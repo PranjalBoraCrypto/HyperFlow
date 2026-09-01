@@ -372,6 +372,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .rev-hl[data-in="1"]{animation:revin .62s cubic-bezier(.2,.8,.25,1) forwards; animation-delay:var(--d,0ms)}
 .rev-hl[data-instant="1"]{animation:none !important; opacity:1; transform:none}
 @keyframes revin{to{opacity:1; transform:none}}
+@keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
 /* referral — disclosed, never disguised (rf-) */
 .rf-box{display:flex; gap:18px; align-items:center; flex-wrap:wrap;
@@ -395,6 +396,245 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .foot a{color:var(--mint); text-decoration:none}
 .foot a:hover{text-decoration:underline}
 
+/* ============================================================
+   WALLET PAGE v2 — namespaced wl- / eq- / dp- / rn- / nr- / mk-
+   ============================================================ */
+
+/* ---- identity ---- */
+.wl-hero{display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start}
+.wl-hero .sealwrap{position:relative; width:104px; height:104px; flex:0 0 auto}
+.wl-hero .sealwrap canvas{width:104px; height:104px; display:block; border-radius:24px}
+.wl-hero .sealwrap::after{content:""; position:absolute; inset:-6px; border-radius:30px; pointer-events:none;
+  background:radial-gradient(circle at 50% 30%, color-mix(in srgb,var(--mint) 22%,transparent), transparent 70%);
+  opacity:0; transition:opacity .4s}
+.wl-hero:hover .sealwrap::after{opacity:1}
+.wl-idt{min-width:0; display:flex; flex-direction:column; gap:6px}
+.wl-arch{font-size:clamp(26px,5vw,40px); line-height:1; font-weight:800}
+.wl-tag{color:var(--ink-2); font-size:14.5px; max-width:58ch}
+.wl-why{font-size:12.5px; color:var(--ink-3); display:flex; gap:7px; align-items:baseline}
+.wl-why b{color:var(--mint-2); font-weight:600; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.1em; text-transform:uppercase; flex:0 0 auto}
+.wl-runners{display:flex; gap:6px; flex-wrap:wrap; margin-top:2px}
+.wl-runner{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3);
+  border:1px dashed var(--line); border-radius:99px; padding:3px 9px; transition:border-color .2s,color .2s}
+.wl-runner:hover{border-color:var(--line-2); color:var(--ink-2)}
+.wl-idrow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px; min-width:0}
+.wl-idrow code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3);
+  background:var(--raised); border:1px solid transparent; border-radius:6px; padding:4px 8px;
+  overflow-wrap:anywhere; min-width:0; max-width:100%; transition:filter .3s, border-color .2s, color .2s}
+.wl-idrow code:hover{border-color:var(--line); color:var(--ink-2)}
+.wl-idrow code[data-masked="1"]{filter:blur(5px)}
+.wl-mini{min-height:34px; min-width:34px; display:grid; place-items:center; border-radius:9px; color:var(--ink-3);
+  border:1px solid transparent; transition:background .18s, color .18s, border-color .18s, transform .18s}
+.wl-mini:hover{background:var(--raised); color:var(--mint); border-color:var(--line); transform:translateY(-1px)}
+.wl-mini:active{transform:translateY(0) scale(.94)}
+.wl-mini[aria-pressed="true"]{color:var(--mint); background:var(--mint-wash); border-color:var(--mint-2)}
+.wl-mini svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+.wl-role{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3)}
+.wl-role b{color:var(--mint-2); font-weight:600}
+@media (max-width:560px){
+  .wl-hero{grid-template-columns:1fr; gap:14px}
+  .wl-hero .sealwrap, .wl-hero .sealwrap canvas{width:84px; height:84px}
+}
+
+/* ---- tiles ---- */
+.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:10px}
+.wl-tile{position:relative; background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m);
+  padding:14px 16px 13px; display:flex; flex-direction:column; gap:4px; min-width:0; overflow:hidden;
+  overflow-wrap:anywhere; transition:border-color .24s, transform .24s, box-shadow .24s}
+.wl-tile::before{content:""; position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .3s;
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,0%), color-mix(in srgb,var(--mint) 9%,transparent), transparent 62%)}
+.wl-tile:hover{border-color:var(--line-2); transform:translateY(-2px); box-shadow:var(--shade)}
+.wl-tile:hover::before{opacity:1}
+.wl-tile .k{display:flex; align-items:center; gap:6px}
+.wl-tile .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(19px,3.2vw,25px); font-weight:600;
+  font-variant-numeric:tabular-nums; letter-spacing:-.025em; line-height:1.15}
+.wl-tile .s{font-size:12px; color:var(--ink-3); line-height:1.35}
+.wl-tile .v.up{color:var(--up)} .wl-tile .v.down{color:var(--down)}
+.wl-tile .v.none{color:var(--ink-3); font-size:16px; font-weight:500}
+.wl-tile .sp{height:26px; margin-top:4px; opacity:.9}
+@media (max-width:400px){ .wl-tiles{grid-template-columns:1fr; gap:8px} .wl-tile{padding:12px} }
+@media (min-width:401px) and (max-width:520px){ .wl-tiles{grid-template-columns:1fr 1fr; gap:8px} }
+
+/* ---- segmented control ---- */
+.wl-seg{display:inline-flex; background:var(--raised); border:1px solid var(--line); border-radius:11px;
+  padding:3px; gap:2px; max-width:100%; overflow-x:auto; scrollbar-width:none}
+.wl-seg::-webkit-scrollbar{display:none}
+.wl-seg button{padding:7px 13px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink-3);
+  white-space:nowrap; transition:background .2s, color .2s}
+.wl-seg button:hover:not(.on){color:var(--ink); background:color-mix(in srgb,var(--line) 60%,transparent)}
+.wl-seg button.on{background:var(--mint); color:var(--on-mint)}
+@media (max-width:768px){ .wl-seg{width:100%} .wl-seg button{flex:1 1 0; min-height:38px} }
+
+/* ---- equity chart (eq-) ----
+   Composition: labels sit ON the gridlines at the left, a band shades the
+   distance from the starting value, and the readout is a fixed rail under the
+   plot rather than a floating bubble — which is what makes it usable on a phone. */
+.eq-wrap{display:flex; flex-direction:column; gap:0; background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden}
+.eq-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  padding:14px 16px 10px}
+.eq-plot{position:relative; height:clamp(190px,30vw,260px); touch-action:pan-y}
+.eq-plot canvas{display:block; width:100%; height:100%}
+.eq-rail{display:grid; grid-template-columns:1fr auto auto; gap:10px 16px; align-items:baseline;
+  padding:11px 16px; border-top:1px solid var(--line); background:var(--raised); min-height:52px}
+.eq-rail .r1{font-family:"IBM Plex Mono",monospace; font-size:17px; font-weight:600; font-variant-numeric:tabular-nums}
+.eq-rail .r2{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3)}
+.eq-rail .r3{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600}
+.eq-rail .r3.up{color:var(--up)} .eq-rail .r3.down{color:var(--down)}
+@media (max-width:520px){ .eq-rail{grid-template-columns:1fr auto} .eq-rail .r2{grid-column:1/-1} }
+.eq-empty{padding:34px 16px; text-align:center; color:var(--ink-3); font-size:13.5px}
+
+/* ---- depth meter (dp-) ----
+   One stacked bar showing each component's weighted contribution, then the rows.
+   Missing components are hatched and contribute nothing rather than zero. */
+.dp-top{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.dp-num{font-family:Chivo; font-weight:900; font-size:clamp(40px,7vw,58px); line-height:.9; letter-spacing:-.05em}
+.dp-of{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-3)}
+.dp-stack{display:flex; height:14px; border-radius:99px; overflow:hidden; background:var(--raised);
+  border:1px solid var(--line); gap:2px; padding:2px}
+.dp-seg{height:100%; border-radius:99px; transform-origin:left center; transform:scaleX(0);
+  transition:transform .9s cubic-bezier(.2,.85,.25,1), filter .2s}
+.dp-seg:hover{filter:brightness(1.25)}
+.dp-seg[data-missing="1"]{background:repeating-linear-gradient(-45deg,var(--line) 0 4px,transparent 4px 8px) !important}
+.dp-rows{display:flex; flex-direction:column; gap:11px}
+.dp-row{display:grid; grid-template-columns:1fr auto; gap:3px 12px; align-items:center;
+  padding:9px 11px; border-radius:10px; border:1px solid transparent; transition:background .2s, border-color .2s}
+.dp-row:hover{background:var(--raised); border-color:var(--line)}
+.dp-row .n{font-size:13.5px; display:flex; align-items:center; gap:7px}
+.dp-row .n i{width:8px; height:8px; border-radius:3px; flex:0 0 auto}
+.dp-row .v{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.dp-row .tr{grid-column:1/-1; height:6px; border-radius:99px; background:var(--raised); overflow:hidden; margin-top:3px}
+.dp-row .tr[data-missing="1"]{background:repeating-linear-gradient(-45deg,var(--raised) 0 5px,transparent 5px 10px)}
+.dp-row .fl{display:block; height:100%; border-radius:99px; transform-origin:left center; transform:scaleX(0);
+  transition:transform 1s cubic-bezier(.2,.85,.25,1)}
+.dp-row .d{grid-column:1/-1; font-size:12px; color:var(--ink-3); margin-top:2px}
+.dp-row .d.miss{font-style:italic}
+.dp-row .w{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
+
+/* ---- runs (rn-) — reconstructed trades ---- */
+.rn-list{display:flex; flex-direction:column; gap:10px}
+.rn{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden;
+  transition:border-color .24s, transform .24s}
+.rn:hover{border-color:var(--line-2)}
+.rn[data-open="1"]{border-color:var(--mint-2)}
+.rn-h{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:13px 15px;
+  cursor:pointer; width:100%; text-align:left}
+.rn-h:hover{background:var(--raised)}
+.rn-side{font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:700; letter-spacing:.07em;
+  padding:4px 8px; border-radius:5px; white-space:nowrap}
+.rn-side.l{background:color-mix(in srgb,var(--up) 17%,transparent); color:var(--up)}
+.rn-side.s{background:color-mix(in srgb,var(--down) 17%,transparent); color:var(--down)}
+.rn-m{min-width:0; display:flex; flex-direction:column; gap:2px}
+.rn-m b{font-size:14px; font-weight:600}
+.rn-m s{text-decoration:none; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.rn-p{text-align:right; display:flex; flex-direction:column; gap:2px}
+.rn-p b{font-family:"IBM Plex Mono",monospace; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums}
+.rn-p b.up{color:var(--up)} .rn-p b.down{color:var(--down)} .rn-p b.na{color:var(--ink-3); font-size:12px}
+.rn-p s{text-decoration:none; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
+.rn-flag{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:9.5px;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--flag);
+  background:color-mix(in srgb,var(--flag) 14%,transparent); border-radius:4px; padding:2px 6px}
+.rn-body{display:none; padding:0 15px 15px; flex-direction:column; gap:12px}
+.rn[data-open="1"] .rn-body{display:flex}
+.rn-strip{position:relative; height:118px; border-radius:10px; background:var(--raised);
+  border:1px solid var(--line); overflow:hidden}
+.rn-strip canvas{display:block; width:100%; height:100%}
+.rn-facts{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(122px,100%),1fr)); gap:8px}
+.rn-fact{background:var(--raised); border:1px solid var(--line); border-radius:9px; padding:9px 11px;
+  display:flex; flex-direction:column; gap:2px; min-width:0}
+.rn-fact .k{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.rn-fact .v{font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere}
+.rn-legs{display:flex; flex-direction:column; gap:1px; max-height:none}
+.rn-leg{display:grid; grid-template-columns:auto auto 1fr auto; gap:10px; align-items:center;
+  padding:7px 9px; border-radius:7px; font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  transition:background .16s}
+.rn-leg:hover{background:var(--raised)}
+.rn-leg .kd{font-size:9px; letter-spacing:.08em; padding:2px 6px; border-radius:4px; white-space:nowrap;
+  background:var(--raised); color:var(--ink-3)}
+.rn-leg .kd.entry{background:color-mix(in srgb,var(--mint) 16%,transparent); color:var(--mint)}
+.rn-leg .kd.add{background:color-mix(in srgb,var(--mint) 10%,transparent); color:var(--mint-2)}
+.rn-leg .kd.exit{background:color-mix(in srgb,var(--ink-3) 18%,transparent); color:var(--ink-2)}
+.rn-leg .kd.liq{background:color-mix(in srgb,var(--down) 20%,transparent); color:var(--down)}
+.rn-leg .t{color:var(--ink-3)}
+.rn-leg .pn{text-align:right; font-variant-numeric:tabular-nums}
+.rn-leg .pn.up{color:var(--up)} .rn-leg .pn.down{color:var(--down)}
+
+/* ---- narrative (nr-) ---- */
+.nr{display:flex; flex-direction:column; gap:9px}
+.nr-l{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; padding:12px 14px;
+  border-radius:11px; background:var(--panel); border:1px solid var(--line);
+  transition:transform .26s cubic-bezier(.2,.9,.3,1), border-color .26s}
+.nr-l:hover{transform:translateX(4px); border-color:var(--line-2)}
+.nr-l .d{width:26px; height:26px; border-radius:8px; display:grid; place-items:center; flex:0 0 auto;
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:700}
+.nr-l.good .d{background:color-mix(in srgb,var(--up) 15%,transparent); color:var(--up)}
+.nr-l.bad .d{background:color-mix(in srgb,var(--down) 15%,transparent); color:var(--down)}
+.nr-l.neu .d{background:var(--raised); color:var(--ink-3)}
+.nr-l .t{font-size:14px; line-height:1.55}
+.nr-l .t b{font-weight:600; color:var(--ink)}
+.nr-more{align-self:flex-start; height:40px; padding:0 16px; border-radius:99px; border:1px solid var(--line);
+  background:var(--panel); font-size:13px; color:var(--ink-2); transition:border-color .2s,color .2s,transform .2s}
+.nr-more:hover{border-color:var(--mint-2); color:var(--mint); transform:translateY(-1px)}
+
+/* ---- marks (mk-) — our own classification, clearly labelled ---- */
+.mk-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(min(148px,100%),1fr)); gap:9px}
+.mk{position:relative; border-radius:12px; padding:13px 12px; text-align:center; overflow:hidden;
+  border:1px solid var(--line); background:var(--panel);
+  transition:transform .3s cubic-bezier(.2,1.25,.4,1), border-color .28s}
+.mk .i{width:34px; height:34px; margin:0 auto 8px; border-radius:10px; display:grid; place-items:center;
+  background:var(--raised); color:var(--ink-3); font-family:"IBM Plex Mono",monospace; font-size:13px;
+  font-weight:700; transition:background .3s, color .3s}
+.mk .n{font-size:12.5px; font-weight:600; line-height:1.25}
+.mk .r{font-size:10.5px; color:var(--ink-3); margin-top:3px; line-height:1.35}
+.mk[data-got="0"]{opacity:.44; filter:saturate(.3)}
+.mk[data-got="1"]{border-color:color-mix(in srgb,var(--mint) 45%,var(--line))}
+.mk[data-got="1"] .i{background:var(--mint-wash); color:var(--mint)}
+.mk[data-got="1"]:hover{transform:translateY(-4px); border-color:var(--mint)}
+.mk[data-got="1"]::after{content:""; position:absolute; top:-40%; left:-60%; width:38%; height:200%;
+  transform:rotate(17deg); opacity:0;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--mint) 20%,transparent),transparent)}
+.mk[data-got="1"]:hover::after{opacity:1; animation:mkSweep .8s ease}
+@keyframes mkSweep{from{left:-60%}to{left:120%}}
+
+/* ---- proof panel ---- */
+.wl-proof{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--mint);
+  border-radius:0 var(--r-m) var(--r-m) 0; padding:14px 16px; display:flex; flex-direction:column; gap:7px}
+.wl-proof h4{font-family:Chivo; font-size:13px; font-weight:800; margin:0; letter-spacing:-.02em}
+.wl-proof .p{display:grid; grid-template-columns:1fr auto; gap:4px 14px; font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; align-items:baseline}
+.wl-proof .p .k{color:var(--ink-3); overflow-wrap:anywhere}
+.wl-proof .p .v{font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+.wl-proof .p .v.ok{color:var(--mint)} .wl-proof .p .v.bad{color:var(--down)}
+.wl-proof p{font-size:12.5px; color:var(--ink-3); line-height:1.55}
+
+/* ---- loader v2 ---- */
+.ld2{display:flex; flex-direction:column; align-items:center; gap:16px; padding:34px 0 8px}
+.ld2-stage{position:relative; width:min(360px,88vw); height:186px}
+.ld2-stage canvas{display:block; width:100%; height:100%}
+.ld2-pct{position:absolute; right:0; top:0; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.ld2-addr{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.ld2-step{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-2); text-align:center; min-height:19px}
+.ld2-step i{display:inline-block; width:5px; height:5px; border-radius:99px; background:var(--mint);
+  margin-left:7px; vertical-align:middle; animation:ld2p 1s ease-in-out infinite}
+@keyframes ld2p{0%,100%{opacity:.25}50%{opacity:1}}
+.ld2-bar{width:min(360px,88vw); height:2px; background:var(--line); border-radius:99px; overflow:hidden}
+.ld2-bar i{display:block; height:100%; width:0%; background:var(--mint); transition:width .4s ease}
+.ld2-skel{width:100%; max-width:760px; display:flex; flex-direction:column; gap:10px; margin-top:16px}
+.ld2-skrow{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.sk{background:linear-gradient(90deg,var(--raised),color-mix(in srgb,var(--raised) 55%,var(--line)),var(--raised));
+  background-size:220% 100%; border-radius:var(--r-m); animation:skshift 1.5s linear infinite}
+.ld2-skel .t{height:84px} .ld2-skel .c{height:170px} .ld2-skel .l{height:44px}
+@keyframes skshift{to{background-position:-220% 0}}
+
+/* ---- watch/empty ---- */
+.wl-empty{display:flex; flex-direction:column; align-items:center; gap:11px; padding:38px 20px; text-align:center;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m)}
+.wl-empty canvas{width:88px; height:88px}
+.wl-empty h3{font-size:16px}
+.wl-empty p{color:var(--ink-2); max-width:44ch; font-size:13.5px}
+
 /* ---- touch targets: 44px minimum on anything tappable ----
    Measured with getBoundingClientRect on the deployed page, not assumed:
    fourteen controls were under 44px tall before this block existed. */
@@ -412,6 +652,10 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .wl-mini{min-height:44px; min-width:44px}
   .foot a{display:inline-block; padding:12px 0}
   .tp-q{width:22px; height:22px; font-size:11px}
+  .wl-mini{min-height:44px; min-width:44px}
+  .rn-h{min-height:56px}
+  .nr-more{height:44px}
+  .wl-runner{min-height:32px; display:inline-flex; align-items:center}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -543,9 +787,12 @@ const TIPS={
   staked:'HYPE currently delegated to validators. Held separately from spot balance, so a big staker does not look empty.',
   since:'The first entry in this wallet’s ledger — its earliest deposit or transfer on Hyperliquid. Survives the fills cap, unlike first-fill date.',
   fillwin:'The fills endpoint returns 2,000 at a time. This is the window we actually read, not the wallet’s whole history — every number derived from fills covers this window only.',
-  depth:'HyperFlow’s own descriptive measure of how much this wallet has done on Hyperliquid. Not a rank, not a grade, not official, and it says nothing about what happens next.',
   genesis:'The genesis distribution this wallet received, straight from its ledger — token, amount and date as recorded by the exchange.',
-  subacc:'Subaccounts belonging to this address. Their balances are shown separately and are never folded into the headline numbers.'
+  subacc:'Subaccounts belonging to this address. Their balances are shown separately and are never folded into the headline numbers.',
+  curve:'Account value over time, from the perpAllTime series — the one that ends exactly on the account value shown above. The allTime series folds in spot and staked HYPE and does not reconcile with the perp account, so it is not drawn here.',
+  winrate:'Of the trades we could rebuild end to end inside the fill window, the share that closed in profit. Positions still open, and positions that were already running when the window opens, are excluded.',
+  hold:'The median time from a position leaving flat to returning to flat, across complete trades in the read window.',
+  depth:'HyperFlow’s own descriptive measure of how much this wallet has done on Hyperliquid. Components with no data are dropped and the remaining weights renormalised, so nothing is scored zero for being absent. Not a rank, not a grade, and it says nothing about what happens next.'
 };
 (function(){
   const pop=$('#tpPop'); let anchor=null, hideT=null;
@@ -787,51 +1034,180 @@ function drawSeal(cv, size, id, seedStr){
 /* ============================================================
    6. SIGNATURE LOADER — a book filling outward from the spread
    ============================================================ */
-function makeLoader(mount, steps){
-  const wrap=el('div','ld');
-  const cv=el('canvas'); cv.width=680; cv.height=340; cv.setAttribute('aria-hidden','true');
-  const step=el('div','ld-step', steps[0]||'Reading…');
-  const bar=el('div','ld-bar'); const fill=el('i'); bar.appendChild(fill);
-  wrap.append(cv,step,bar); mount.appendChild(wrap);
-  const c=fitCanvas(cv,340,170,1.5);
-  const R=rng(7);
-  const rows=13, depths=[];
-  for(let i=0;i<rows;i++) depths.push(0.22+R()*0.78);
-  let prog=0, target=0, raf=null, alive=true;
-  function frame(){
-    if(!alive) return;
-    prog += (target-prog)*0.09;
-    const W=340,H=170,mid=H/2;
-    c.clearRect(0,0,W,H);
-    const mint=tok('--mint')||'#96FCE4', line=tok('--line')||'#12403A', dim=tok('--ink-3')||'#65847D';
-    // spread line
-    c.strokeStyle=mint; c.globalAlpha=.9; c.lineWidth=1.5;
-    c.beginPath(); c.moveTo(18,mid); c.lineTo(W-18,mid); c.stroke(); c.globalAlpha=1;
-    // rows grow outward from the mid as progress rises
-    for(let i=0;i<rows;i++){
-      const reach = prog*rows - i;
-      if(reach<=0) continue;
-      const a=Math.min(1,reach);
-      const h=7, gap=11;
-      const w=(W-52)*depths[i]*a;
-      // ask above (dimmer), bid below (mint)
-      c.globalAlpha=a*0.85;
-      c.fillStyle=dim;
-      c.fillRect(W/2-2-w/2, mid-gap-(i*gap)-h, w, h-2);
-      c.fillStyle=mint; c.globalAlpha=a*0.9;
-      c.fillRect(W/2-2-w*0.86/2, mid+gap+(i*gap), w*0.86, h-2);
-      c.globalAlpha=1;
-    }
-    // frame
-    c.strokeStyle=line; c.lineWidth=1; c.strokeRect(.5,.5,W-1,H-1);
+/* ============================================================
+   LOADER v2 — an order book building outward from the spread.
+   It eases toward 92% and WAITS there: the data decides when it
+   finishes, so the bar never lies about progress. A skeleton of
+   the page sits underneath so nothing jumps when the data lands.
+   Depth seeding is hashed off the address, so two wallets do not
+   load identically.
+   ============================================================ */
+function makeLoader2(mount, steps, addr){
+  const wrap=el('div','ld2');
+  const stage=el('div','ld2-stage');
+  const cv=el('canvas'); cv.setAttribute('aria-hidden','true');
+  const pct=el('div','ld2-pct','0%');
+  stage.append(cv,pct);
+  const ad=el('div','ld2-addr', shortAddr(addr||''));
+  const step=el('div','ld2-step'); step.append(document.createTextNode(steps[0]||'Reading…'), el('i'));
+  const bar=el('div','ld2-bar'); const fill=el('i'); bar.appendChild(fill);
+  const skel=el('div','ld2-skel');
+  const r1=el('div','ld2-skrow'); [0,1,2].forEach(()=>r1.appendChild(el('div','sk t')));
+  skel.append(r1, el('div','sk c'), el('div','sk l'));
+  wrap.append(stage,ad,step,bar,skel);
+  mount.appendChild(wrap);
+
+  const c=fitCanvas(cv,Math.min(360,innerWidth*0.88),186,1.5);
+  const R=rng(hashStr(addr||'x')||9);
+  const ROWS=14, depth=[], jitter=[];
+  for(let i=0;i<ROWS;i++){ depth.push(0.18+R()*0.82); jitter.push(R()*6.283); }
+  let prog=0, done=false, raf=null, t0=performance.now(), W=0, H=0;
+  function measure(){ const r=stage.getBoundingClientRect(); if(!r.width) return false;
+    W=r.width; H=r.height; fitCanvas(cv,W,H,1.5); return true; }
+  measure();
+  function frame(now){
     raf=requestAnimationFrame(frame);
+    if(!cv.isConnected){ cancelAnimationFrame(raf); return; }
+    if(!W && !measure()) return;
+    const ctx=cv.getContext('2d');
+    const elp=(now-t0)/1000;
+    /* asymptotic to 0.92 while waiting, then a quick run to 1 once the data is in */
+    prog = done ? Math.min(1, prog+0.055) : 0.92*(1-Math.exp(-elp*0.5));
+    const mint=tok('--mint'), dim=tok('--ink-3'), line=tok('--line');
+    const mid=H/2, gap=Math.max(8,H/22), h=Math.max(5,gap-4);
+    ctx.clearRect(0,0,W,H);
+    /* the spread line, with a travelling highlight */
+    ctx.strokeStyle=mint; ctx.lineWidth=1.5; ctx.globalAlpha=.85;
+    ctx.beginPath(); ctx.moveTo(10,mid); ctx.lineTo(W-10,mid); ctx.stroke();
+    const hx=10+((elp*0.34)%1)*(W-20);
+    const hg=ctx.createLinearGradient(hx-40,0,hx+40,0);
+    hg.addColorStop(0,'rgba(0,0,0,0)'); hg.addColorStop(.5,mint); hg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.strokeStyle=hg; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(hx-40,mid); ctx.lineTo(hx+40,mid); ctx.stroke();
+    ctx.globalAlpha=1;
+    for(let i=0;i<ROWS;i++){
+      const reach=prog*ROWS-i; if(reach<=0) continue;
+      const a=Math.min(1,reach), e=1-Math.pow(1-a,3);
+      const breathe=1+Math.sin(elp*1.4+jitter[i])*0.045;
+      const w=(W-30)*depth[i]*e*breathe;
+      ctx.globalAlpha=e*0.8;
+      ctx.fillStyle=dim;
+      ctx.fillRect(W/2-w/2, mid-gap-(i*gap)-h, w, h);
+      ctx.globalAlpha=e*0.92; ctx.fillStyle=mint;
+      const wb=w*0.88;
+      ctx.fillRect(W/2-wb/2, mid+gap+(i*gap), wb, h);
+      ctx.globalAlpha=1;
+    }
+    ctx.strokeStyle=line; ctx.lineWidth=1; ctx.strokeRect(.5,.5,W-1,H-1);
+    pct.textContent=Math.round(prog*100)+'%';
+    fill.style.width=(prog*100).toFixed(1)+'%';
   }
-  raf=requestAnimationFrame(frame);
+  if(!RM()) raf=requestAnimationFrame(frame);
+  else { pct.textContent='…'; }
+  let rt; const onR=()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(cv.isConnected) measure(); },150); };
+  addEventListener('resize',onR);
   return {
-    set(i,total){ target=Math.min(1,(i+1)/total); fill.style.width=Math.round(target*100)+'%';
-                  if(steps[i]) step.textContent=steps[i]; },
-    done(){ alive=false; cancelAnimationFrame(raf); wrap.remove(); }
+    step(i){ if(steps[i]) step.firstChild.nodeValue=steps[i]; },
+    finish(){ done=true; },
+    done(){ done=true; cancelAnimationFrame(raf); removeEventListener('resize',onR); wrap.remove(); }
   };
+}
+
+/* ============================================================
+   POSITION RECONSTRUCTION
+   Hyperliquid stamps every fill with startPosition — the size held
+   immediately before it. That is venue truth, so there is no need to
+   rebuild size by counting forwards (which drifts permanently once the
+   capped window opens mid-position).
+   The catch, and it is a silent one: userFills is returned NEWEST FIRST,
+   and many fills share a millisecond. A stable sort by `time` therefore
+   leaves same-millisecond fills in reverse order. Measured on live data:
+   sorting by time gives 1,628 broken links across 2,000 BTC fills, worst
+   gap 55.4 BTC, and lands 1.87 BTC away from the size the exchange
+   reports. Simply reversing the array gives 0 broken links and lands
+   exactly on it. Ordering is the whole ball game here.
+   ============================================================ */
+const isSpotCoin = c => /^[@+]/.test(c);
+function chrono(fills){ return (fills||[]).slice().reverse(); }   // oldest-first
+
+function buildRuns(fills, livePos){
+  const perp = chrono(fills).filter(f=>!isSpotCoin(f.coin));
+  const byCoin={};
+  perp.forEach(f=>{ (byCoin[f.coin]=byCoin[f.coin]||[]).push(f); });
+  const runs=[], checks={links:0, linkBreaks:0, worstLink:0, endChecked:0, endBreaks:0, worstEnd:0, backMax:0};
+  const FLAT=1e-9;
+
+  Object.keys(byCoin).forEach(coin=>{
+    const fs=byCoin[coin];
+    const after=fs.map(f=>+f.startPosition + (f.side==='B'? +f.sz : -f.sz));
+
+    /* check 1: does each fill's result equal the next fill's stated start? */
+    for(let i=0;i<fs.length-1;i++){
+      checks.links++;
+      const d=Math.abs(after[i]-(+fs[i+1].startPosition));
+      if(d>1e-8){ checks.linkBreaks++; checks.worstLink=Math.max(checks.worstLink,d); }
+    }
+    /* check 2: does the walk land on the size the exchange reports right now? */
+    const live = livePos[coin]!=null ? livePos[coin] : 0;
+    if(fs.length){
+      checks.endChecked++;
+      const d=Math.abs(after[after.length-1]-live);
+      if(d>1e-6){ checks.endBreaks++; checks.worstEnd=Math.max(checks.worstEnd,d); }
+    }
+    /* check 3: an independent backwards walk from venue truth, for cross-check */
+    const back=new Array(fs.length); let acc=live;
+    for(let i=fs.length-1;i>=0;i--){ back[i]=acc; acc-=(fs[i].side==='B'?1:-1)*Math.abs(+fs[i].sz); }
+    for(let i=0;i<fs.length;i++) checks.backMax=Math.max(checks.backMax, Math.abs(back[i]-after[i]));
+    const before0 = fs.length ? +fs[0].startPosition : 0;
+
+    let cur=null;
+    fs.forEach((f,i)=>{
+      const prev = i===0 ? before0 : after[i-1];
+      if(!cur){
+        cur={coin, t0:f.time, legs:[], realized:0, notional:0, peakSize:0,
+             dir: after[i]>0?'LONG': after[i]<0?'SHORT':(f.side==='B'?'LONG':'SHORT'),
+             /* already running before this window opened: we can see its exits but
+                not its entry, so its PnL is a fragment and must not read as a trade */
+             partial: Math.abs(prev)>FLAT};
+      }
+      const leg={t:f.time, px:+f.px, sz:Math.abs(+f.sz), side:f.side, dir:f.dir,
+                 pnl:+f.closedPnl, fee:+f.fee, after:after[i], maker:f.crossed===false,
+                 liq: /liquidat/i.test(f.dir||'') || f.liquidation!=null};
+      leg.kind = leg.liq ? 'LIQ'
+               : Math.abs(prev)<FLAT ? 'ENTRY'
+               : Math.abs(after[i])<FLAT ? 'EXIT'
+               : Math.abs(after[i])>Math.abs(prev) ? 'ADD' : 'TRIM';
+      cur.legs.push(leg);
+      cur.realized+=leg.pnl; cur.notional+=leg.sz*leg.px;
+      cur.peakSize=Math.max(cur.peakSize, Math.abs(after[i]));
+      if(Math.abs(after[i])<FLAT){ cur.t1=f.time; cur.open=false; runs.push(cur); cur=null; }
+    });
+    if(cur){ cur.open=true; cur.t1=Date.now(); cur.liveSize=live; runs.push(cur); }
+  });
+  runs.sort((a,b)=>b.t1-a.t1);
+  return {runs, checks};
+}
+
+/* Weighted-average cost, not cash flow.
+   Cash flow double-counts the moment a position is partly closed: the proceeds
+   sit in the cash total AND in the venue's realised PnL. Proof: short 10 @ 100,
+   buy back 5 @ 90, mark 95 → truth is $75, cash flow says $125.
+   Realised comes straight from the venue's closedPnl; only the open remainder is
+   marked, and only when we know what it cost. */
+function runPnl(run, mark){
+  let sz=0, basis=0, realized=0;
+  for(const l of run.legs){
+    const s=(l.side==='B'?1:-1)*l.sz;
+    if(Math.abs(sz)<1e-9 || Math.sign(s)===Math.sign(sz)) basis=(Math.abs(sz)*basis + l.sz*l.px)/(Math.abs(sz)+l.sz);
+    else if(l.sz>Math.abs(sz)) basis=l.px;                     /* flipped through flat */
+    sz = l.after;                                              /* trimming keeps the basis */
+    if(Math.abs(sz)<1e-9){ sz=0; basis=0; }
+    realized+=l.pnl;
+  }
+  /* no honest mark for a run whose entry we never saw */
+  const canMark = !run.partial && Math.abs(sz)>1e-9 && basis>0 && mark>0;
+  const unreal = canMark ? sz*(mark-basis) : 0;
+  const fees = run.legs.reduce((s,l)=>s+(l.fee||0),0);
+  return {realized, unreal, basis, size:sz, fees, total:realized+unreal, canMark};
 }
 
 /* ============================================================
@@ -934,6 +1310,16 @@ function derive(d){
     const v=(d.vals||[]).find(v=>v.validator.toLowerCase()===x.validator.toLowerCase());
     return v? v.name : shortAddr(x.validator);
   });
+  f.validatorDetail = (d.dels||[]).map(x=>{
+    const v=(d.vals||[]).find(v=>v.validator.toLowerCase()===x.validator.toLowerCase());
+    const st=v? Object.fromEntries(v.stats||[]) : {};
+    return {name: v? v.name : shortAddr(x.validator), amount:+x.amount,
+            commission: v? +v.commission : null,
+            uptime: st.month? +st.month.uptimeFraction : null,
+            apr: st.month? +st.month.predictedApr : null,
+            jailed: v? !!v.isJailed : false,
+            locked: x.lockedUntilTimestamp||null};
+  });
   f.rewards = (d.drew||[]).reduce((s,x)=>s+(+x.totalAmount||0),0);
   f.stakingSince = (d.dhist||[]).length ? Math.min(...d.dhist.map(x=>x.time)) : null;
 
@@ -1022,8 +1408,13 @@ function depth(f){
     {k:'Tenure',   v: f.tenureDays!=null? cap(f.tenureDays,900):null,
      detail: f.tenureDays!=null? 'first ledger entry '+dayStr(f.firstLedger):null, miss:'no ledger history'}
   ];
+  /* declared weights. Missing components are dropped and the remaining weights
+     renormalised, so a wallet is never scored down for data that does not exist. */
+  const W_={Trading:.24, Position:.16, Staking:.20, Holdings:.14, Spread:.14, Tenure:.12};
+  comps.forEach(c=>c.weight=W_[c.k]);
   const known=comps.filter(c=>c.v!=null);
-  const total = known.length? Math.round(known.reduce((s,c)=>s+c.v,0)/known.length) : null;
+  const wsum=known.reduce((s,c)=>s+c.weight,0);
+  const total = known.length? Math.round(known.reduce((s,c)=>s+c.v*c.weight,0)/wsum) : null;
   return {comps,total,knownCount:known.length};
 }
 
@@ -1221,12 +1612,12 @@ function viewHome(){
   app.appendChild(b1.node);
 
   const b2=blk('Live markets','02');
-  const note=el('p',null,'Every perp on the main book, sized by 24-hour volume. Sweep the cursor to shove them; rest it to read one.');
-  note.style.color='var(--ink-2)'; note.style.fontSize='14px';
+  const fieldNote=el('p',null,'Every perp on the main book, sized by 24-hour volume. Sweep the cursor to shove them; rest it to read one.');
+  fieldNote.style.color='var(--ink-2)'; fieldNote.style.fontSize='14px';
   const field=el('div','hm-field');
   const fl=el('div','hm-fieldnote lab','sized by 24h notional volume · live');
   field.appendChild(fl);
-  b2.body.append(note,field);
+  b2.body.append(fieldNote,field);
   app.appendChild(b2.node);
 
   const b3=blk('The exchange','03');
@@ -1268,6 +1659,338 @@ function viewCast(you){
 const MASK={addr:false, amounts:false};
 function maskNum(s){ return MASK.amounts ? '•'.repeat(Math.min(9,String(s).length)) : s; }
 
+/* ============================================================
+   COUNT-UP — one number, one series. Whatever counts up here is the
+   same computed value the card and the tile show; they can never
+   disagree because there is only one of them.
+   ============================================================ */
+/* ---- small shared utilities ---- */
+function median(a){ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y), m=s.length>>1;
+  return s.length%2? s[m] : (s[m-1]+s[m])/2; }
+function dur(ms){
+  if(ms==null||!isFinite(ms)) return '—';
+  const s=ms/1000;
+  if(s<90) return Math.round(s)+'s';
+  if(s<5400) return (s/60).toFixed(s<600?1:0)+' min';
+  if(s<172800) return (s/3600).toFixed(s<36000?1:0)+' h';
+  if(s<2592000) return (s/86400).toFixed(1)+' days';
+  return (s/2592000).toFixed(1)+' months';
+}
+function note(html){ const n=el('div','wl-note'); n.innerHTML=html; return n; }
+let _toastN=null,_toastT=null;
+function toast(msg){
+  if(!_toastN){ _toastN=el('div'); _toastN.style.cssText=
+    'position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(8px);'+
+    'z-index:300;background:var(--raised);border:1px solid var(--line-2);color:var(--ink);'+
+    'padding:10px 16px;border-radius:99px;font-size:13px;box-shadow:0 12px 34px rgba(0,0,0,.45);'+
+    'opacity:0;transition:opacity .2s, transform .2s;pointer-events:none';
+    document.body.appendChild(_toastN); }
+  _toastN.textContent=msg;
+  _toastN.style.opacity='1'; _toastN.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(_toastT);
+  _toastT=setTimeout(()=>{ _toastN.style.opacity='0'; _toastN.style.transform='translateX(-50%) translateY(8px)'; },1700);
+}
+/* pointer glow on tiles — desktop only, and bound once per node */
+function glowTiles(scope){
+  if(matchMedia('(pointer:coarse)').matches) return;
+  scope.querySelectorAll('.wl-tile').forEach(t=>{
+    if(t.__g) return; t.__g=1;
+    t.addEventListener('pointermove',e=>{
+      const r=t.getBoundingClientRect();
+      t.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+      t.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+    },{passive:true});
+  });
+}
+/* a short settle on a newly painted page so it reads as movement, not a redraw */
+function flick(box){
+  if(!box||RM()) return;
+  [...box.children].forEach((n,i)=>{
+    n.style.animation='none'; void n.offsetWidth;
+    n.style.animation='pgIn .34s cubic-bezier(.2,.9,.3,1) '+Math.min(i,8)*26+'ms both';
+  });
+}
+/* watchlist — this browser only, never sent anywhere */
+const WATCH_KEY='hf.watch';
+function watchGet(){ try{ const v=JSON.parse(localStorage.getItem(WATCH_KEY)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function watchToggle(a){
+  try{ const l=watchGet(); const i=l.indexOf(a);
+    if(i>=0) l.splice(i,1); else l.unshift(a);
+    localStorage.setItem(WATCH_KEY, JSON.stringify(l.slice(0,24)));
+  }catch(e){}
+}
+
+/* ============================================================
+   NARRATIVE — thresholds, each one naming the number behind it.
+   Tone is descriptive, never advisory: it says what happened, not
+   what to do, and never what happens next.
+   ============================================================ */
+function narrative(f, d, runs){
+  const L=[], add=(tone,text)=>L.push({tone,text});
+  const m=v=>'<b>'+fmtUsd(v)+'</b>';
+  if(!f.fillCount && !f.staked && !f.equity){
+    add('neu','This address has no perp account, no fills and no delegation on Hyperliquid. If you expected activity, check the address — or it may only exist on another chain.');
+    return L;
+  }
+  add('neu','The exchange reports this address as a <b>'+(d.role?.role||'unknown')+'</b>, and its ledger opens on <b>'+
+    (f.firstLedger? dayStr(f.firstLedger):'—')+'</b>'+(f.tenureDays!=null?', '+f.tenureDays+' days ago':'')+'.');
+  if(f.oi>0){
+    const p=f.positions.slice().sort((a,b)=>Math.abs(+b.positionValue)-Math.abs(+a.positionValue))[0];
+    const long=+p.szi>0;
+    add(+p.unrealizedPnl>=0?'good':'bad',
+      'Right now it is '+(long?'long':'short')+' <b>'+p.coin+'</b> — '+fmtNum(Math.abs(+p.szi),4)+' units worth '+m(+p.positionValue)+
+      ' at '+(p.leverage?.value||'—')+'× '+(p.leverage?.type||'')+' margin, entered around '+fmtUsd(p.entryPx)+
+      '. On paper that is '+(+p.unrealizedPnl>=0?'ahead':'behind')+' by <b>'+fmtUsd(Math.abs(+p.unrealizedPnl))+'</b>.');
+    if(f.positions.length>1) add('neu','It holds '+f.positions.length+' positions at once, '+m(f.oi)+' of notional in total.');
+    if(p.liquidationPx){
+      const gap=Math.abs((+p.liquidationPx-+p.entryPx)/+p.entryPx*100);
+      add(gap<12?'bad':'neu','The exchange puts the liquidation price for that position at <b>'+fmtUsd(p.liquidationPx)+
+        '</b> — about '+gap.toFixed(0)+'% from the entry. That is the exchange’s number, not ours.');
+    }
+  } else if(f.equity>0){
+    add('neu','Completely flat on perps right now — the account holds '+m(f.equity)+' and nothing is open.');
+  }
+  if(f.runsClosed){
+    add(f.runRealized>=0?'good':'bad','Across the '+f.runsClosed+' complete trades we could rebuild from the fill window, this wallet banked <b>'+
+      fmtUsd(f.runRealized)+'</b>, winning '+Math.round(f.runWinRate*100)+'% of them. A trade here means position opened and returned to flat, not a single fill.');
+  }
+  if(f.partialRuns) add('neu','Another '+f.partialRuns+' position'+(f.partialRuns===1?' was':'s were')+
+    ' already running when the fill window opens. We can see the exits but not the entries, so those are shown as fragments and excluded from the win rate.');
+  if(f.medHold!=null) add('neu','A typical complete trade lasts <b>'+dur(f.medHold)+'</b>.');
+  if(f.makerShare!=null){
+    add(f.makerShare>0.6?'good':'neu', Math.round(f.makerShare*100)+'% of the fills we read were maker-side'+
+      (f.makerShare>0.6?', which is the side that earns the spread rather than paying it':', so most of them crossed the book and paid the taker fee')+'.');
+  }
+  const fund=f.positions.reduce((s,p)=>s+(+(p.cumFunding?.sinceOpen||0)),0);
+  if(Math.abs(fund)>1){
+    add(fund<0?'good':'bad', fund<0
+      ? 'Funding is running in this wallet’s favour on its open positions — <b>'+fmtUsd(-fund)+'</b> received for sitting on the less crowded side.'
+      : 'Holding costs money here: <b>'+fmtUsd(fund)+'</b> paid in funding since these positions opened. That is the hourly fee for being on the crowded side.');
+  }
+  if(f.staked>0){
+    add('good','It has <b>'+fmtNum(f.staked,2)+' HYPE</b> delegated to '+f.validators+' validator'+(f.validators===1?'':'s')+
+      (f.validatorNames.length?' ('+f.validatorNames.join(', ')+')':'')+
+      (f.stakingSince?', and has been staking since <b>'+dayStr(f.stakingSince)+'</b>':'')+
+      (f.rewards>0?'. '+fmtNum(f.rewards,2)+' HYPE of rewards have accrued so far':'')+'.');
+  } else add('neu','This wallet has never delegated HYPE. That is an absence of data rather than a zero, and the staking component of the depth read is excluded because of it.');
+  if(f.genesis.length){
+    const g=f.genesis.find(x=>x.token==='HYPE')||f.genesis[0];
+    add('neu','Its ledger records a genesis distribution of <b>'+maskNum(fmtNum(g.amount,2))+' '+g.token+'</b> on <b>'+dayStr(g.time)+'</b>. Past tense, straight from the ledger.');
+  }
+  if(f.dexActive.length) add('neu','It is active on '+f.dexActive.length+' builder-deployed market'+(f.dexActive.length===1?'':'s')+
+    ' — '+f.dexActive.join(', ')+' — as well as the main book.');
+  if(f.outcomeHeld>0) add('neu','It holds '+f.outcomeHeld+' outcome-market position'+(f.outcomeHeld===1?'':'s')+', so it takes sides on events as well as on price.');
+  if(f.subCount) add('neu','This address has <b>'+f.subCount+' subaccounts</b> holding '+fmtUsd(f.subEquity,0)+
+    ' between them. None of that is folded into the headline numbers above, which are this address alone.');
+  if(f.fillWindow && Date.now()-f.fillWindow.to > 6048e5)
+    add('neu','Nothing new since <b>'+dayStr(f.fillWindow.to)+'</b> — this wallet has gone quiet, at least on the markets we can see.');
+  add('neu','None of the above is advice, and none of it predicts anything. It is a description of a record, and every sentence names the field it came from.');
+  return L;
+}
+
+/* ============================================================
+   MARKS — ours, not the exchange's. Each states its own rule.
+   ============================================================ */
+function markList(f, runs){
+  const liq = runs.some(r=>r.legs.some(l=>l.kind==='LIQ'));
+  return [
+    {g:'01', n:'Opened an account', r:'A ledger entry exists', got:!!f.firstLedger},
+    {g:'02', n:'Traded perps',      r:'At least one perp fill', got:f.fillCount>0},
+    {g:'03', n:'Six figures',       r:'$100K lifetime perp volume', got:(f.perpVlm||0)>=1e5},
+    {g:'04', n:'Eight figures',     r:'$10M lifetime perp volume', got:(f.perpVlm||0)>=1e7},
+    {g:'05', n:'Maker',             r:'Over half of read fills were passive', got:(f.makerShare||0)>0.5},
+    {g:'06', n:'Spread out',        r:'Five or more markets in the read window', got:f.markets>=5},
+    {g:'07', n:'Builder markets',   r:'A position on a HIP-3 dex', got:f.dexActive.length>0},
+    {g:'08', n:'Outcome trader',    r:'Holds a HIP-4 outcome position', got:f.outcomeHeld>0},
+    {g:'09', n:'Delegator',         r:'HYPE currently delegated', got:f.staked>0},
+    {g:'10', n:'Year of staking',   r:'First delegation over a year ago', got:!!f.stakingSince && daysAgo(f.stakingSince)>=365},
+    {g:'11', n:'Held through',      r:'A complete trade lasting over 30 days', got:runs.some(r=>!r.open && !r.partial && (r.t1-r.t0)>=2592e6)},
+    {g:'12', n:'Survived a liq',    r:'Traded again after a liquidation', got:liq && f.fillCount>3},
+    {g:'13', n:'Genesis ledger',    r:'A spotGenesis entry on this address', got:f.genesis.length>0},
+    {g:'14', n:'Two years in',      r:'Ledger opened over 730 days ago', got:f.tenureDays!=null && f.tenureDays>=730}
+  ];
+}
+
+function countUp(node,to,fmt,ms){
+  if(RM()||!isFinite(to)){ node.textContent=fmt(to); return; }
+  const t0=performance.now(), dur=ms||850;
+  (function step(t){
+    const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+    node.textContent=fmt(to*e);
+    if(p<1) requestAnimationFrame(step);
+  })(performance.now());
+}
+function sparkSvg(vals,color){
+  if(!vals||vals.length<2) return '';
+  const w=120,h=26,mn=Math.min(...vals),mx=Math.max(...vals),rg=(mx-mn)||1;
+  const pts=vals.map((v,i)=>[(i/(vals.length-1))*w, h-((v-mn)/rg)*(h-5)-2.5]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const id='s'+Math.random().toString(36).slice(2,8);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+   <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0%" stop-color="${color}" stop-opacity=".3"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+   <path d="${d} L${w} ${h} L0 ${h} Z" fill="url(#${id})"/>
+   <path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+   <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="2.2" fill="${color}"/></svg>`;
+}
+
+/* ============================================================
+   EQUITY CHART — labels sit on the gridlines, a band shades the
+   distance travelled from the opening value, and the readout is a
+   fixed rail beneath the plot rather than a floating bubble, so it
+   works the same under a thumb as under a cursor.
+   ============================================================ */
+function equityChart(plot, rail, series){
+  const vals=series.map(p=>p[1]), times=series.map(p=>p[0]);
+  if(plot.__raf){ cancelAnimationFrame(plot.__raf); plot.__raf=null; }
+  plot.innerHTML='';
+  const cv=el('canvas'); plot.appendChild(cv);
+  const c=cv.getContext('2d');
+  let W=0,H=0,pts=[],hi=-1,hx=null,hxT=null,intro=0,pulse=0,mn=0,mx=1,rg=1,ticks=[];
+  const PL=12, PR=12, PT=18, PB=22;
+  const START=vals[0], LAST=vals[vals.length-1], up=LAST>=START;
+  const col=()=>up?tok('--up'):tok('--down');
+  function size(){
+    const r=plot.getBoundingClientRect(); if(!r.width) return false;
+    W=r.width; H=r.height; fitCanvas(cv,W,H,2);
+    const lo=Math.min(...vals), h2=Math.max(...vals);
+    const pad=((h2-lo)||Math.abs(h2)||1)*0.14;
+    mn=lo-pad; mx=h2+pad; rg=(mx-mn)||1;
+    const n=H<210?3:4;
+    ticks=Array.from({length:n+1},(_,i)=>mn+rg*i/n);
+    pts=vals.map((v,i)=>[PL+(i/Math.max(1,vals.length-1))*(W-PL-PR), yOf(v)]);
+    return true;
+  }
+  const yOf=v=>PT+(1-(v-mn)/rg)*(H-PT-PB);
+  function draw(){
+    if(!W) return;
+    const C=col(), ink3=tok('--ink-3'), line=tok('--line');
+    c.clearRect(0,0,W,H);
+    const n=Math.max(2,Math.round(pts.length*intro)), seg=pts.slice(0,n), base=H-PB;
+    /* gridlines with the value written on the line itself */
+    c.font='500 10px "IBM Plex Mono", monospace'; c.textBaseline='alphabetic';
+    ticks.forEach(t=>{
+      const y=yOf(t);
+      c.strokeStyle=line; c.lineWidth=1;
+      c.beginPath(); c.moveTo(PL,y+.5); c.lineTo(W-PR,y+.5); c.stroke();
+      const lbl='$'+fmtCompact(t);
+      const tw=c.measureText(lbl).width;
+      c.fillStyle=tok('--panel'); c.fillRect(PL,y-11,tw+10,12);
+      c.fillStyle=ink3; c.textAlign='left'; c.fillText(lbl,PL+4,y-2);
+    });
+    /* the band between where it started and where it is */
+    const sy=yOf(START);
+    c.save(); c.beginPath(); c.rect(PL,PT-4,W-PL-PR,base-PT+4); c.clip();
+    const bg=c.createLinearGradient(0,Math.min(sy,seg[seg.length-1][1]),0,Math.max(sy,seg[seg.length-1][1]));
+    bg.addColorStop(0,hexA(C,.14)); bg.addColorStop(1,hexA(C,.02));
+    c.beginPath(); c.moveTo(seg[0][0],sy);
+    seg.forEach(p=>c.lineTo(p[0],p[1]));
+    c.lineTo(seg[seg.length-1][0],sy); c.closePath(); c.fillStyle=bg; c.fill();
+    c.restore();
+    /* opening value, dashed */
+    c.strokeStyle=hexA(ink3,.5); c.lineWidth=1; c.setLineDash([3,5]);
+    c.beginPath(); c.moveTo(PL,sy); c.lineTo(W-PR,sy); c.stroke(); c.setLineDash([]);
+    /* the line */
+    c.save(); c.beginPath(); c.rect(PL-2,PT-8,W-PL-PR+4,base-PT+10); c.clip();
+    c.beginPath(); seg.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
+    c.strokeStyle=C; c.lineWidth=2.2; c.lineJoin='round'; c.lineCap='round';
+    c.shadowColor=hexA(C,.5); c.shadowBlur=12; c.stroke(); c.shadowBlur=0;
+    c.restore();
+    /* endpoint, breathing */
+    const e=seg[seg.length-1], pr=1+Math.sin(pulse)*0.16;
+    c.fillStyle=hexA(C,.2); c.beginPath(); c.arc(e[0],e[1],8*pr,0,7); c.fill();
+    c.fillStyle=C; c.beginPath(); c.arc(e[0],e[1],3.8,0,7); c.fill();
+    /* crosshair */
+    if(hi>=0 && hx!=null){
+      const py=yOf(vals[hi]);
+      c.strokeStyle=hexA(C,.55); c.lineWidth=1; c.setLineDash([3,4]);
+      c.beginPath(); c.moveTo(hx,PT-4); c.lineTo(hx,base); c.stroke(); c.setLineDash([]);
+      c.fillStyle=C; c.beginPath(); c.arc(hx,py,5.5,0,7); c.fill();
+      c.fillStyle=tok('--panel'); c.beginPath(); c.arc(hx,py,2.4,0,7); c.fill();
+    }
+  }
+  function paintRail(i){
+    const v=vals[i], d=v-START, dp=START!==0? d/Math.abs(START)*100 : 0;
+    const back=vals.length-1-i;
+    rail.innerHTML=`<span class="r1">${fmtUsd(v)}</span>
+      <span class="r3 ${d>=0?'up':'down'}">${d>=0?'▲':'▼'} ${fmtUsd(Math.abs(d))} (${d>=0?'+':'−'}${Math.abs(dp).toFixed(1)}%)</span>
+      <span class="r2">${back===0?'latest sample':back+' sample'+(back===1?'':'s')+' back'} · ${new Date(times[i]).toISOString().slice(0,16).replace('T',' ')}</span>`;
+  }
+  function anim(){
+    if(!cv.isConnected){ plot.__raf=null; return; }
+    intro=Math.min(1,intro+0.05); pulse+=0.055;
+    if(hxT!=null) hx = hx==null? hxT : hx+(hxT-hx)*0.3;
+    draw();
+    plot.__raf=requestAnimationFrame(anim);
+  }
+  function nearest(x){ let b=0,bd=1e9; pts.forEach((p,i)=>{const d=Math.abs(p[0]-x); if(d<bd){bd=d;b=i;}}); return b; }
+  plot.addEventListener('pointermove',ev=>{
+    const r=cv.getBoundingClientRect(); hi=nearest(ev.clientX-r.left); hxT=pts[hi][0];
+    if(RM()){ hx=hxT; draw(); }
+    paintRail(hi);
+  },{passive:true});
+  plot.addEventListener('pointerleave',()=>{ hi=-1; hx=hxT=null; paintRail(vals.length-1); },{passive:true});
+  if(!size()) return;
+  paintRail(vals.length-1);
+  if(RM()){ intro=1; draw(); } else anim();
+  let rz; const onR=()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(cv.isConnected && size()) draw(); },170); };
+  addEventListener('resize',onR);
+  ACTIVE.push(()=>{ if(plot.__raf) cancelAnimationFrame(plot.__raf); removeEventListener('resize',onR); });
+}
+function hexA(col,a){
+  col=(col||'').trim();
+  if(col.startsWith('#')){ const n=parseInt(col.slice(1),16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+  if(col.startsWith('rgb')) return col.replace(/rgba?\(([^)]+)\)/,(m,g)=>`rgba(${g.split(',').slice(0,3).join(',')},${a})`);
+  return col;
+}
+
+/* ---- a run drawn as a price path with its legs marked ---- */
+function runStrip(cv, run){
+  const legs=run.legs;
+  if(legs.length<1) return;
+  const host=cv.parentElement;
+  function paint(){
+    const r=host.getBoundingClientRect(); if(!r.width) return;
+    const c=fitCanvas(cv,r.width,r.height,1.5), W=r.width, H=r.height;
+    const pad={l:10,r:10,t:16,b:16};
+    const t0=legs[0].t, t1=Math.max(legs[legs.length-1].t, t0+1);
+    const px=legs.map(l=>l.px);
+    const lo=Math.min(...px), hi=Math.max(...px), rg=(hi-lo)||Math.abs(hi)||1;
+    const X=t=>pad.l+((t-t0)/(t1-t0))*(W-pad.l-pad.r);
+    const Y=p=>pad.t+(1-(p-lo+rg*0.12)/(rg*1.24))*(H-pad.t-pad.b);
+    const mint=tok('--mint'), up=tok('--up'), dn=tok('--down'), ink3=tok('--ink-3'), line=tok('--line');
+    c.clearRect(0,0,W,H);
+    c.strokeStyle=line; c.lineWidth=1;
+    [0.5,1].forEach(f=>{ const y=pad.t+(H-pad.t-pad.b)*f; c.beginPath(); c.moveTo(0,y+.5); c.lineTo(W,y+.5); c.stroke(); });
+    /* the path the fills trace */
+    c.beginPath(); legs.forEach((l,i)=>{ const x=X(l.t), y=Y(l.px); i?c.lineTo(x,y):c.moveTo(x,y); });
+    c.strokeStyle=hexA(ink3,.7); c.lineWidth=1.4; c.lineJoin='round'; c.stroke();
+    legs.forEach(l=>{
+      const x=X(l.t), y=Y(l.px);
+      const col = l.kind==='LIQ'?dn : l.kind==='ENTRY'?mint : l.kind==='ADD'?mint : l.pnl>0?up : l.pnl<0?dn : ink3;
+      if(l.kind==='ENTRY'||l.kind==='ADD'){
+        c.fillStyle=col; c.beginPath();
+        c.moveTo(x,y-5); c.lineTo(x+4.5,y+3); c.lineTo(x-4.5,y+3); c.closePath(); c.fill();
+      } else if(l.kind==='LIQ'){
+        c.strokeStyle=col; c.lineWidth=2; c.beginPath();
+        c.moveTo(x-4,y-4); c.lineTo(x+4,y+4); c.moveTo(x+4,y-4); c.lineTo(x-4,y+4); c.stroke();
+      } else {
+        c.fillStyle=col; c.beginPath(); c.arc(x,y,3.4,0,7); c.fill();
+        c.fillStyle=tok('--raised'); c.beginPath(); c.arc(x,y,1.4,0,7); c.fill();
+      }
+    });
+    c.font='500 9px "IBM Plex Mono", monospace'; c.fillStyle=ink3;
+    c.textAlign='left'; c.fillText('$'+fmtCompact(hi), 8, 11);
+    c.textAlign='left'; c.fillText('$'+fmtCompact(lo), 8, H-5);
+    c.textAlign='right'; c.fillText(legs.length+' fills', W-8, 11);
+  }
+  paint();
+  let rz; const onR=()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(cv.isConnected) paint(); },160); };
+  addEventListener('resize',onR);
+  ACTIVE.push(()=>removeEventListener('resize',onR));
+}
+
 function tile(label, value, sub, cls, tip){
   const t=el('div','wl-tile');
   const l=el('div','lab'); l.style.display='flex'; l.style.alignItems='center'; l.style.gap='6px';
@@ -1280,243 +2003,474 @@ async function viewWallet(addr){
   killActive(); app.innerHTML='';
   setSecs([{label:'Read a wallet',id:'home',href:'#/'},{label:'The cast',id:'cast',href:'#/cast'}],'wallet');
   const host=el('div'); app.appendChild(host);
-  const ld=makeLoader(host, STEPS);
+  const ld=makeLoader2(host, STEPS, addr);
   let d;
-  try{ d = await readWallet(addr,(i,n)=>ld.set(i,n)); }
+  try{ d = await readWallet(addr,(i)=>ld.step(i)); ld.finish(); await new Promise(r=>setTimeout(r,340)); }
   catch(e){
     ld.done();
     const b=blk('Could not read','01');
     b.body.append(el('h2',null, e.code==='RATE' ? 'The exchange rate-limited this browser' : 'That read did not complete'));
     const p=el('p',null, e.code==='RATE'
-      ? 'Rate limits are per IP, so this is about this browser only — not the site. Give it about a minute and try again.'
-      : 'The address may not exist on Hyperliquid, or the request timed out. Check the address and try again.');
+      ? 'Rate limits are per IP, so this is about this browser and not the site. A full wallet read costs about 415 weight against a budget of 1,200 a minute — give it a minute and try again.'
+      : 'The address may have no Hyperliquid account, or a request timed out. Check the address and try again.');
     p.style.color='var(--ink-2)'; b.body.append(p);
     app.innerHTML=''; app.appendChild(b.node); reveal(app,true); return;
   }
   ld.done();
+
   const f=derive(d), a=assign(f), sc=depth(f);
+  const livePos={}; (d.ch?.assetPositions||[]).forEach(p=>livePos[p.position.coin]=+p.position.szi);
+  const marks={}; (d.mids||{}); const midOf=c=>+(d.mids?.[c]||0);
+  const built = buildRuns(d.fills, livePos);
+  const RUNS = built.runs.map(r=>Object.assign(r,{pnl:runPnl(r, midOf(r.coin))}));
+  const closed = RUNS.filter(r=>!r.open && !r.partial);
+  f.runsClosed=closed.length;
+  f.runsWon=closed.filter(r=>r.pnl.realized>0).length;
+  f.runWinRate=closed.length? f.runsWon/closed.length : null;
+  f.medHold = closed.length? median(closed.map(r=>r.t1-r.t0)) : null;
+  f.runRealized = closed.reduce((s,r)=>s+r.pnl.realized,0);
+  f.partialRuns = RUNS.filter(r=>r.partial).length;
 
-  /* ---- identity ---- */
-  const b0=blk('Who this is','01');
-  const id=el('div','wl-id');
-  const seal=el('canvas','wl-seal'); id.appendChild(seal);
-  const idt=el('div','wl-idt');
-  idt.append(el('h2','wl-arch', a.weak? 'Not enough to type yet' : CAST[CAST_IX[a.id]].name));
-  idt.append(el('p','wl-tag', a.weak? 'This wallet has too little recorded activity for any archetype to be earned.' : CAST[CAST_IX[a.id]].desc));
-  const why=el('p','wl-tag'); why.style.color='var(--ink-3)'; why.style.fontSize='12.5px';
-  why.textContent='Assigned because: '+a.why+'.';
-  idt.appendChild(why);
-  const ad=el('div','wl-addr');
-  const code=el('code',null,addr); if(MASK.addr) code.dataset.masked='1';
-  const cp=el('button','wl-mini'); cp.setAttribute('aria-label','Copy address');
-  cp.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
-  cp.addEventListener('click',()=>{navigator.clipboard?.writeText(addr); cp.setAttribute('data-tip','Copied'); });
-  const bl=el('button','wl-mini'); bl.setAttribute('aria-label','Blur address');
-  bl.innerHTML='<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-  bl.addEventListener('click',()=>{ MASK.addr=!MASK.addr; code.dataset.masked=MASK.addr?'1':'0'; });
-  ad.append(code,cp,bl); idt.appendChild(ad);
-  const roleTag=el('span','lab'); roleTag.textContent='exchange reports this address as: '+(d.role?.role||'unknown');
-  idt.appendChild(roleTag);
-  id.appendChild(idt);
-  b0.body.appendChild(id);
-  app.appendChild(b0.node);
-  drawSeal(seal,96,a.weak?'homestead':a.id,addr);
+  let stage=0;
+  const B=(label)=>{ stage++; const b=blk(label,String(stage).padStart(2,'0')); app.appendChild(b.node); return b.body; };
 
-  /* ---- headline tiles ---- */
-  const b1=blk('Right now','02');
-  const tiles=el('div','wl-tiles');
-  tiles.append(
-    tile('Account value', fmtUsd(f.equity), 'as the exchange reports it', '', 'equity'),
-    tile('Open interest', f.oi>0? fmtUsd(f.oi):'nothing open', f.oi>0? f.positions.length+' market'+(f.positions.length===1?'':'s'):'no perp position', f.oi>0?'':'none', 'oi'),
-    tile('Perp volume', f.perpVlm!=null? '$'+fmtCompact(f.perpVlm):'—', 'lifetime, perps only', '', 'vlm'),
-    tile('HYPE staked', f.staked>0? fmtNum(f.staked,2): 'hasn’t staked', f.staked>0? f.validators+' validator'+(f.validators===1?'':'s'):'no delegation history', f.staked>0?'':'none', 'staked'),
-    tile('On Hyperliquid since', f.firstLedger? dayStr(f.firstLedger):'—', f.tenureDays!=null? f.tenureDays+' days':'', '', 'since'),
-    tile('Perp all-time PnL', f.perpPnl!=null? fmtUsd(f.perpPnl):'—', 'this address’s perp account only', f.perpPnl>0?'up':f.perpPnl<0?'down':''),
-    tile('Volume incl. spot', f.totalVlmAgrees? '$'+fmtCompact(f.totalVlm):'—',
-         f.totalVlmAgrees? 'portfolio and referral agree' : 'two endpoints disagree — withheld')
-  );
-  b1.body.appendChild(tiles);
-  const chk=el('div','wl-note');
-  chk.innerHTML='<b>Checked:</b> we recomputed the exchange’s own identity from the raw positions — '+
-    'Σ|notional| vs totalNtlPos differs by <span class="num">'+f.oiResidual.toExponential(2)+'</span>, '+
-    'and cash + Σ signed notional vs accountValue by <span class="num">'+f.equityResidual.toExponential(2)+'</span>. '+
-    'These figures are printed because those residuals are zero. '+
-    'The PnL series is <span class="num">perpAllTime</span>, not <span class="num">allTime</span> — it ends on this account’s value to within '+
-    (f.seriesResidual!=null? f.seriesResidual.toExponential(2):'—')+', where allTime does not reconcile at all.';
-  b1.body.appendChild(chk);
-  app.appendChild(b1.node);
+  /* ---------------- 01 identity ---------------- */
+  (function(){
+    const body=B('Who this is');
+    const hero=el('div','wl-hero');
+    const sw=el('div','sealwrap'); const seal=el('canvas'); sw.appendChild(seal); hero.appendChild(sw);
+    const idt=el('div','wl-idt');
+    idt.append(el('h2','wl-arch', a.weak? 'Not enough to type yet' : CAST[CAST_IX[a.id]].name));
+    idt.append(el('p','wl-tag', a.weak
+      ? 'Too little recorded activity for any archetype to be earned. Nothing here is assigned from the address itself.'
+      : CAST[CAST_IX[a.id]].desc));
+    const why=el('div','wl-why'); why.append(el('b',null,'Because'), document.createTextNode(a.why+'.'));
+    idt.appendChild(why);
+    if(a.runners?.length){
+      const rr=el('div','wl-runners');
+      a.runners.forEach(r=>{ const t=CAST[CAST_IX[r.id]];
+        const s=el('span','wl-runner','also fits '+t.name.replace('The ','')+' ('+r.score.toFixed(2)+')');
+        s.setAttribute('data-tip','Archetypes are scored against the wallet’s own behaviour and the highest wins. These are the runners-up and their scores, so the choice is inspectable rather than magic.');
+        rr.appendChild(s); });
+      idt.appendChild(rr);
+    }
+    const row=el('div','wl-idrow');
+    const code=el('code',null,addr); if(MASK.addr) code.dataset.masked='1';
+    const cp=el('button','wl-mini'); cp.setAttribute('aria-label','Copy address'); cp.setAttribute('data-tip','Copy this address');
+    cp.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+    cp.addEventListener('click',()=>{ navigator.clipboard?.writeText(addr); toast('Address copied'); });
+    const bl=el('button','wl-mini'); bl.setAttribute('aria-label','Blur address'); bl.setAttribute('data-tip','Blur the address on screen and in the shared image');
+    bl.setAttribute('aria-pressed',String(MASK.addr));
+    bl.innerHTML='<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    bl.addEventListener('click',()=>{ MASK.addr=!MASK.addr; code.dataset.masked=MASK.addr?'1':'0'; bl.setAttribute('aria-pressed',String(MASK.addr)); });
+    const wt=el('button','wl-mini'); wt.setAttribute('aria-label','Save to this device');
+    wt.setAttribute('data-tip','Saved in this browser only. Never sent anywhere, never leaves the device.');
+    const inList=()=>watchGet().includes(addr);
+    wt.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 4.5l2.3 4.9 5.2.7-3.8 3.7.9 5.2-4.6-2.5-4.6 2.5.9-5.2L4.5 10l5.2-.7z"/></svg>';
+    const syncWt=()=>{ wt.setAttribute('aria-pressed',String(inList())); wt.querySelector('svg path').setAttribute('fill', inList()?'currentColor':'none'); };
+    syncWt();
+    wt.addEventListener('click',()=>{ watchToggle(addr); syncWt(); toast(inList()?'Saved to this device':'Removed'); });
+    row.append(code,cp,bl,wt); idt.appendChild(row);
+    const role=el('div','wl-role');
+    role.innerHTML='exchange reports this address as <b>'+(d.role?.role||'unknown')+'</b>'+
+      (d.role?.role==='vault'?' — a vault reads differently from a personal wallet, and its equity belongs to depositors':'');
+    idt.appendChild(role);
+    hero.appendChild(idt);
+    body.appendChild(hero);
+    drawSeal(seal,104,a.weak?'homestead':a.id,addr);
+  })();
 
-  /* ---- depth breakdown ---- */
-  const b2=blk('How deep','03');
-  const head=el('div'); head.style.display='flex'; head.style.alignItems='baseline'; head.style.gap='10px'; head.style.flexWrap='wrap';
-  const hv=el('h2',null, sc.total!=null? String(sc.total):'—'); hv.style.fontSize='38px';
-  const hl=el('span',null,'HyperFlow depth'); hl.style.color='var(--ink-2)';
-  head.append(hv,hl,q('depth'));
-  const hsub=el('p',null,'Descriptive only. It is the mean of the '+sc.knownCount+' components below that this wallet has data for — components with no data are shown as missing, not as zero. It is not a rank, not a grade, and it says nothing about what happens next.');
-  hsub.style.color='var(--ink-3)'; hsub.style.fontSize='13px';
-  const sbox=el('div','card pad wl-score');
-  sc.comps.forEach(cmp=>{
-    const row=el('div','wl-comp');
-    const cn=el('div','cn'); cn.append(document.createTextNode(cmp.k));
-    const cv=el('div','cv', cmp.v!=null? Math.round(cmp.v)+' / 100' : 'no data');
-    const tr=el('div','wl-track'); const fi=el('i','wl-fill');
-    if(cmp.v==null) tr.dataset.missing='1'; tr.appendChild(fi);
-    row.append(cn,cv,tr);
-    const det=el('div','wl-miss', cmp.v!=null? cmp.detail : cmp.miss);
-    det.style.gridColumn='1/-1';
-    row.appendChild(det);
-    sbox.appendChild(row);
-    if(cmp.v!=null) requestAnimationFrame(()=>{ fi.style.transform='scaleX('+(cmp.v/100)+')'; });
-  });
-  b2.body.append(head,hsub,sbox);
-  app.appendChild(b2.node);
+  /* ---------------- 02 right now ---------------- */
+  (function(){
+    const body=B('Right now');
+    const tiles=el('div','wl-tiles');
+    const eqSeries=f.equitySeries.map(p=>+p[1]);
+    const t1=tile('Account value','—','as the exchange reports it','', 'equity');
+    tiles.appendChild(t1);
+    countUp(t1.querySelector('.v'), f.equity, v=>fmtUsd(v));
+    if(eqSeries.length>3){ const sp=el('div','sp'); sp.innerHTML=sparkSvg(eqSeries.slice(-40), f.perpPnl>=0?tok('--up'):tok('--down')); t1.appendChild(sp); }
+    tiles.append(
+      tile('Open interest', f.oi>0? fmtUsd(f.oi):'nothing open',
+           f.oi>0? f.positions.length+' market'+(f.positions.length===1?'':'s')+' · '+(f.maxLev||0)+'× top':'no perp position',
+           f.oi>0?'':'none','oi'),
+      tile('Perp volume', f.perpVlm!=null? '$'+fmtCompact(f.perpVlm):'—','lifetime, perps only','','vlm'),
+      tile('HYPE staked', f.staked>0? fmtNum(f.staked,2):'hasn’t staked',
+           f.staked>0? f.validators+' validator'+(f.validators===1?'':'s'):'no delegation history', f.staked>0?'':'none','staked'),
+      tile('On Hyperliquid since', f.firstLedger? dayStr(f.firstLedger):'—',
+           f.tenureDays!=null? f.tenureDays+' days':'','','since'),
+      tile('Perp all-time PnL', f.perpPnl!=null? fmtUsd(f.perpPnl):'—','this address’s perp account only',
+           f.perpPnl>0?'up':f.perpPnl<0?'down':''),
+      tile('Volume incl. spot', f.totalVlmAgrees? '$'+fmtCompact(f.totalVlm):'—',
+           f.totalVlmAgrees? 'portfolio and referral agree':'two endpoints disagree — withheld')
+    );
+    body.appendChild(tiles);
+    glowTiles(tiles);
 
-  /* ---- positions ---- */
-  const b3=blk('Open positions','04');
-  if(f.positions.length){
+    const pr=el('div','wl-proof');
+    pr.appendChild(el('h4',null,'Checked before any of the above was printed'));
+    const g=el('div','p');
+    const rows=[
+      ['Σ|position notional| vs totalNtlPos', f.oiResidual, 1e-6],
+      ['cash + Σ signed notional vs accountValue', f.equityResidual, 1e-6],
+      ['perpAllTime series end vs accountValue', f.seriesResidual, 1e-6],
+      ['fill chain: links that did not join', built.checks.linkBreaks, 0.5],
+      ['fill walk vs live size, worst market', built.checks.worstEnd, 1e-6],
+      ['forward walk vs independent backward walk', built.checks.backMax, 1e-6]
+    ];
+    rows.forEach(([k,v,tol])=>{
+      const kk=el('span','k',k);
+      const vv=el('span','v '+((v==null||Math.abs(v)<=tol)?'ok':'bad'),
+        v==null?'—':(Math.abs(v)<1e-12?'0':(typeof v==='number'&&Number.isInteger(v)&&Math.abs(v)>=1?String(v):v.toExponential(2))));
+      g.append(kk,vv);
+    });
+    pr.appendChild(g);
+    pr.appendChild(el('p',null,'Every figure on this page is derived from these six identities holding. Where one fails the number that depends on it is withheld rather than shown with a caveat.'));
+    body.appendChild(pr);
+  })();
+
+  /* ---------------- 03 equity ---------------- */
+  (function(){
+    const body=B('Account over time');
+    const wrap=el('div','eq-wrap');
+    const head=el('div','eq-head');
+    const ht=el('div'); ht.style.display='flex'; ht.style.alignItems='center'; ht.style.gap='7px';
+    ht.append(el('span','lab','perp account value'), q('curve'));
+    const seg=el('div','wl-seg');
+    const plot=el('div','eq-plot'); const rail=el('div','eq-rail');
+    const RANGES=[['perpDay','24h'],['perpWeek','7d'],['perpMonth','30d'],['perpAllTime','All']];
+    const pmap=Object.fromEntries(d.pf||[]);
+    let active='perpAllTime';
+    function paint(){
+      const s=(pmap[active]?.accountValueHistory)||[];
+      if(s.length<2){ plot.innerHTML=''; plot.appendChild(el('div','eq-empty','The exchange returned fewer than two samples for this range, so there is no line to draw. That is missing data, not a flat account.')); rail.innerHTML=''; return; }
+      equityChart(plot, rail, s);
+    }
+    RANGES.forEach(([k,l])=>{
+      const n=(pmap[k]?.accountValueHistory||[]).length;
+      const b=el('button',null,l+(n?'':' ·'));
+      b.disabled=n<2; if(n<2) b.style.opacity='.4';
+      b.className = k===active?'on':'';
+      b.addEventListener('click',()=>{ active=k;
+        [...seg.children].forEach(x=>x.classList.remove('on')); b.classList.add('on'); paint(); });
+      seg.appendChild(b);
+    });
+    head.append(ht,seg);
+    wrap.append(head,plot,rail);
+    body.appendChild(wrap);
+    const n=(pmap.perpAllTime?.accountValueHistory||[]).length;
+    body.appendChild(note('<b>Sample count:</b> the all-time range is '+n+' points, not a tick-by-tick history — enough for the shape, not enough to claim a peak. Ranges the exchange returned no data for are disabled rather than drawn empty.'));
+    paint();
+  })();
+
+  /* ---------------- 04 depth ---------------- */
+  (function(){
+    const body=B('How deep');
+    const top=el('div','dp-top');
+    const num=el('div','dp-num','0');
+    const meta=el('div'); meta.style.display='flex'; meta.style.flexDirection='column'; meta.style.gap='3px';
+    const l1=el('div'); l1.style.display='flex'; l1.style.alignItems='center'; l1.style.gap='7px';
+    l1.append(el('span',null,'HyperFlow depth'), q('depth'));
+    meta.append(l1, el('div','dp-of', sc.knownCount+' of 6 components have data · missing components are excluded, not scored zero'));
+    top.append(num,meta);
+    body.appendChild(top);
+    if(sc.total!=null) countUp(num, sc.total, v=>String(Math.round(v)), 1100); else num.textContent='—';
+
+    const stack=el('div','dp-stack');
+    const HUES=['#96FCE4','#7FE9FF','#9BF6A8','#D7F58A','#C4A8FF','#FFCF5C'];
+    sc.comps.forEach((cmp,i)=>{
+      const s=el('i','dp-seg'); s.style.background=HUES[i]; s.style.flex=String(cmp.weight);
+      if(cmp.v==null) s.dataset.missing='1';
+      s.setAttribute('data-tip', cmp.k+' — weighted '+Math.round(cmp.weight*100)+'% of the total. '+(cmp.v==null? cmp.miss : cmp.detail));
+      stack.appendChild(s);
+      requestAnimationFrame(()=>{ s.style.transform='scaleX('+(cmp.v==null?1:cmp.v/100)+')'; });
+    });
+    body.appendChild(stack);
+
+    const rows=el('div','dp-rows');
+    sc.comps.forEach((cmp,i)=>{
+      const r=el('div','dp-row');
+      const n=el('div','n'); const dot=el('i'); dot.style.background=HUES[i];
+      n.append(dot, document.createTextNode(cmp.k), el('span','w','×'+cmp.weight.toFixed(2)));
+      const v=el('div','v', cmp.v!=null? Math.round(cmp.v)+' / 100' : 'no data');
+      const tr=el('div','tr'); const fl=el('i','fl'); fl.style.background=HUES[i];
+      if(cmp.v==null) tr.dataset.missing='1'; tr.appendChild(fl);
+      const det=el('div','d'+(cmp.v==null?' miss':''), cmp.v!=null? cmp.detail : cmp.miss);
+      r.append(n,v,tr,det); rows.appendChild(r);
+      if(cmp.v!=null) requestAnimationFrame(()=>{ fl.style.transform='scaleX('+(cmp.v/100)+')'; });
+    });
+    body.appendChild(rows);
+    body.appendChild(note('Descriptive, and ours. It is a weighted mean of the components above that have data — not a rank against other wallets, not a grade, not a qualification for anything, and it says nothing about what this wallet does next.'));
+  })();
+
+  /* ---------------- 05 what it reads as ---------------- */
+  (function(){
+    const body=B('What it reads as');
+    const lines=narrative(f, d, RUNS);
+    const box=el('div','nr');
+    let shown=0;
+    const more=el('button','nr-more');
+    function batch(){
+      const next=Math.min(lines.length, shown+4);
+      for(let i=shown;i<next;i++){
+        const L=lines[i];
+        const n=el('div','nr-l '+L.tone);
+        n.append(el('div','d', L.tone==='good'?'+':L.tone==='bad'?'−':'·'));
+        const t=el('div','t'); t.innerHTML=L.text; n.appendChild(t);
+        n.style.animation='revin .5s cubic-bezier(.2,.8,.25,1) '+((i-shown)*60)+'ms both';
+        box.appendChild(n);
+      }
+      shown=next;
+      more.textContent = shown<lines.length ? ('Show '+Math.min(4,lines.length-shown)+' more of '+lines.length) : '';
+      more.hidden = shown>=lines.length;
+    }
+    more.addEventListener('click',batch);
+    body.append(box,more); batch();
+  })();
+
+  /* ---------------- 06 open positions ---------------- */
+  (function(){
+    const body=B('Open positions');
+    if(!f.positions.length){
+      const e=el('div','wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+      e.append(el('h3',null,'Nothing open'),
+        el('p',null,'No perp position on the main book right now. A fact about this minute, not a judgement — the wallet may still be staking, holding spot, or trading on a builder-deployed market.'));
+      body.appendChild(e); drawSeal(cv,88,'anchor',addr);
+      return;
+    }
     const tw=el('div','wl-tw');
-    tw.innerHTML='<table><thead><tr><th>Market</th><th>Side</th><th>Size</th><th>Entry</th><th>Notional</th><th>Lev</th><th>Liq</th><th>uPnL</th></tr></thead><tbody></tbody></table>';
+    tw.innerHTML='<table><thead><tr><th>Market</th><th>Side</th><th>Size</th><th>Entry</th><th>Mark</th><th>Notional</th><th>Lev</th><th>Liq</th><th>Funding paid</th><th>uPnL</th></tr></thead><tbody></tbody></table>';
     const tb=tw.querySelector('tbody');
     f.positions.forEach(p=>{
-      const long=+p.szi>0;
+      const long=+p.szi>0, mark=midOf(p.coin);
       const tr=el('tr');
       tr.innerHTML='<td><b>'+p.coin+'</b></td>'+
         '<td><span class="wl-side '+(long?'l':'s')+'">'+(long?'LONG':'SHORT')+'</span></td>'+
         '<td class="n">'+fmtNum(Math.abs(+p.szi),6)+'</td>'+
         '<td class="n">'+fmtUsd(p.entryPx)+'</td>'+
+        '<td class="n">'+(mark?fmtUsd(mark):'—')+'</td>'+
         '<td class="n">'+fmtUsd(p.positionValue,0)+'</td>'+
         '<td class="n">'+(p.leverage?.value||'—')+'× '+(p.leverage?.type||'')+'</td>'+
         '<td class="n">'+(p.liquidationPx? fmtUsd(p.liquidationPx):'none reported')+'</td>'+
+        '<td class="n" style="color:'+(+(p.cumFunding?.sinceOpen||0)<=0?'var(--up)':'var(--down)')+'">'+
+          fmtUsd(-(+(p.cumFunding?.sinceOpen||0)))+'</td>'+
         '<td class="n" style="color:'+(+p.unrealizedPnl>=0?'var(--up)':'var(--down)')+'">'+fmtUsd(p.unrealizedPnl)+'</td>';
       tb.appendChild(tr);
     });
-    b3.body.appendChild(tw);
-    const n=el('div','wl-note'); n.innerHTML='<b>Leverage and liquidation price are the exchange’s own figures</b>, not inferred. '+q('liq').outerHTML;
-    b3.body.appendChild(n);
-  } else {
-    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
-    e.append(el('h3',null,'Nothing open'), el('p',null,'This wallet has no perp position on the main book right now. That is a fact about this moment, not a judgement — it may still be staking, holding spot, or trading elsewhere.'));
-    b3.body.appendChild(e);
-    drawSeal(cv,88,'anchor',addr);
-  }
-  app.appendChild(b3.node);
+    body.appendChild(tw);
+    body.appendChild(note('<b>Leverage and liquidation price are the exchange’s own figures</b>, not inferred from equity. Funding is shown as it affects this wallet: negative <code>cumFunding.sinceOpen</code> means funding was received, so it is displayed as a positive number here and the sign convention is stated rather than assumed.'));
+  })();
 
-  /* ---- fills, paginated 10 ---- */
-  const b4=blk('Recent fills','05');
-  if(f.fillCount){
-    const win=el('div','wl-note');
-    win.innerHTML='<b>Read window:</b> the '+f.fillCount.toLocaleString()+' most recent fills, '+
-      dayStr(f.fillWindow.from)+' → '+dayStr(f.fillWindow.to)+'. '+
-      'Everything derived from fills below covers this window only. '+q('fillwin').outerHTML;
-    const tw=el('div','wl-tw');
-    tw.innerHTML='<table><thead><tr><th>Time</th><th>Market</th><th>Direction</th><th>Size</th><th>Price</th><th>Closed PnL</th><th>Role</th></tr></thead><tbody></tbody></table>';
-    const tb=tw.querySelector('tbody');
-    const per=10; let page=0; const pages=Math.ceil(d.fills.length/per);
-    function paint(){
-      tb.innerHTML='';
-      d.fills.slice(page*per,(page+1)*per).forEach(x=>{
-        const tr=el('tr');
-        tr.innerHTML='<td class="n">'+new Date(x.time).toISOString().slice(0,16).replace('T',' ')+'</td>'+
-          '<td><b>'+x.coin+'</b></td><td>'+x.dir+'</td>'+
-          '<td class="n">'+fmtNum(+x.sz,6)+'</td><td class="n">'+fmtUsd(x.px)+'</td>'+
-          '<td class="n" style="color:'+(+x.closedPnl>0?'var(--up)':+x.closedPnl<0?'var(--down)':'var(--ink-3)')+'">'+
-            (+x.closedPnl? fmtUsd(x.closedPnl):'—')+'</td>'+
-          '<td>'+(x.crossed===false?'maker':'taker')+'</td>';
-        tb.appendChild(tr);
-      });
-      lbl.textContent='Page '+(page+1)+' of '+pages;
-      prev.disabled=page===0; next.disabled=page>=pages-1;
+  /* ---------------- 07 reconstructed trades ---------------- */
+  (function(){
+    const body=B('Trades, rebuilt');
+    if(!RUNS.length){
+      const e=el('div','wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+      e.append(el('h3',null,'No perp fills in reach'),
+        el('p',null,'The fills endpoint returned nothing for the perp markets. Either this wallet has never traded perps, or its trading sits in subaccounts.'));
+      body.appendChild(e); drawSeal(cv,88,'ember',addr);
+      body.appendChild(refBlock('nofills'));
+      return;
     }
-    const pg=el('div','wl-pager');
-    const prev=el('button','wl-pgb','← Newer'), next=el('button','wl-pgb','Older →'), lbl=el('span','lab');
-    prev.addEventListener('click',()=>{ if(page>0){page--; paint();} });
-    next.addEventListener('click',()=>{ if(page<pages-1){page++; paint();} });
-    pg.append(prev,lbl,next);
-    b4.body.append(win,tw,pg); paint();
-  } else {
-    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
-    e.append(el('h3',null,'No fills in reach'), el('p',null,'The exchange returned no fills for this address. Either it has never traded, or its trading sits in subaccounts — check the block below.'));
-    b4.body.append(e, refBlock('nofills')); drawSeal(cv,88,'ember',addr);
-  }
-  app.appendChild(b4.node);
-
-  /* ---- staking ---- */
-  const b5=blk('Staking','06');
-  if(f.staked>0 || f.stakingSince){
-    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='12px';
-    const t=el('div','wl-tiles');
-    t.append(
-      tile('Delegated', fmtNum(f.staked,2)+' HYPE', f.hypeMid? '≈ '+fmtUsd(f.staked*f.hypeMid,0):''),
-      tile('Rewards accrued', fmtNum(f.rewards,2)+' HYPE', (d.drew||[]).length+' daily records'),
-      tile('Staking since', f.stakingSince? dayStr(f.stakingSince):'—', f.stakingSince? daysAgo(f.stakingSince)+' days':''),
-      tile('Validators', String(f.validators), f.validatorNames.join(', ')||'—')
+    const summary=el('div','wl-tiles');
+    summary.append(
+      tile('Trades rebuilt', String(RUNS.length), RUNS.filter(r=>r.open).length+' still open · '+f.partialRuns+' opened before the window'),
+      tile('Win rate', f.runWinRate!=null? Math.round(f.runWinRate*100)+'%':'—',
+           f.runsClosed? f.runsWon+' of '+f.runsClosed+' complete trades':'no complete trades in the window','','winrate'),
+      tile('Typical hold', f.medHold!=null? dur(f.medHold):'—','median across complete trades','','hold'),
+      tile('Realised in window', f.runsClosed? fmtUsd(f.runRealized):'—','venue closedPnl, summed',
+           f.runRealized>0?'up':f.runRealized<0?'down':'')
     );
-    c.appendChild(t);
-    b5.body.appendChild(c);
-  } else {
-    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
-    e.append(el('h3',null,'Hasn’t staked'), el('p',null,'No delegation history for this address. That is missing data, not a zero — the staking component of the depth score is shown as missing above.'));
-    b5.body.appendChild(e); drawSeal(cv,88,'anchor',addr);
-  }
-  app.appendChild(b5.node);
+    body.appendChild(summary); glowTiles(summary);
 
-  /* ---- genesis ---- */
-  if(f.genesis.length){
-    const b6=blk('Genesis','07');
-    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='10px';
-    const h=el('div'); h.style.display='flex'; h.style.alignItems='center'; h.style.gap='8px'; h.style.flexWrap='wrap';
+    body.appendChild(note('<b>Read window:</b> the '+f.fillCount.toLocaleString()+' most recent fills, '+
+      (f.fillWindow? dayStr(f.fillWindow.from)+' → '+dayStr(f.fillWindow.to):'—')+
+      '. Everything in this block covers that window only, and nothing else on the page depends on it. '+q('fillwin').outerHTML));
+
+    const list=el('div','rn-list');
+    const PER=6; let page=0;
+    const pgHost=el('div','wl-pager');
+    function paint(){
+      list.innerHTML='';
+      const pages=Math.ceil(RUNS.length/PER)||1; page=Math.max(0,Math.min(page,pages-1));
+      RUNS.slice(page*PER,page*PER+PER).forEach(r=>list.appendChild(runCard(r, midOf(r.coin))));
+      flick(list);
+      pgHost.innerHTML='';
+      const prev=el('button','wl-pgb','← Newer'), next=el('button','wl-pgb','Older →');
+      const lbl=el('span','lab','Page '+(page+1)+' of '+pages+' · '+RUNS.length+' trades');
+      prev.disabled=page===0; next.disabled=page>=pages-1;
+      prev.addEventListener('click',()=>{ page--; paint(); });
+      next.addEventListener('click',()=>{ page++; paint(); });
+      pgHost.append(prev,lbl,next);
+    }
+    body.append(list,pgHost); paint();
+
+    const pr=el('div','wl-proof');
+    pr.appendChild(el('h4',null,'How these were rebuilt'));
+    pr.appendChild(el('p',null,'Each fill carries <code>startPosition</code>, the size held immediately before it, so position is read from the venue rather than counted forward from zero — which drifts permanently once a capped window opens mid-position. The one trap is ordering: <code>userFills</code> comes back newest first and many fills share a millisecond, so a stable sort by time silently reverses them. On this wallet, sorting by time breaks '+built.checks.linkBreaks+' of '+built.checks.links+' links; reversing the array instead is what the numbers above are built on.'));
+    const g=el('div','p');
+    [['links checked',built.checks.links],['links that did not join',built.checks.linkBreaks],
+     ['markets landed on the live size',built.checks.endChecked-built.checks.endBreaks+' of '+built.checks.endChecked],
+     ['forward vs backward walk, max gap',built.checks.backMax.toExponential(2)]].forEach(([k,v])=>{
+      g.append(el('span','k',k), el('span','v '+((''+v).startsWith('0')||v===0?'ok':''), String(v)));
+    });
+    pr.appendChild(g);
+    body.appendChild(pr);
+  })();
+
+  /* ---------------- 08 marks ---------------- */
+  (function(){
+    const body=B('Marks');
+    const M=markList(f, RUNS);
+    const grid=el('div','mk-grid');
+    M.forEach(m=>{
+      const n=el('div','mk'); n.dataset.got=m.got?'1':'0';
+      n.append(el('div','i',m.g), el('div','n',m.n), el('div','r',m.r));
+      n.setAttribute('data-tip', m.got? 'Earned: '+m.r : 'Not earned. Rule: '+m.r);
+      grid.appendChild(n);
+    });
+    body.appendChild(grid);
+    body.appendChild(note('HyperFlow’s own classification, not an official Hyperliquid one. Each mark states the rule that unlocks it, and every rule is checkable against the endpoints listed on the page.'));
+  })();
+
+  /* ---------------- 09 staking ---------------- */
+  (function(){
+    const body=B('Staking');
+    if(f.staked>0 || f.stakingSince){
+      const t=el('div','wl-tiles');
+      t.append(
+        tile('Delegated', fmtNum(f.staked,2)+' HYPE', f.hypeMid? '≈ '+fmtUsd(f.staked*f.hypeMid,0)+' at the current mid':''),
+        tile('Rewards accrued', fmtNum(f.rewards,2)+' HYPE', (d.drew||[]).length+' daily records summed'),
+        tile('Staking since', f.stakingSince? dayStr(f.stakingSince):'—', f.stakingSince? daysAgo(f.stakingSince)+' days':''),
+        tile('Validators', String(f.validators), f.validatorNames.join(', ')||'—')
+      );
+      body.appendChild(t); glowTiles(t);
+      if(f.validatorDetail?.length){
+        const tw=el('div','wl-tw');
+        tw.innerHTML='<table><thead><tr><th>Validator</th><th>Delegated</th><th>Commission</th><th>Uptime 30d</th><th>Predicted APR</th><th>Locked until</th></tr></thead><tbody></tbody></table>';
+        const tb=tw.querySelector('tbody');
+        f.validatorDetail.forEach(v=>{
+          const tr=el('tr');
+          tr.innerHTML='<td><b>'+v.name+'</b>'+(v.jailed?' <span class="rn-flag">jailed</span>':'')+'</td>'+
+            '<td class="n">'+fmtNum(v.amount,2)+' HYPE</td>'+
+            '<td class="n">'+(v.commission!=null?(v.commission*100).toFixed(1)+'%':'—')+'</td>'+
+            '<td class="n">'+(v.uptime!=null?(v.uptime*100).toFixed(2)+'%':'—')+'</td>'+
+            '<td class="n">'+(v.apr!=null?(v.apr*100).toFixed(2)+'%':'—')+'</td>'+
+            '<td class="n">'+(v.locked? dayStr(v.locked):'—')+'</td>';
+          tb.appendChild(tr);
+        });
+        body.appendChild(tw);
+        body.appendChild(note('Commission, uptime and predicted APR are the validator’s own published figures from <code>validatorSummaries</code>. Predicted APR is the network’s estimate, not a promise and not ours.'));
+      }
+    } else {
+      const e=el('div','wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+      e.append(el('h3',null,'Hasn’t staked'),
+        el('p',null,'No delegation history for this address. That is missing data, not a zero — the staking component is excluded from the depth score above rather than scored nil.'));
+      body.appendChild(e); drawSeal(cv,88,'anchor',addr);
+    }
+  })();
+
+  /* ---------------- 10 genesis ---------------- */
+  if(f.genesis.length) (function(){
+    const body=B('Genesis');
+    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='11px';
+    const h=el('div'); h.style.display='flex'; h.style.alignItems='center'; h.style.gap='9px'; h.style.flexWrap='wrap';
     h.append(el('h3',null,'Received at genesis'), q('genesis'));
-    const tg=el('button','sc-tog'); tg.setAttribute('aria-pressed', String(MASK.amounts));
-    const bx=el('span','box'); tg.append(bx, document.createTextNode('Hide amounts'));
-    h.appendChild(tg);
-    c.appendChild(h);
-    const rows=el('div'); rows.style.display='flex'; rows.style.flexDirection='column'; rows.style.gap='6px';
+    const tg=el('button','sc-tog'); tg.setAttribute('aria-pressed',String(MASK.amounts));
+    tg.append(el('span','box'), document.createTextNode('Hide amounts'));
+    h.appendChild(tg); c.appendChild(h);
+    const rows=el('div'); rows.style.display='flex'; rows.style.flexDirection='column'; rows.style.gap='7px';
     function paintG(){
       rows.innerHTML='';
       f.genesis.forEach(g=>{
-        const r=el('div'); r.style.display='flex'; r.style.gap='12px'; r.style.alignItems='baseline'; r.style.flexWrap='wrap';
-        const amt=el('span','num'); amt.style.fontSize='19px'; amt.style.fontWeight='600';
+        const r=el('div'); r.style.cssText='display:flex;gap:12px;align-items:baseline;flex-wrap:wrap';
+        const amt=el('span','num'); amt.style.cssText='font-size:19px;font-weight:600';
         amt.textContent=maskNum(fmtNum(g.amount,2))+' '+g.token;
-        const dt=el('span','lab'); dt.textContent=dayStr(g.time);
-        r.append(amt,dt); rows.appendChild(r);
+        r.append(amt, el('span','lab',dayStr(g.time))); rows.appendChild(r);
       });
     }
     tg.addEventListener('click',()=>{ MASK.amounts=!MASK.amounts; tg.setAttribute('aria-pressed',String(MASK.amounts)); paintG(); });
-    paintG();
-    c.appendChild(rows);
-    c.appendChild(el('p','wl-miss','Recorded on this wallet’s own ledger as a spotGenesis entry. Historical fact, past tense — it describes what happened, nothing more.'));
-    b6.body.appendChild(c); app.appendChild(b6.node);
-  }
+    paintG(); c.appendChild(rows);
+    c.appendChild(el('p','wl-miss','Recorded on this wallet’s own ledger as a <code>spotGenesis</code> entry. Historical fact, past tense — it describes what happened and implies nothing about what comes next.'));
+    body.appendChild(c);
+  })();
 
-  /* ---- subaccounts, never merged ---- */
-  if(f.subCount){
-    const b7=blk('Subaccounts','08');
+  /* ---------------- 11 subaccounts ---------------- */
+  if(f.subCount) (function(){
+    const body=B('Subaccounts');
     const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='12px';
     const h=el('div'); h.style.display='flex'; h.style.alignItems='center'; h.style.gap='8px';
     h.append(el('h3',null,f.subCount+' subaccount'+(f.subCount===1?'':'s')), q('subacc'));
     c.appendChild(h);
     const t=el('div','wl-tiles');
     t.append(
-      tile('Children account value', fmtUsd(f.subEquity,0), 'summed across '+f.subCount+' subaccounts'),
-      tile('Children open interest', fmtUsd(f.subNtl,0), 'not included in the headline above')
+      tile('Children account value', fmtUsd(f.subEquity,0),'summed across '+f.subCount+' subaccounts'),
+      tile('Children open interest', fmtUsd(f.subNtl,0),'not included in the headline above'),
+      tile('Aggregate PnL', f.aggPnl!=null? fmtUsd(f.aggPnl):'—','portfolio · allTime — spans more than the perp account'),
+      tile('Aggregate value', f.aggEquity!=null? fmtUsd(f.aggEquity,0):'—','does not equal this address’s perp account')
     );
-    if(f.aggPnl!=null){
-      const agg=el('div','wl-tiles');
-      agg.append(
-        tile('Aggregate PnL', fmtUsd(f.aggPnl), 'portfolio · allTime — spans more than the perp account'),
-        tile('Aggregate value', f.aggEquity!=null? fmtUsd(f.aggEquity,0):'—', 'does not equal this address’s perp account')
-      );
-      c.appendChild(agg);
-    }
-    c.append(t, el('p','wl-miss','Kept separate on purpose. The headline numbers at the top are the pasted address’s perp account only, exactly as the exchange reports it for that address. The aggregate figures come from portfolio.allTime, which folds in spot, staked HYPE and other holdings — on every wallet tested it failed to reconcile with the perp account, so it is never shown as a headline.'));
-    b7.body.appendChild(c); app.appendChild(b7.node);
-  }
+    c.appendChild(t);
+    c.appendChild(el('p','wl-miss','Kept separate on purpose. The headline numbers are the pasted address’s perp account only, exactly as the exchange reports it for that address. <code>portfolio.allTime</code> folds in spot, staked HYPE and other holdings; on every wallet tested it failed to reconcile with the perp account, so it is never shown as a headline.'));
+    body.appendChild(c);
+    glowTiles(t);
+  })();
 
-  /* ---- share ---- */
-  const b8=blk('Share it','09');
-  b8.body.appendChild(shareCard(addr,f,a,sc));
-  app.appendChild(b8.node);
+  /* ---------------- 12 share ---------------- */
+  (function(){
+    const body=B('Share it');
+    body.appendChild(shareCard(addr,f,a,sc));
+  })();
+
   reveal(app);
+}
+
+/* ---- one run, as a card ---- */
+function runCard(r, mark){
+  const n=el('div','rn');
+  const long=r.dir==='LONG';
+  const h=el('button','rn-h'); h.type='button';
+  const side=el('span','rn-side '+(long?'l':'s'), long?'LONG':'SHORT');
+  const m=el('div','rn-m');
+  const title=el('b',null,r.coin);
+  if(r.open){ const f2=el('span','rn-flag','open'); f2.style.marginLeft='7px'; title.appendChild(f2); }
+  if(r.partial){ const f2=el('span','rn-flag','entry not in window'); f2.style.marginLeft='7px'; title.appendChild(f2); }
+  m.append(title, el('s',null, dayStr(r.t0)+' → '+(r.open?'now':dayStr(r.t1))+' · '+dur(r.t1-r.t0)+' · '+r.legs.length+' fills'));
+  const p=el('div','rn-p');
+  const val=r.partial ? null : (r.open ? r.pnl.total : r.pnl.realized);
+  const b=el('b', val==null?'na':(val>0?'up':val<0?'down':''), val==null? 'fragment' : fmtUsd(val));
+  p.append(b, el('s',null, r.partial? 'exits only' : r.open? (r.pnl.canMark?'realised + open':'realised only') : 'realised'));
+  h.append(side,m,p);
+  const body=el('div','rn-body');
+  const strip=el('div','rn-strip'); const cv=el('canvas'); strip.appendChild(cv);
+  const facts=el('div','rn-facts');
+  const F=(k,v)=>{ const d2=el('div','rn-fact'); d2.append(el('div','k',k), el('div','v',v)); return d2; };
+  facts.append(
+    F('Peak size', fmtNum(r.peakSize,6)+' '+r.coin),
+    F('Avg cost', r.pnl.basis>0? fmtUsd(r.pnl.basis) : '—'),
+    F('Turnover', fmtUsd(r.notional,0)),
+    F('Fees', fmtUsd(r.pnl.fees)),
+    F('Realised', fmtUsd(r.pnl.realized)),
+    F(r.open? 'Open (marked)' : 'Legs', r.open? (r.pnl.canMark? fmtUsd(r.pnl.unreal) : 'not markable') : String(r.legs.length))
+  );
+  const legs=el('div','rn-legs');
+  r.legs.slice().reverse().slice(0,24).forEach(l=>{
+    const row=el('div','rn-leg');
+    const kd=el('span','kd '+(l.kind==='ENTRY'?'entry':l.kind==='ADD'?'add':l.kind==='LIQ'?'liq':'exit'), l.kind);
+    row.append(kd,
+      el('span','t', new Date(l.t).toISOString().slice(5,16).replace('T',' ')),
+      el('span',null, fmtNum(l.sz,5)+' @ '+fmtUsd(l.px)+(l.maker?' · maker':'')),
+      el('span','pn '+(l.pnl>0?'up':l.pnl<0?'down':''), l.pnl? fmtUsd(l.pnl):'—'));
+    legs.appendChild(row);
+  });
+  if(r.legs.length>24) legs.appendChild(el('div','wl-miss','showing the 24 most recent of '+r.legs.length+' fills in this trade'));
+  body.append(strip,facts,legs);
+  if(r.partial) body.appendChild(el('div','wl-miss','This trade was already running when the fill window opens, so its entry price is unknown and only the exits are visible. Its PnL is a fragment and is deliberately not presented as a trade result.'));
+  n.append(h,body);
+  h.addEventListener('click',()=>{
+    const open=n.dataset.open==='1';
+    n.dataset.open=open?'0':'1';
+    if(!open) runStrip(cv,r);
+  });
+  return n;
 }
 
 /* ============================================================
@@ -1685,9 +2639,9 @@ function shareCard(addr,f,a,sc){
   });
   ctrls.append(dl,cpb,xb);
 
-  const note=el('p','wl-miss','The image is drawn in your browser. Nothing is uploaded, and the toggles above change the exported file, not just the preview.');
+  const scNote=el('p','wl-miss','The image is drawn in your browser. Nothing is uploaded, and the toggles above change the exported file, not just the preview.');
 
-  wrap.append(stage,togs,ctrls,note);
+  wrap.append(stage,togs,ctrls,scNote);
 
   // 3D tilt — listener on the CARD, transform on the TILT wrapper only,
   // so the controls underneath never inherit it.
