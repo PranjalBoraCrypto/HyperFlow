@@ -1333,15 +1333,18 @@ function scanLoader(mount,total,steps){
 function tensionRope(host, biasFn){
   const cv=el('canvas'); host.appendChild(cv);
   let W=0,H=0,c=null,raf=null,run=false;
-  const N=22, pts=[]; let rest=0, anchorY=0;
+  const N=22, pts=[]; let rest=0, anchorY=0, maxY=0;
   function size(){
     const r=host.getBoundingClientRect(); if(!r.width) return false;
     W=r.width;H=r.height;c=fit(cv,W,H,1.6);
     const span=W-48; anchorY=H*0.34;
-    /* only 1.5% slack. The first version used 6% with heavy gravity and five
-       relaxation passes, which could not hold it — the middle fell out of the
-       box entirely and the "rope" rendered as two diagonal lines. */
-    rest=span/(N-1)*1.015;
+    /* Slack is measured, not eyeballed. A hanging line with slack s over span L
+       sags about sqrt(3*L*s/8): at 1.5% over a 1058px span that is 79px, which
+       in a 132px box is most of the height — which is exactly what it did.
+       0.2% puts the sag near 25px, a taut cable with a gentle dip, and it holds
+       that shape at any width because both terms scale with the span. */
+    rest=span/(N-1)*1.002;
+    maxY=anchorY+H*0.40;
     for(let i=0;i<N;i++){
       const x=24+span*(i/(N-1));
       if(!pts[i]) pts[i]={x,y:anchorY+10,px:x,py:anchorY+10};
@@ -1376,7 +1379,7 @@ function tensionRope(host, biasFn){
       const p=pts[i];
       const vx=clamp((p.x-p.px)*0.97,-9,9), vy=clamp((p.y-p.py)*0.97,-9,9);
       p.px=p.x; p.py=p.y; p.x+=vx; p.y+=vy+G;
-      if(i===loadI) p.y+=0.34+Math.abs(bias)*0.5;   /* the load, where funding puts it */
+      if(i===loadI) p.y+=0.18+Math.abs(bias)*0.28;  /* the load, where funding puts it */
     }
     if(grab>0&&grab<N-1){ pts[grab].x=clamp(mx,10,W-10); pts[grab].y=clamp(my,10,H-10); }
     /* 16 relaxation passes, and a pinned neighbour hands its whole share to the
@@ -1394,8 +1397,8 @@ function tensionRope(host, biasFn){
       }
       pts[0].x=24; pts[0].y=anchorY; pts[N-1].x=W-24; pts[N-1].y=anchorY;
     }
-    /* nothing leaves the box, ever */
-    for(let i=1;i<N-1;i++){ pts[i].x=clamp(pts[i].x,6,W-6); pts[i].y=clamp(pts[i].y,8,H-8); }
+    /* nothing leaves the box, and nothing sags past its allowance */
+    for(let i=1;i<N-1;i++){ pts[i].x=clamp(pts[i].x,8,W-8); pts[i].y=clamp(pts[i].y,10,Math.min(maxY,H-10)); }
 
     const up=tok('--up'), dn=tok('--down'), line=tok('--line-2'), ink3=tok('--ink-3');
     c.clearRect(0,0,W,H);
