@@ -970,28 +970,6 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 @media (max-width:1180px){ .clx.compact .clx-b span{display:none} .clx.compact .clx-b{padding:0 10px} }
 @media (max-width:860px){ .clx-b{height:44px;padding:0 13px} .clx.compact .clx-b{height:44px;padding:0 12px} }
 
-/* how long you hold it — funding is linear in time, price is not */
-.hs{margin-top:4px}
-.hs-track{position:relative;height:34px;display:flex;align-items:center;cursor:pointer;touch-action:none}
-.hs-track::before{content:"";position:absolute;left:0;right:0;height:5px;border-radius:99px;background:var(--g3)}
-.hs-fill{position:absolute;left:0;height:5px;border-radius:99px;background:var(--mint);width:0}
-.hs-knob{position:absolute;top:50%;width:22px;height:22px;margin-left:-11px;margin-top:-11px;
-  border-radius:99px;background:var(--mint);border:3px solid var(--g0);box-shadow:var(--e2);
-  transition:left var(--sp) var(--spring),transform var(--sp) var(--ease);cursor:grab}
-.hs-knob:active{cursor:grabbing;transform:scale(1.12)}
-.hs-knob:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
-.hs-ticks{display:flex;justify-content:space-between;margin-top:2px;
-  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-4)}
-.hs-out{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
-.hs-c{padding:13px 14px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line)}
-.hs-c s{display:block;text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:9.5px;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-.hs-c b{display:block;margin-top:7px;font-family:"Bricolage Grotesque",sans-serif;font-size:22px;
-  font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.hs-c b.warn{color:var(--warn)}
-.hs-c p{margin-top:6px;font-size:11.5px;color:var(--ink-3);line-height:1.5}
-.hs-v{margin-top:11px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
-@media (max-width:560px){ .hs-out{grid-template-columns:1fr} }
 
 /* the reading, before the numbers */
 .mk-say{padding:14px 16px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
@@ -1819,80 +1797,6 @@ function setNav(id){
 }
 function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page:String(name)}}); }catch(e){} }
 
-/* ── how long you hold changes what funding costs ──────────────────
-   Funding is charged every hour, so its cost grows in a straight line
-   with time held. Price does not: over N hours an ordinary move grows
-   roughly with the SQUARE ROOT of N. That is the whole insight, and it
-   is why an eye-watering funding rate is irrelevant to a scalper and
-   decisive for someone holding a week. Drag the handle to see where
-   the two cross. Everything is a percentage of position, so there is
-   no amount to type in and nothing here depends on your size. */
-function holdStrip(m,a){
-  const STEPS=[{h:1,l:'1 hour'},{h:4,l:'4 hours'},{h:8,l:'8 hours'},
-               {h:24,l:'1 day'},{h:72,l:'3 days'},{h:168,l:'1 week'}];
-  const wrap=el('div','hs');
-  wrap.append(Object.assign(el('div','micro','If you hold it — drag'),{style:'margin-bottom:9px'}));
-  const track=el('div','hs-track');
-  const fillEl=el('i','hs-fill'); const knob=el('button','hs-knob'); knob.type='button';
-  knob.setAttribute('aria-label','Holding period');
-  track.append(fillEl,knob);
-  const ticks=el('div','hs-ticks');
-  STEPS.forEach(st=>ticks.appendChild(el('span',null,st.l.replace(' hours','h').replace(' hour','h').replace('1 day','1d').replace('3 days','3d').replace('1 week','1w'))));
-  wrap.append(track,ticks);
-  const out=el('div','hs-out');
-  const costCell=el('div','hs-c'); costCell.append(el('s',null,'funding costs'), el('b'), el('p'));
-  const moveCell=el('div','hs-c'); moveCell.append(el('s',null,'an ordinary move'), el('b'), el('p'));
-  out.append(costCell,moveCell);
-  wrap.appendChild(out);
-  const verdictEl=el('p','hs-v'); wrap.appendChild(verdictEl);
-
-  let i=3;                                   /* one day, the common case */
-  const hourly=(m.fundingHr||0)/100;         /* fraction of notional per hour */
-  const atrPct=(a&&a.atr&&a.last)? a.atr/a.last*100 : null;
-  function paint(){
-    const st=STEPS[i];
-    const cost=Math.abs(hourly)*st.h*100;    /* linear in time */
-    const move=atrPct!=null? atrPct*Math.sqrt(st.h) : null;   /* ~sqrt of time */
-    fillEl.style.width=(i/(STEPS.length-1)*100)+'%';
-    knob.style.left=(i/(STEPS.length-1)*100)+'%';
-    $('b',costCell).textContent=cost.toFixed(3)+'%';
-    $('p',costCell).textContent = hourly===0 ? 'funding is flat right now'
-      : (hourly>0 ? 'a long pays this over ' : 'a long receives this over ')+st.l;
-    $('b',moveCell).textContent = move!=null? move.toFixed(2)+'%' : '—';
-    $('p',moveCell).textContent = move!=null
-      ? 'what '+st.l+' of ordinary trading moves it, from its own recent range'
-      : 'not enough bars to size the usual move';
-    $('b',costCell).className = cost>0.15?'warn':'';
-    if(hourly===0){ verdictEl.textContent='Funding is flat on this market right now, so holding it costs nothing beyond the spread and the fees — however long you hold.'; return; }
-    if(move==null){ verdictEl.textContent=''; return; }
-    const ratio=cost/move;
-    verdictEl.textContent = ratio<0.08
-      ? 'Over '+st.l+' the funding is noise next to the move — it is not what decides this trade.'
-      : ratio<0.25
-        ? 'Over '+st.l+' funding is a real but minor cost, around '+Math.round(ratio*100)+'% of an ordinary move.'
-        : ratio<0.6
-          ? 'Over '+st.l+' funding eats about '+Math.round(ratio*100)+'% of an ordinary move. It starts to matter here.'
-          : 'Over '+st.l+' funding costs more than half of an ordinary move'+
-            (ratio>=1?' — in fact more than the whole of one':'')+'. Holding this long is expensive at the current rate.';
-  }
-  const setFromX=cx=>{
-    const r=track.getBoundingClientRect();
-    const t=clamp((cx-r.left)/r.width,0,1);
-    const ni=Math.round(t*(STEPS.length-1));
-    if(ni!==i){ i=ni; paint(); }
-  };
-  let dragging=false;
-  track.addEventListener('pointerdown',e=>{ dragging=true; track.setPointerCapture(e.pointerId);
-    setFromX(e.clientX); e.preventDefault(); });
-  track.addEventListener('pointermove',e=>{ if(dragging) setFromX(e.clientX); });
-  ['pointerup','pointercancel'].forEach(ev=>track.addEventListener(ev,()=>{dragging=false;}));
-  knob.addEventListener('keydown',e=>{
-    if(e.key==='ArrowLeft'&&i>0){ i--; paint(); e.preventDefault(); }
-    if(e.key==='ArrowRight'&&i<STEPS.length-1){ i++; paint(); e.preventDefault(); }
-  });
-  paint();
-  return wrap;
-}
 
 /* Two things you can do with any market on this site: read it here, or trade
    it there. Everywhere a coin appears it gets both, from this one function, so
@@ -3120,11 +3024,6 @@ ROUTES.radar=async function(args){
       m.fundingApr>0?'down':m.fundingApr<0?'up':'');
     P('Cost to trade', cost.toFixed(3)+'%','taker both ways plus the impact spread','breakeven',cost>0.2?'warn':'');
     body.appendChild(grid);
-    /* The rope showed "positioning tension" as a hanging line. It was pretty,
-       its caption overlapped the curve, and it asked the reader to translate a
-       sag into a decision. Replaced with the question funding actually raises:
-       does it matter for as long as I plan to hold? */
-    if(!isSpot()) body.appendChild(holdStrip(m,a));
     /* A button that says "trade BTC" has to open BTC. It used to open the
        referral link, which lands in the app on whatever market it feels like —
        the label was writing a cheque the link didn't cash. The referral is a
