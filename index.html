@@ -154,12 +154,12 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 /* the left-gutter rhythm: a mono marker beside the block, hairline between */
 .blk{display:grid; grid-template-columns:112px 1fr; gap:0 24px; padding:28px 0; border-top:1px solid var(--line)}
 .blk:first-child{border-top:none}
-.blk > .mk{display:flex; flex-direction:column; gap:5px; position:sticky; top:112px; align-self:start}
-.blk > .mk .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--mint); font-weight:600}
+.blk > .blkm{display:flex; flex-direction:column; gap:5px; position:sticky; top:112px; align-self:start}
+.blk > .mrk .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--mint); font-weight:600}
 .blk > .bd{min-width:0; display:flex; flex-direction:column; gap:16px}
 @media (max-width:760px){
   .blk{grid-template-columns:1fr; gap:12px; padding:22px 0}
-  .blk > .mk{position:static; flex-direction:row; align-items:center; gap:8px}
+  .blk > .blkm{position:static; flex-direction:row; align-items:center; gap:8px}
 }
 
 .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); box-shadow:var(--shade)}
@@ -579,23 +579,23 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .nr-more:hover{border-color:var(--mint-2); color:var(--mint); transform:translateY(-1px)}
 
 /* ---- marks (mk-) — our own classification, clearly labelled ---- */
-.mk-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(min(148px,100%),1fr)); gap:9px}
-.mk{position:relative; border-radius:12px; padding:13px 12px; text-align:center; overflow:hidden;
+.mrk-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(min(148px,100%),1fr)); gap:9px}
+.mrk{position:relative; border-radius:12px; padding:13px 12px; text-align:center; overflow:hidden;
   border:1px solid var(--line); background:var(--panel);
   transition:transform .3s cubic-bezier(.2,1.25,.4,1), border-color .28s}
-.mk .i{width:34px; height:34px; margin:0 auto 8px; border-radius:10px; display:grid; place-items:center;
+.mrk .i{width:34px; height:34px; margin:0 auto 8px; border-radius:10px; display:grid; place-items:center;
   background:var(--raised); color:var(--ink-3); font-family:"IBM Plex Mono",monospace; font-size:13px;
   font-weight:700; transition:background .3s, color .3s}
-.mk .n{font-size:12.5px; font-weight:600; line-height:1.25}
-.mk .r{font-size:10.5px; color:var(--ink-3); margin-top:3px; line-height:1.35}
-.mk[data-got="0"]{opacity:.44; filter:saturate(.3)}
-.mk[data-got="1"]{border-color:color-mix(in srgb,var(--mint) 45%,var(--line))}
-.mk[data-got="1"] .i{background:var(--mint-wash); color:var(--mint)}
-.mk[data-got="1"]:hover{transform:translateY(-4px); border-color:var(--mint)}
-.mk[data-got="1"]::after{content:""; position:absolute; top:-40%; left:-60%; width:38%; height:200%;
+.mrk .n{font-size:12.5px; font-weight:600; line-height:1.25}
+.mrk .r{font-size:10.5px; color:var(--ink-3); margin-top:3px; line-height:1.35}
+.mrk[data-got="0"]{opacity:.44; filter:saturate(.3)}
+.mrk[data-got="1"]{border-color:color-mix(in srgb,var(--mint) 45%,var(--line))}
+.mrk[data-got="1"] .i{background:var(--mint-wash); color:var(--mint)}
+.mrk[data-got="1"]:hover{transform:translateY(-4px); border-color:var(--mint)}
+.mrk[data-got="1"]::after{content:""; position:absolute; top:-40%; left:-60%; width:38%; height:200%;
   transform:rotate(17deg); opacity:0;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--mint) 20%,transparent),transparent)}
-.mk[data-got="1"]:hover::after{opacity:1; animation:mkSweep .8s ease}
+.mrk[data-got="1"]:hover::after{opacity:1; animation:mkSweep .8s ease}
 @keyframes mkSweep{from{left:-60%}to{left:120%}}
 
 /* ---- proof panel ---- */
@@ -1510,7 +1510,7 @@ function killActive(){ while(ACTIVE.length) (ACTIVE.pop())(); }
 const app=$('#app'), secsIn=$('#shSecsIn');
 function blk(mark, num){
   const b=el('div','blk rev-hl');
-  const m=el('div','mk'); const n=el('div','n',num); const l=el('div','lab',mark);
+  const m=el('div','blkm'); const n=el('div','n',num); const l=el('div','lab',mark);
   m.append(n,l); const bd=el('div','bd'); b.append(m,bd); return {node:b, body:bd};
 }
 function setSecs(items, active){
@@ -1812,13 +1812,23 @@ function markList(f, runs){
 }
 
 function countUp(node,to,fmt,ms){
-  if(RM()||!isFinite(to)){ node.textContent=fmt(to); return; }
+  /* The true value is written synchronously FIRST. requestAnimationFrame is
+     throttled or suspended in a background tab, a hidden pane and a bfcache
+     restore, and a count-up that starts at zero and never gets a frame leaves
+     a $6.1M account reading $0.00. The animation is an enhancement layered on
+     top of a correct value, never the thing that produces it. */
+  node.textContent=fmt(to);
+  if(RM()||!isFinite(to)) return;
   const t0=performance.now(), dur=ms||850;
-  (function step(t){
+  let raf=null;
+  const step=(t)=>{
     const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
     node.textContent=fmt(to*e);
-    if(p<1) requestAnimationFrame(step);
-  })(performance.now());
+    if(p<1) raf=requestAnimationFrame(step); else node.textContent=fmt(to);
+  };
+  raf=requestAnimationFrame(step);
+  /* if no frame arrives within a beat, the value already on screen is correct */
+  setTimeout(()=>{ if(raf!=null && node.isConnected && node.textContent!==fmt(to)) {} },dur+400);
 }
 function sparkSvg(vals,color){
   if(!vals||vals.length<2) return '';
@@ -1932,7 +1942,8 @@ function equityChart(plot, rail, series){
   plot.addEventListener('pointerleave',()=>{ hi=-1; hx=hxT=null; paintRail(vals.length-1); },{passive:true});
   if(!size()) return;
   paintRail(vals.length-1);
-  if(RM()){ intro=1; draw(); } else anim();
+  intro=1; draw();                 /* correct chart first, no frame required */
+  if(!RM()){ intro=0; anim(); }    /* then replay the intro as an enhancement */
   let rz; const onR=()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(cv.isConnected && size()) draw(); },170); };
   addEventListener('resize',onR);
   ACTIVE.push(()=>{ if(plot.__raf) cancelAnimationFrame(plot.__raf); removeEventListener('resize',onR); });
@@ -2182,7 +2193,10 @@ async function viewWallet(addr){
       if(cmp.v==null) s.dataset.missing='1';
       s.setAttribute('data-tip', cmp.k+' — weighted '+Math.round(cmp.weight*100)+'% of the total. '+(cmp.v==null? cmp.miss : cmp.detail));
       stack.appendChild(s);
-      requestAnimationFrame(()=>{ s.style.transform='scaleX('+(cmp.v==null?1:cmp.v/100)+')'; });
+      /* reflow, then set: the transition still plays, but the final state is
+         applied synchronously so a throttled frame cannot leave the bar at zero */
+      void s.offsetWidth;
+      s.style.transform='scaleX('+(cmp.v==null?1:cmp.v/100)+')';
     });
     body.appendChild(stack);
 
@@ -2196,7 +2210,7 @@ async function viewWallet(addr){
       if(cmp.v==null) tr.dataset.missing='1'; tr.appendChild(fl);
       const det=el('div','d'+(cmp.v==null?' miss':''), cmp.v!=null? cmp.detail : cmp.miss);
       r.append(n,v,tr,det); rows.appendChild(r);
-      if(cmp.v!=null) requestAnimationFrame(()=>{ fl.style.transform='scaleX('+(cmp.v/100)+')'; });
+      if(cmp.v!=null){ void fl.offsetWidth; fl.style.transform='scaleX('+(cmp.v/100)+')'; }
     });
     body.appendChild(rows);
     body.appendChild(note('Descriptive, and ours. It is a weighted mean of the components above that have data — not a rank against other wallets, not a grade, not a qualification for anything, and it says nothing about what this wallet does next.'));
@@ -2321,9 +2335,9 @@ async function viewWallet(addr){
   (function(){
     const body=B('Marks');
     const M=markList(f, RUNS);
-    const grid=el('div','mk-grid');
+    const grid=el('div','mrk-grid');
     M.forEach(m=>{
-      const n=el('div','mk'); n.dataset.got=m.got?'1':'0';
+      const n=el('div','mrk'); n.dataset.got=m.got?'1':'0';
       n.append(el('div','i',m.g), el('div','n',m.n), el('div','r',m.r));
       n.setAttribute('data-tip', m.got? 'Earned: '+m.r : 'Not earned. Rule: '+m.r);
       grid.appendChild(n);
