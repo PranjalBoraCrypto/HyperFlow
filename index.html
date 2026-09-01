@@ -556,6 +556,11 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
   .qm{width:22px;height:22px;font-size:11px}
   .top{height:auto;min-height:var(--top);padding-top:6px;padding-bottom:6px}
 }
+/* at 320 the top bar had crumb + LIVE + search + clock + theme fighting over
+   300px and the page title was ellipsing to nothing. The dock already says
+   which page you are on, so the crumb gives up its space first. */
+@media (max-width:560px){ .crumb .live{display:none} }
+@media (max-width:420px){ .crumb{display:none} }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
     transition-duration:.001ms!important;scroll-behavior:auto!important}
