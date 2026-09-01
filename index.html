@@ -828,7 +828,10 @@ async function readWallet(addr, onStep){
   S(0); const role   = await apiRetry({type:'userRole',user:addr},{ttl:300000});
   S(1); const ch     = await apiRetry({type:'clearinghouseState',user:addr},{ttl:15000});
   S(2); const spot   = await apiRetry({type:'spotClearinghouseState',user:addr},{ttl:15000});
-  S(3); const pf     = await apiRetry({type:'portfolio',user:addr},{ttl:60000});
+  S(3); const [pf,ref] = await Promise.all([
+          apiRetry({type:'portfolio',user:addr},{ttl:60000}),
+          apiRetry({type:'referral',user:addr},{ttl:300000}).catch(()=>null)
+        ]);
   S(4);
   const [dsum,dels,dhist,drew,vals] = await Promise.all([
     apiRetry({type:'delegatorSummary',user:addr},{ttl:60000}),
@@ -848,7 +851,7 @@ async function readWallet(addr, onStep){
   S(8);
   let subs=[]; try{ subs = await api({type:'subAccounts',user:addr},{ttl:60000}) || []; }catch(e){ subs=[]; }
   const mids = await api({type:'allMids'},{ttl:15000}).catch(()=>({}));
-  return {addr, role, ch, spot, pf, dsum, dels, dhist, drew, vals, ledger, fills, dexStates, subs, mids};
+  return {addr, role, ch, spot, pf, ref, dsum, dels, dhist, drew, vals, ledger, fills, dexStates, subs, mids};
 }
 
 /* ---- derive features, showing the working ------------------- */
@@ -870,11 +873,27 @@ function derive(d){
   f.concentration = f.oi>0 ? Math.max(0,...pos.map(p=>Math.abs(+p.positionValue)))/f.oi : null;
   f.cumFunding = pos.reduce((s,p)=>s+(+(p.cumFunding?.allTime||0)),0);
 
+  /* portfolio has two families and they are NOT interchangeable.
+     Verified on three wallets: perpAllTime.accountValueHistory ends exactly on
+     clearinghouseState.accountValue every time; allTime never does — it folds in
+     spot, staked HYPE and whatever else the address holds. So the series that may
+     sit beside a perp account value is perpAllTime, and only perpAllTime. */
   const pmap = Object.fromEntries(d.pf||[]);
-  f.lifetimeVlm = pmap.allTime ? +pmap.allTime.vlm : null;
-  f.equitySeries = pmap.allTime ? pmap.allTime.accountValueHistory : [];
-  f.pnlSeries    = pmap.allTime ? pmap.allTime.pnlHistory : [];
-  f.allTimePnl   = f.pnlSeries?.length ? +f.pnlSeries[f.pnlSeries.length-1][1] : null;
+  const pa = pmap.perpAllTime, at = pmap.allTime;
+  f.perpVlm   = pa ? +pa.vlm : null;                 // perp only
+  f.totalVlm  = at ? +at.vlm : null;                 // perp + spot
+  f.refVlm    = d.ref ? +d.ref.cumVlm : null;
+  // print the total only when two independent endpoints agree on it
+  f.totalVlmAgrees = (f.totalVlm!=null && f.refVlm!=null)
+    && Math.abs(f.totalVlm-f.refVlm) <= Math.max(1, f.totalVlm*1e-6);
+  f.equitySeries = pa ? pa.accountValueHistory : [];
+  f.pnlSeries    = pa ? pa.pnlHistory : [];
+  f.perpPnl      = f.pnlSeries?.length ? +f.pnlSeries[f.pnlSeries.length-1][1] : null;
+  f.perpSeriesEnd = f.equitySeries?.length ? +f.equitySeries[f.equitySeries.length-1][1] : null;
+  f.seriesResidual = (f.perpSeriesEnd!=null) ? f.perpSeriesEnd - +(ms.accountValue||0) : null;
+  // kept, but only ever shown inside the subaccounts/aggregate context
+  f.aggPnl = at?.pnlHistory?.length ? +at.pnlHistory[at.pnlHistory.length-1][1] : null;
+  f.aggEquity = at?.accountValueHistory?.length ? +at.accountValueHistory[at.accountValueHistory.length-1][1] : null;
 
   const bal=d.spot?.balances||[];
   f.hype = +( (bal.find(b=>b.coin==='HYPE')||{}).total || 0 );
@@ -930,7 +949,7 @@ function assign(f){
   const C=[];
   const push=(id,score,why)=>C.push({id,score,why});
   push('anchor', stakeWeight*1.6 + (f.stakingSince? Math.min(1,daysAgo(f.stakingSince)/365)*0.5:0) - (f.fillCount>800?0.5:0),
-       `${(stakeWeight*100).toFixed(0)}% of this wallet’s value is delegated rather than deployed`);
+       `${(stakeWeight*100).toFixed(0)}% of this address’s own account value is delegated rather than deployed${f.subCount?' (its '+f.subCount+' subaccounts are excluded)':''}`);
   push('tidewalker', (Math.abs(f.cumFunding) > Math.max(200, f.oi*0.001) ? 0.9 : 0) + (f.oi>0?0.3:0),
        `${fmtUsd(f.cumFunding)} of cumulative funding accrued on open positions`);
   push('splinter', (f.markets>=8?0.8:f.markets/10) + (f.fillCount>=1500?0.5:0) + (f.avgFillNtl && f.avgFillNtl<8000?0.4:0),
@@ -959,11 +978,13 @@ function assign(f){
 function depth(f){
   const cap=(v,m)=>Math.max(0,Math.min(100, v/m*100));
   const comps=[
-    {k:'Trading',  v: f.lifetimeVlm!=null? cap(Math.log10(Math.max(1,f.lifetimeVlm)),10):null,
-     detail: f.lifetimeVlm!=null? fmtUsd(f.lifetimeVlm,0)+' lifetime notional':null, miss:'no trading recorded'},
-    {k:'Position', v: f.equity>0? cap(Math.log10(Math.max(1,f.oi)),8):null,
-     detail: f.oi>0? fmtUsd(f.oi,0)+' open right now, '+(f.maxLev||0)+'× top leverage':'nothing open right now',
-     miss:'no perp account'},
+    {k:'Trading',  v: (f.perpVlm!=null && f.perpVlm>0)? cap(Math.log10(f.perpVlm),10):null,
+     detail: f.perpVlm? fmtUsd(f.perpVlm,0)+' lifetime perp notional':null, miss:'no trading recorded'},
+    /* nothing open is a fact about this minute, not a measurement of depth —
+       scoring it zero would punish a wallet for being flat right now */
+    {k:'Position', v: f.oi>0? cap(Math.log10(f.oi),8):null,
+     detail: f.oi>0? fmtUsd(f.oi,0)+' open right now, '+(f.maxLev||0)+'× top leverage':null,
+     miss:'nothing open right now'},
     {k:'Staking',  v: f.staked>0? cap(Math.log10(Math.max(1,f.staked)),6):null,
      detail: f.staked>0? fmtNum(f.staked,2)+' HYPE with '+f.validators+' validator'+(f.validators===1?'':'s'):null,
      miss:'hasn’t staked'},
@@ -1282,17 +1303,21 @@ async function viewWallet(addr){
   tiles.append(
     tile('Account value', fmtUsd(f.equity), 'as the exchange reports it', '', 'equity'),
     tile('Open interest', f.oi>0? fmtUsd(f.oi):'nothing open', f.oi>0? f.positions.length+' market'+(f.positions.length===1?'':'s'):'no perp position', f.oi>0?'':'none', 'oi'),
-    tile('Lifetime volume', f.lifetimeVlm!=null? '$'+fmtCompact(f.lifetimeVlm):'—', 'portfolio · allTime', '', 'vlm'),
+    tile('Perp volume', f.perpVlm!=null? '$'+fmtCompact(f.perpVlm):'—', 'lifetime, perps only', '', 'vlm'),
     tile('HYPE staked', f.staked>0? fmtNum(f.staked,2): 'hasn’t staked', f.staked>0? f.validators+' validator'+(f.validators===1?'':'s'):'no delegation history', f.staked>0?'':'none', 'staked'),
     tile('On Hyperliquid since', f.firstLedger? dayStr(f.firstLedger):'—', f.tenureDays!=null? f.tenureDays+' days':'', '', 'since'),
-    tile('All-time PnL', f.allTimePnl!=null? fmtUsd(f.allTimePnl):'—', 'portfolio · pnlHistory', f.allTimePnl>0?'up':f.allTimePnl<0?'down':'')
+    tile('Perp all-time PnL', f.perpPnl!=null? fmtUsd(f.perpPnl):'—', 'this address’s perp account only', f.perpPnl>0?'up':f.perpPnl<0?'down':''),
+    tile('Volume incl. spot', f.totalVlmAgrees? '$'+fmtCompact(f.totalVlm):'—',
+         f.totalVlmAgrees? 'portfolio and referral agree' : 'two endpoints disagree — withheld')
   );
   b1.body.appendChild(tiles);
   const chk=el('div','wl-note');
   chk.innerHTML='<b>Checked:</b> we recomputed the exchange’s own identity from the raw positions — '+
     'Σ|notional| vs totalNtlPos differs by <span class="num">'+f.oiResidual.toExponential(2)+'</span>, '+
     'and cash + Σ signed notional vs accountValue by <span class="num">'+f.equityResidual.toExponential(2)+'</span>. '+
-    'These figures are printed because those residuals are zero.';
+    'These figures are printed because those residuals are zero. '+
+    'The PnL series is <span class="num">perpAllTime</span>, not <span class="num">allTime</span> — it ends on this account’s value to within '+
+    (f.seriesResidual!=null? f.seriesResidual.toExponential(2):'—')+', where allTime does not reconcile at all.';
   b1.body.appendChild(chk);
   app.appendChild(b1.node);
 
@@ -1450,7 +1475,15 @@ async function viewWallet(addr){
       tile('Children account value', fmtUsd(f.subEquity,0), 'summed across '+f.subCount+' subaccounts'),
       tile('Children open interest', fmtUsd(f.subNtl,0), 'not included in the headline above')
     );
-    c.append(t, el('p','wl-miss','Kept separate on purpose. The headline numbers at the top are the pasted address only, exactly as the exchange reports it for that address.'));
+    if(f.aggPnl!=null){
+      const agg=el('div','wl-tiles');
+      agg.append(
+        tile('Aggregate PnL', fmtUsd(f.aggPnl), 'portfolio · allTime — spans more than the perp account'),
+        tile('Aggregate value', f.aggEquity!=null? fmtUsd(f.aggEquity,0):'—', 'does not equal this address’s perp account')
+      );
+      c.appendChild(agg);
+    }
+    c.append(t, el('p','wl-miss','Kept separate on purpose. The headline numbers at the top are the pasted address’s perp account only, exactly as the exchange reports it for that address. The aggregate figures come from portfolio.allTime, which folds in spot, staked HYPE and other holdings — on every wallet tested it failed to reconcile with the perp account, so it is never shown as a headline.'));
     b7.body.appendChild(c); app.appendChild(b7.node);
   }
 
@@ -1545,7 +1578,7 @@ function paintShare(cv, ratio, addr, f, a, sc){
   // --- stat tiles, laid into what is left, never touching the band ---
   const stats=[
     ['Open now', f.oi>0? '$'+fmtCompact(f.oi):'—'],
-    ['Lifetime vlm', f.lifetimeVlm!=null? '$'+fmtCompact(f.lifetimeVlm):'—'],
+    ['Perp volume', f.perpVlm!=null? '$'+fmtCompact(f.perpVlm):'—'],
     ['HYPE staked', f.staked>0? fmtCompact(f.staked):'none'],
     ['Since', f.firstLedger? dayStr(f.firstLedger).slice(0,7):'—']
   ].map(([k,v])=>[k, MASK.amounts? '•••••' : v]);
