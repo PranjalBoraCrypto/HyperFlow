@@ -582,7 +582,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-chead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
   margin-bottom:14px}
 .cn-chead h2{font-size:clamp(19px,2.4vw,25px);letter-spacing:-.035em}
-.cn-chart{position:relative;height:clamp(280px,42vh,440px);border-radius:var(--r3);
+.cn-chart{position:relative;height:clamp(320px,50vh,520px);border-radius:var(--r3);
   border:1px solid var(--line);background:var(--g1);padding:4px 4px 0;overflow:hidden;
   transition:opacity var(--sp)}
 .cn-chart[data-busy]{opacity:.45}
@@ -590,20 +590,41 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .ck canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ck .ov{pointer-events:none}
 .ck-tip{position:absolute;top:6px;left:0;pointer-events:none;opacity:0;z-index:3;
-  display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 11px;border-radius:10px;
   background:var(--g3);border:1px solid var(--line-3);box-shadow:var(--e2);white-space:nowrap;
   transition:opacity var(--sp)}
 .ck-tip[data-on="1"]{opacity:1}
-.ck-tip b{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600}
+.ck-tip .hd{display:flex;align-items:baseline;gap:8px}
+.ck-tip b{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700}
 .ck-tip span{font-family:"IBM Plex Mono",monospace;font-size:11.5px}
-.ck-tip s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
-.cn-leg{display:flex;gap:15px;flex-wrap:wrap;margin-top:11px;
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
-.cn-leg span{display:inline-flex;align-items:center;gap:6px}
-.cn-leg span::before{content:"";width:13px;height:2px;border-radius:2px;background:currentColor}
-.cn-leg [data-k="s20"]{color:var(--mint)}
-.cn-leg [data-k="s50"]{color:var(--warn)}
-.cn-leg [data-k="s100"]{color:var(--info)}
+.ck-tip s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3)}
+.ck-tip u{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  color:var(--ink-2);white-space:nowrap}
+.cn-leg{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.cn-lg{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:9px;
+  border:1px solid var(--line);background:var(--g1);cursor:pointer;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);
+  transition:border-color var(--sp),background var(--sp),opacity var(--sp)}
+.cn-lg i{width:14px;height:3px;border-radius:2px;background:currentColor;flex:none}
+.cn-lg s{text-decoration:none;color:var(--ink-4);font-size:10px}
+.cn-lg:hover{border-color:var(--line-3);background:var(--g2)}
+.cn-lg[data-k="s20"]{color:var(--mint)}
+.cn-lg[data-k="s50"]{color:var(--warn)}
+.cn-lg[data-k="s100"]{color:var(--info)}
+.cn-lg[data-on="0"]{opacity:.42}
+.cn-lg[data-on="0"] i{background:var(--line-3)}
+@media (max-width:640px){ .cn-lg s{display:none} }
+@media (max-width:860px){ .cn-lg{height:44px} }
+/* what the visible window contains */
+.cn-cstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(112px,45%),1fr));
+  gap:1px;margin-top:14px;background:var(--line);border:1px solid var(--line);
+  border-radius:var(--r2);overflow:hidden}
+.cn-cs{padding:11px 13px;background:var(--g1)}
+.cn-cs s{display:block;text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:9px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4)}
+.cn-cs b{display:block;margin-top:5px;font-family:"IBM Plex Mono",monospace;font-size:14px;
+  font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.cn-cs b.up{color:var(--up)} .cn-cs b.down{color:var(--down)}
 
 /* measures */
 .cn-meas{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r3);
@@ -628,25 +649,11 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   .cn-mx{padding:0 14px 15px 14px}
 }
 
-/* depth */
-.cn-dep{border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;background:var(--g1)}
-.cn-deprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
-  gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:center}
-.cn-deprow:last-child{border-bottom:none}
-.cn-dephd{background:var(--g2);font-family:"IBM Plex Mono",monospace;font-size:9.5px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-.cn-deprow .r{text-align:right}
-.cn-deprow .n{font-family:"IBM Plex Mono",monospace;font-size:14.5px;font-weight:600;
-  font-variant-numeric:tabular-nums}
-.cn-deprow span:first-child{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-2)}
-.cn-deprow .beyond{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-4)}
-.cn-deptot{background:var(--g2);border-top:1px solid var(--line-2)}
-.cn-deptot .n{font-size:16px}
 .cn-deptot span:first-child{color:var(--ink-3)}
 .cn-fine{margin-top:11px;font-size:12.5px;color:var(--ink-4);line-height:1.6;max-width:80ch}
 
 /* tiles shared by cost and positioning */
-.cn-grid,.cn-cost-g{display:grid;gap:11px;
+.cn-grid{display:grid;gap:11px;
   grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr))}
 .cn-tile{padding:16px 17px;border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
   transition:border-color var(--sp),transform var(--sp) var(--ease)}
@@ -661,10 +668,20 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-tile p{margin-top:7px;font-size:12.5px;color:var(--ink-3);line-height:1.55}
 
 /* tape */
-.cn-tapel{display:flex;flex-direction:column;gap:6px;min-height:60px}
+.cn-tapel{display:flex;flex-direction:column;gap:6px;min-height:60px;
+  /* a fixed run of rows keeps the section from resizing on every print */
+  contain:layout}
+/* Each row animates once, on arrival. Rows already on screen are never
+   rebuilt, so the list never flashes — the thing that makes a live tape
+   painful to look at. */
+@keyframes tapeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .cn-tr{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:12px;align-items:center;
   padding:10px 14px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
-  animation:pgFlick .3s var(--ease-out) both}
+  animation:tapeIn .34s var(--ease-out) both}
+/* a print near the biggest of the session is worth catching the eye once */
+.cn-tr[data-big="1"]{border-color:var(--line-3)}
+.cn-tr[data-big="1"] .cn-tn{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){ .cn-tr{animation:none} }
 .cn-tsd{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;font-weight:600}
 .cn-tr[data-side="buy"]{border-left:3px solid var(--up)}
@@ -680,7 +697,18 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 }
 
 /* section hosts: a min-height so a skeleton swap does not jump the page */
-.cn-book,.cn-cost,.cn-tape,.cn-news{min-height:74px}
+.cn-tape,.cn-news{min-height:74px}
+
+/* markets like this one */
+.cn-sim{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))}
+.cn-simc{position:relative;display:flex;flex-direction:column;gap:7px;padding:15px 16px;
+  border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
+  color:inherit;text-decoration:none;min-height:44px;
+  transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+.cn-simc:hover{border-color:var(--line-2);box-shadow:var(--e2)}
+.cn-simc .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cn-simc .t b{font-family:"Bricolage Grotesque",sans-serif;font-size:16px;font-weight:700;letter-spacing:-.03em}
+.cn-simc .v{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-4)}
 
 /* news */
 .cn-newsl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
@@ -3607,6 +3635,8 @@ function candleChart(host, opts){
   const tip=el('div','ck-tip');
   wrap.append(cv,ov,tip); host.appendChild(wrap);
   let bars=[], W=0,H=0,c=null,o=null, geo=null, hover=-1;
+  /* which averages are drawn — the legend is a control, not a caption */
+  const on={s20:true,s50:true,s100:true};
   /* `opts && opts.mas!==false` is undefined when opts is omitted, which is
      falsy — the averages silently never drew. */
   const mas = !opts || opts.mas!==false;
@@ -3623,7 +3653,7 @@ function candleChart(host, opts){
     const volH=(H-PADT-PADB)-plotH-10;
     let lo=Infinity, hi=-Infinity, vmax=0;
     for(const b of bars){ if(b.l<lo)lo=b.l; if(b.h>hi)hi=b.h; if(b.v>vmax)vmax=b.v; }
-    for(const k of ['s20','s50','s100']) if(mas) for(const b of bars){
+    for(const k of ['s20','s50','s100']) if(mas&&on[k]) for(const b of bars){
       const v=b[k]; if(v!=null){ if(v<lo)lo=v; if(v>hi)hi=v; } }
     const pad=(hi-lo)*0.06||1; lo-=pad; hi+=pad;
     const step=plotW/bars.length;
@@ -3660,7 +3690,7 @@ function candleChart(host, opts){
     /* moving averages */
     if(mas){
       [['s100',hexA(tok('--info'),.75),1.3],['s50',hexA(tok('--warn'),.8),1.3],
-       ['s20',hexA(tok('--mint'),.95),1.6]].forEach(([k,col,lw])=>{
+       ['s20',hexA(tok('--mint'),.95),1.6]].filter(([k])=>on[k]).forEach(([k,col,lw])=>{
         c.strokeStyle=col; c.lineWidth=lw; c.beginPath(); let started=false;
         for(let i=0;i<bars.length;i++){ const v=bars[i][k]; if(v==null) continue;
           const x=geo.x(i), y=geo.y(v); started?c.lineTo(x,y):(c.moveTo(x,y),started=true); }
@@ -3682,6 +3712,20 @@ function candleChart(host, opts){
     }
     c.textAlign='left'; c.textBaseline='middle';
 
+    /* the window's own high and low: the first two levels anyone looks for */
+    let hiB=bars[0], loB=bars[0];
+    for(const b of bars){ if(b.h>hiB.h) hiB=b; if(b.l<loB.l) loB=b; }
+    c.font='500 9.5px "IBM Plex Mono", monospace'; c.textBaseline='middle';
+    [[hiB,hiB.h,-9,'high'],[loB,loB.l,9,'low']].forEach(([b,v,dy,lbl])=>{
+      const x=geo.x(bars.indexOf(b)), y=geo.y(v);
+      c.fillStyle=hexA(ink4,.9);
+      c.textAlign = x>W*0.72 ? 'right' : 'left';
+      c.fillText(lbl+' '+px(v), x + (x>W*0.72?-7:7), y+dy);
+      c.strokeStyle=hexA(ink4,.5); c.lineWidth=1;
+      c.beginPath(); c.arc(x,y,2.2,0,7); c.stroke();
+    });
+    c.textAlign='left';
+
     /* last price marker */
     const last=bars[bars.length-1];
     if(last){ const y=geo.y(last.c), col=last.c>=last.o?up:dn;
@@ -3698,17 +3742,28 @@ function candleChart(host, opts){
     if(!o) return;
     o.clearRect(0,0,W,H);
     if(hover<0||!geo||!bars[hover]){ tip.dataset.on='0'; return; }
-    const b=bars[hover], x=geo.x(hover);
-    o.strokeStyle=hexA(tok('--ink'),.28); o.lineWidth=1; o.setLineDash([3,3]);
+    const b=bars[hover], x=geo.x(hover), y=geo.y(b.c);
+    const ink=tok('--ink');
+    o.strokeStyle=hexA(ink,.28); o.lineWidth=1; o.setLineDash([3,3]);
     o.beginPath(); o.moveTo(Math.round(x)+.5,PADT-6); o.lineTo(Math.round(x)+.5,H-PADB+4); o.stroke();
+    /* the horizontal is the half people actually use: it puts the hovered
+       close on the price scale so you can read a level off the chart */
+    o.beginPath(); o.moveTo(0,Math.round(y)+.5); o.lineTo(W-PADR,Math.round(y)+.5); o.stroke();
     o.setLineDash([]);
-    o.fillStyle=hexA(tok('--mint'),.9);
-    o.beginPath(); o.arc(x,geo.y(b.c),3,0,7); o.fill();
+    o.fillStyle=hexA(ink,.86); rr(o,W-PADR+5,y-9,PADR-8,18,5); o.fill();
+    o.fillStyle=tok('--g0'); o.font='600 10px "IBM Plex Mono", monospace';
+    o.textAlign='center'; o.textBaseline='middle';
+    o.fillText(px(b.c), W-PADR+5+(PADR-8)/2, y);
+    o.textAlign='left';
+    o.fillStyle=hexA(tok('--mint'),.95);
+    o.beginPath(); o.arc(x,y,3.4,0,7); o.fill();
     const chg=b.o? (b.c/b.o-1)*100 : 0;
-    tip.innerHTML='<b>'+px(b.c)+'</b>'+
-      '<span class="'+(chg>=0?'up':'down')+'">'+pct(chg)+'</span>'+
-      '<s>'+new Date(b.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+
-      ' · vol '+fmtC(b.v)+'</s>';
+    const rng=b.l? (b.h/b.l-1)*100 : 0;
+    tip.innerHTML='<div class="hd"><b>'+px(b.c)+'</b>'+
+      '<span class="'+(chg>=0?'up':'down')+'">'+pct(chg)+'</span></div>'+
+      '<s>'+new Date(b.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</s>'+
+      '<u>O '+px(b.o)+'  H '+px(b.h)+'  L '+px(b.l)+'</u>'+
+      '<u>range '+rng.toFixed(2)+'%  ·  vol '+fmtC(b.v)+'</u>';
     tip.dataset.on='1';
     const tw=tip.offsetWidth||150;
     tip.style.left=clamp(x-tw/2, 4, Math.max(4,W-tw-4))+'px';
@@ -3725,7 +3780,9 @@ function candleChart(host, opts){
   ACTIVE.push(()=>removeEventListener('resize',onR));
   return {
     set(list){ bars=list||[]; if(size()){ compute(); draw(); hover=-1; overlay(); } },
-    redraw(){ if(size()){ compute(); draw(); overlay(); } }
+    redraw(){ if(size()){ compute(); draw(); overlay(); } },
+    toggle(k){ on[k]=!on[k]; if(size()){ compute(); draw(); overlay(); } return on[k]; },
+    shown(k){ return !!on[k]; }
   };
 }
 
@@ -3742,55 +3799,7 @@ function withMAs(bars){
   return out;
 }
 
-/* Round numbers a person reads without decoding — the four largest that fit
-   inside what the exchange actually publishes. */
-function bookSteps(reach){
-  const LADDER=[0.005,0.01,0.02,0.03,0.05,0.075,0.1,0.15,0.25,0.4,0.6,1,1.5,2.5,4];
-  const fit=LADDER.filter(v=>v<=reach);
-  if(fit.length<2) return reach>0? [reach/2, reach] : [];
-  return fit.slice(-4);
-}
 
-/* ── the book ─────────────────────────────────────────────────────
-   How many dollars you can actually put through before the price moves.
-   Walks the real ladder, level by level, accumulating notional until the
-   fill price is X% away from mid. This is the number that decides whether
-   a market is tradeable at size, and it is nowhere on the exchange's own
-   screen. */
-function depthLadder(book, steps){
-  const bids=(book.levels&&book.levels[0])||[], asks=(book.levels&&book.levels[1])||[];
-  if(!bids.length||!asks.length) return null;
-  const bestBid=+bids[0].px, bestAsk=+asks[0].px, mid=(bestBid+bestAsk)/2;
-  const walk=(side,limitPx,dir)=>{
-    let notional=0, size=0;
-    for(const lv of side){
-      const p=+lv.px, s=+lv.sz;
-      if(dir>0 ? p>limitPx : p<limitPx) break;
-      notional+=p*s; size+=s;
-    }
-    return {notional,size};
-  };
-  /* The exchange publishes 20 levels a side and no more, so the book has a
-     reach — the distance to its furthest level. Past that there is nothing to
-     measure, and printing the same total under 0.5% and 1.0% would look like a
-     number rather than the edge of the data. Rows past the reach say so. */
-  const reachAsk=(+asks[asks.length-1].px - mid)/mid*100;
-  const reachBid=(mid - +bids[bids.length-1].px)/mid*100;
-  const askTotal=asks.reduce((s,l)=>s+ +l.px * +l.sz, 0);
-  const bidTotal=bids.reduce((s,l)=>s+ +l.px * +l.sz, 0);
-  return {
-    mid, bestBid, bestAsk,
-    spreadPct: (bestAsk-bestBid)/mid*100,
-    bidLevels: bids.length, askLevels: asks.length,
-    reachAsk, reachBid, askTotal, bidTotal,
-    reach: Math.min(reachAsk, reachBid),
-    rows: steps.map(pctMove=>({
-      pctMove,
-      buy:  pctMove<=reachAsk ? walk(asks, mid*(1+pctMove/100), +1).notional : null,
-      sell: pctMove<=reachBid ? walk(bids, mid*(1-pctMove/100), -1).notional : null
-    }))
-  };
-}
 
 /* The spot universe, in exactly the shape the perp one has, so the radar, the
    board, the table and the coin page do not need to know which they are
@@ -3942,10 +3951,22 @@ ROUTES.coin=async function(args){
   chartSec.appendChild(chartHead);
   const chartHost=el('div','cn-chart');
   chartSec.appendChild(chartHost);
+  /* the legend does something. Three lines you cannot switch off is a caption;
+     three you can is a control, and on a busy chart turning two of them off is
+     the difference between reading it and squinting at it. */
   const legend=el('div','cn-leg');
-  legend.innerHTML='<span data-k="s20">20-bar average</span><span data-k="s50">50-bar</span>'+
-    '<span data-k="s100">100-bar</span>';
-  chartSec.appendChild(legend);
+  [['s20','20-bar average','about a day'],
+   ['s50','50-bar','about two days'],
+   ['s100','100-bar','about four days']].forEach(([k,label,sub])=>{
+    const b=el('button','cn-lg'); b.type='button'; b.dataset.k=k; b.dataset.on='1';
+    b.innerHTML='<i></i><span>'+label+'</span><s>'+sub+'</s>';
+    b.title='Show or hide the '+label;
+    b.addEventListener('click',()=>{ if(!chart) return;
+      b.dataset.on=chart.toggle(k)?'1':'0'; });
+    legend.appendChild(b);
+  });
+  const chartStat=el('div','cn-cstat');
+  chartSec.append(legend,chartStat);
   PAGE.appendChild(chartSec);
 
   const measSec=el('section','sec rv');
@@ -3953,14 +3974,6 @@ ROUTES.coin=async function(args){
     'Seven of them. Each one is a number you can check, and a plain sentence about what that number means.'));
   const measHost=el('div','cn-meas'); measSec.appendChild(measHost); PAGE.appendChild(measSec);
 
-  const bookSec=el('section','sec rv');
-  bookSec.appendChild(secHead('Size you can actually move',
-    'Walked through the live order book. How many dollars go through before the price moves that far.'));
-  const bookHost=el('div','cn-book'); bookSec.appendChild(bookHost); PAGE.appendChild(bookSec);
-
-  const costSec=el('section','sec rv');
-  costSec.appendChild(secHead('What the trade costs','Before it is right about direction, a trade has to clear its own cost.'));
-  const costHost=el('div','cn-cost'); costSec.appendChild(costHost); PAGE.appendChild(costSec);
 
   const posSec=el('section','sec rv');
   posSec.appendChild(secHead(isSpot()?'The token':'Positioning',
@@ -3968,11 +3981,13 @@ ROUTES.coin=async function(args){
   const posHost=el('div','cn-grid'); posSec.appendChild(posHost); PAGE.appendChild(posSec);
 
   const tapeSec=el('section','sec rv');
-  tapeSec.appendChild(secHead('The tape','Live trades as they print, biggest first. Nothing is stored — this is what has crossed since you opened the page.'));
+  tapeSec.appendChild(secHead('The tape',
+    'Every trade as it prints, newest first. Nothing is stored and nothing is replayed — this starts when you open the page.'));
   const tapeHost=el('div','cn-tape'); tapeSec.appendChild(tapeHost); PAGE.appendChild(tapeSec);
 
   const newsSec=el('section','sec rv');
-  newsSec.appendChild(secHead('In the news','From CoinDesk, The Block, Blockworks and Decrypt. Refreshed hourly.'));
+  newsSec.appendChild(secHead('In the news',
+    'Headlines mentioning this market, from newsrooms rather than wires. Refreshed hourly.'));
   const newsHost=el('div','cn-news'); newsHost.appendChild(el('div','sk sk-row'));
   newsSec.appendChild(newsHost); PAGE.appendChild(newsSec);
 
@@ -3981,6 +3996,11 @@ ROUTES.coin=async function(args){
     'This page reads the market. Placing the order is the one thing it cannot do for you.'));
   refSec.appendChild(refBlock('coin'));
   PAGE.appendChild(refSec);
+
+  const simSec=el('section','sec rv');
+  simSec.appendChild(secHead('Markets like this one',
+    'Closest on the things that decide how a market behaves: how much trades, how much is open against it, and how it has moved today.'));
+  const simHost=el('div','cn-sim lead'); simSec.appendChild(simHost); PAGE.appendChild(simSec);
 
   field(PAGE); magnetise(PAGE); reveal(PAGE);
 
@@ -4006,6 +4026,7 @@ ROUTES.coin=async function(args){
     /* the buttons need the spot index, but nothing else waits on it */
     spotIndex().then(()=>paintActions()).catch(()=>paintActions());
     paintPositioning();
+    paintSimilar(U);
     startTape();
     loadNews();
     await loadRange('1h');
@@ -4084,21 +4105,28 @@ ROUTES.coin=async function(args){
     chartHost.dataset.busy='1';
     try{
       const now=Date.now();
+      /* The 50 and 100-bar averages need 50 and 100 bars BEFORE the first one
+         drawn, or they simply start partway across the chart — which is what
+         made the lines appear out of nowhere. Fetch a 100-bar run-up, compute
+         the averages over everything, then draw only the window. */
+      const WARM=100;
       const raw=await apiR({type:'candleSnapshot',req:{coin:M.key||name,interval:r.k,
-        startTime:now-r.bars*r.ms, endTime:now}},{ttl:45000});
+        startTime:now-(r.bars+WARM)*r.ms, endTime:now}},{ttl:45000});
       if(!Array.isArray(raw)||raw.length<5){
         chartHost.innerHTML='';
         chartHost.appendChild(el('p','rd-count','Not enough history at this interval to draw a chart.'));
         chart=null; return;
       }
-      chart.set(withMAs(raw));
+      const full=withMAs(raw);
+      const win=full.length>r.bars ? full.slice(-r.bars) : full;
+      chart.set(win);
+      paintChartStat(win,r);
       /* the hourly bars are what every measure on this page is computed from,
          so the read and the measures are only recomputed on the 1h range */
       if(k==='1h'){
         A=analyse(M, raw);
         RADAR.det[name]=A;
-        paintRead(); paintMeasures(); paintCost();
-        loadBook();
+        paintRead(); paintMeasures();
       }
     }catch(e){
       chartHost.innerHTML='';
@@ -4106,6 +4134,57 @@ ROUTES.coin=async function(args){
         (e.code==='RATE'?'The exchange rate-limited this browser.':'Try again in a moment.')));
       chart=null;
     } finally { delete chartHost.dataset.busy; }
+  }
+
+  /* "Similar" has to mean something or it is a random list. Three axes, each
+     on a log scale because a market ten times bigger is one step away, not ten
+     — traded volume, open interest, and the size of today's move. Nearest on
+     the sum wins. Delisted markets and the coin itself are never candidates. */
+  function paintSimilar(U){
+    if(!M) return;
+    const lg=v=>Math.log10(Math.max(v||0,1));
+    const pool=U.filter(x=>x.name!==M.name && !x.delisted
+      && x.vol>(isSpot()?SPOT_FLOOR:VOL_FLOOR)/4);
+    if(!pool.length){ simSec.remove(); return; }
+    const near=pool.map(x=>{
+      const dv=Math.abs(lg(x.vol)-lg(M.vol));
+      const doi=(x.oiNtl!=null&&M.oiNtl!=null)? Math.abs(lg(x.oiNtl)-lg(M.oiNtl)) : 0;
+      const dc=Math.abs((x.chg||0)-(M.chg||0))/8;
+      return {m:x, d:dv*1.0 + doi*0.8 + dc*0.7};
+    }).sort((a,b)=>a.d-b.d).slice(0,6);
+    simHost.innerHTML='';
+    near.forEach(({m:x})=>{
+      const a2=el('a','cn-simc tilt edge'); a2.href='#/coin/'+encodeURIComponent(x.name);
+      const top=el('div','t');
+      top.append(el('b',null,x.name),
+        Object.assign(el('span','chip '+(x.chg>=0?'up':'down')),{textContent:pct(x.chg)}));
+      a2.appendChild(top);
+      a2.appendChild(Object.assign(el('div','v'),
+        {textContent:'$'+fmtC(x.vol)+' traded'+(x.oiNtl?' · $'+fmtC(x.oiNtl)+' open':'')}));
+      simHost.appendChild(a2);
+    });
+    field(simHost);
+  }
+
+  /* What the window on screen actually contains — the four numbers a reader
+     would otherwise work out by squinting at the axis. */
+  function paintChartStat(win,r){
+    chartStat.innerHTML='';
+    if(!win.length) return;
+    let hi=-Infinity, lo=Infinity, vol=0, upN=0;
+    for(const b of win){ if(b.h>hi)hi=b.h; if(b.l<lo)lo=b.l; vol+=b.v; if(b.c>=b.o) upN++; }
+    const first=win[0].o, last=win[win.length-1].c;
+    const chg=first? (last/first-1)*100 : 0;
+    const span=(win[win.length-1].t-win[0].t)/864e5;
+    const S=(k,v,cls)=>{ const n=el('div','cn-cs');
+      n.append(el('s',null,k), Object.assign(el('b',null,v),{className:cls||''}));
+      chartStat.appendChild(n); };
+    S('over this window', pct(chg), chg>=0?'up':'down');
+    S('high', px(hi));
+    S('low', px(lo));
+    S('range', (lo? (hi/lo-1)*100 : 0).toFixed(2)+'%');
+    S('green bars', Math.round(upN/win.length*100)+'%');
+    S('shown', (span<2? Math.round(span*24)+' hours' : Math.round(span)+' days'));
   }
 
   /* ── the read ──
@@ -4119,10 +4198,17 @@ ROUTES.coin=async function(args){
     const card=el('div','cn-readc tilt edge'); card.dataset.dir=r.dir;
     const l=el('div','l');
     const badge=el('div','cn-badge');
+    /* "Reads up" in green at 29px is a description that behaves like a call.
+       A count cannot be mistaken for one: it says what the indicators did,
+       names how many, and leaves the conclusion where it belongs. */
+    const total=r.votes.length;
+    const lean = r.dir==='long' ? r.for+' of '+total+' measures lean up'
+               : r.dir==='short'? r.against+' of '+total+' measures lean down'
+               : 'The measures are split '+r.for+'–'+r.against;
     badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+
       (r.dir==='long'?'<path d="M12 19V5M6 11l6-6 6 6"/>':
        r.dir==='short'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>'+
-      '<span>'+(r.dir==='long'?'Reads up':r.dir==='short'?'Reads down':'No trend')+'</span>';
+      '<span>'+lean+'</span>';
     l.appendChild(badge);
     l.appendChild(el('p','cn-readp', r.dir==='none'
       ? 'The seven measures are split — '+r.for+' point up, '+r.against+' point down. That is a market without a trend to read, not a quiet one.'
@@ -4150,100 +4236,40 @@ ROUTES.coin=async function(args){
     if(!A) return;
     const r=momentum(M,A);
     measHost.innerHTML='';
+    /* These open, like the ones on the home page. The earlier edit patched the
+       home copy only, so this list has been sitting here inert. */
     r.votes.forEach(v=>{
       const row=el('div','cn-m'); row.dataset.v=v.vote;
+      const hd=el('button','cn-mh'); hd.type='button';
       const ic=el('span','cn-mv');
       ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+
         (v.vote==='for'?'<path d="M12 19V5M6 11l6-6 6 6"/>':
          v.vote==='against'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>';
       const body=el('div','cn-mb');
       body.append(el('b',null,v.label), el('s',null,v.why));
-      row.append(ic, body, el('span','cn-mn',v.val));
+      hd.append(ic, body, el('span','cn-mn',v.val));
+      const cv=el('span','cn-mcv');
+      cv.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
+      hd.appendChild(cv);
+      row.appendChild(hd);
+      const mn=meaningFor(v,M,A);
+      if(mn){
+        const ex=el('div','cn-mx');
+        ex.append(el('p','hm-what',mn.what), el('p','hm-now',mn.now));
+        row.appendChild(ex);
+        hd.addEventListener('click',()=>{
+          const open=row.dataset.open==='1';
+          $$('.cn-m[data-open="1"]',measHost).forEach(o=>{ if(o!==row) o.dataset.open='0'; });
+          row.dataset.open=open?'0':'1';
+        });
+      } else { hd.disabled=true; cv.hidden=true; }
       measHost.appendChild(row);
     });
     field(measHost);
   }
 
-  /* ── the book ── */
-  async function loadBook(){
-    bookHost.innerHTML=''; bookHost.appendChild(el('div','sk sk-row'));
-    try{
-      const book=await apiR({type:'l2Book',coin:M.key||name},{ttl:8000});
-      /* Fixed steps do not survive contact with a real book. Hyperliquid
-         publishes 20 levels a side and no more, and on a liquid market those
-         20 levels span almost nothing — HYPE's reach 0.04% from mid, so a
-         ladder starting at 0.05% printed "past the book" four times and told
-         a reader nothing. The steps are chosen to fit the book in front of
-         us instead. */
-      const d=depthLadder(book, bookSteps(depthLadder(book,[]).reach));
-      bookHost.innerHTML='';
-      if(!d){ bookHost.appendChild(el('p','rd-count','The book came back empty.')); return; }
-      const t=el('div','cn-dep');
-      const hd=el('div','cn-deprow cn-dephd');
-      hd.append(el('span',null,'Price moves by'), el('span','r',
-        'Buying'), el('span','r','Selling'));
-      t.appendChild(hd);
-      let anyBeyond=false;
-      d.rows.forEach(row=>{
-        const r2=el('div','cn-deprow');
-        const cell=v=>{ if(v==null){ anyBeyond=true;
-            return Object.assign(el('span','r beyond'),{textContent:'past the book'}); }
-          return Object.assign(el('span','r n'),{textContent:'$'+fmtC(v)}); };
-        r2.append(el('span',null,row.pctMove<0.01?row.pctMove.toFixed(3)+'%':row.pctMove.toFixed(2)+'%'),
-          cell(row.buy), cell(row.sell));
-        t.appendChild(r2);
-      });
-      /* the whole thing, so the reader has the ceiling as well as the steps */
-      const tot=el('div','cn-deprow cn-deptot');
-      tot.append(el('span',null,'everything published'),
-        Object.assign(el('span','r n'),{textContent:'$'+fmtC(d.askTotal)}),
-        Object.assign(el('span','r n'),{textContent:'$'+fmtC(d.bidTotal)}));
-      t.appendChild(tot);
-      bookHost.appendChild(t);
-      bookHost.appendChild(Object.assign(el('p','cn-fine'),{textContent:
-        'Mid '+px(d.mid)+', spread '+d.spreadPct.toFixed(3)+'%. The exchange publishes '+
-        d.bidLevels+' bids and '+d.askLevels+' asks, reaching '+d.reach.toFixed(2)+
-        '% from mid'+(anyBeyond?' — past that there is nothing to measure, not nothing there.':'.')}));
-      field(bookHost);
-    }catch(e){
-      bookHost.innerHTML='';
-      bookHost.appendChild(el('p','rd-count','The book did not load.'));
-    }
-  }
-
-  /* ── cost ── */
-  function paintCost(){
-    if(!A) return;
-    const SIZE=10000;
-    const taker=TAKER, round=SIZE*taker*2;
-    const fundDay=SIZE*(M.fundingHr/100)*24;
-    const spread=(M.spreadPct||0);
-    /* what the trade owes before direction matters: taker in, taker out, and
-       half the impact spread (you cross it once on the way in) */
-    const be=(taker*2*100)+spread/2;
-    costHost.innerHTML='';
-    const g=el('div','cn-cost-g');
-    const tile=(k,v,s,cls)=>{ const n=el('div','cn-tile');
-      n.append(el('s',null,k), Object.assign(el('b',null,v),{className:cls||''}), el('p',null,s));
-      g.appendChild(n); };
-    tile('Round trip, taker','$'+fmtN(round,2),
-      'in and out on $10,000 at '+(taker*100).toFixed(3)+'% a side, before any tier or referral discount');
-    if(!isSpot()) tile('Funding, 24h if long', (fundDay>=0?'−':'+')+'$'+fmtN(Math.abs(fundDay),2),
-      fundDay>=0? 'you pay this to hold a $10,000 long for a day at the current rate'
-                : 'you receive this to hold a $10,000 long for a day at the current rate',
-      fundDay>0?'down':'up');
-    tile('Break-even move', (be).toFixed(3)+'%',
-      'how far it has to go just to cover the round trip and half the spread');
-    tile('Expected move, 1×ATR', A.atr? px(A.atr) : '—',
-      A.atr&&M.mark? (A.atr/M.mark*100).toFixed(2)+'% of price — a stop inside this is inside the noise'
-                   : 'not enough bars');
-    costHost.appendChild(g);
-    costHost.appendChild(Object.assign(el('p','cn-fine'),{textContent: isSpot()
-      ? 'Spot has no funding: you own the asset, so there is nothing to pay to keep holding it.'
-      : 'Funding settles hourly and changes hourly; this is the current rate held flat for a day, not a forecast of it.'}));
-    field(costHost);
-  }
-
+  
+  
   function paintPositioning(){
     posHost.innerHTML='';
     const tile=(k,v,s,cls,tip)=>{ const n=el('div','cn-tile');
@@ -4276,62 +4302,77 @@ ROUTES.coin=async function(args){
     field(posHost);
   }
 
-  /* ── the tape ──
-     A WebSocket, not a poll. Hyperliquid publishes no REST history of trades,
-     so this is honestly what has crossed since the page opened — the heading
-     says so rather than implying an hour of history nobody has. */
+    /* ── the tape ──
+     A live feed, not a leaderboard. It used to hold the eight biggest prints
+     since the page opened, which meant it stopped changing after a minute and
+     looked broken. Now it is the last twelve trades, newest at the top, each
+     one sliding in as it arrives — and it repaints ONLY the rows that changed,
+     so nothing on screen flashes. A list that rebuilds itself every second is
+     a strobe, and people close the tab. */
   function startTape(){
-    let ws=null, biggest=[], seen=new Set(), count=0, notional=0, live=false, retry=null;
-    const cap=8;
+    let ws=null, retry=null, live=false;
+    const CAP=12;
+    const seen=new Set();
+    let feed=[], count=0, notional=0, biggest=0, dirty=false;
     tapeHost.innerHTML='';
-    const status=el('p','cn-fine','connecting to the trade feed…');
     const list=el('div','cn-tapel');
+    const status=el('p','cn-fine','connecting to the trade feed…');
     tapeHost.append(list,status);
-    const render=()=>{
-      list.innerHTML='';
-      if(!biggest.length){
-        list.appendChild(el('p','rd-count', live
-          ? 'Nothing has crossed on this market yet. On a quiet book that can take a while.'
-          : 'Waiting for the first print…'));
-        return;
-      }
-      biggest.forEach(t=>{
-        const r=el('div','cn-tr'); r.dataset.side=t.side==='B'?'buy':'sell';
-        r.append(el('span','cn-tsd', t.side==='B'?'buy':'sell'),
-          Object.assign(el('span','cn-tn'),{textContent:'$'+fmtC(t.ntl)}),
-          Object.assign(el('span','cn-tp'),{textContent:px(t.px)}),
-          Object.assign(el('span','cn-tt'),{textContent:new Date(t.time)
-            .toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}));
-        list.appendChild(r);
-      });
-      status.textContent=count.toLocaleString()+' trades seen · $'+fmtC(notional)+
-        ' crossed since you opened this page · largest '+biggest.length+' shown';
+    const empty=el('p','rd-count','Waiting for the first print…');
+    list.appendChild(empty);
+
+    const rowFor=t=>{
+      const r=el('div','cn-tr'); r.dataset.side=t.side==='B'?'buy':'sell';
+      r.dataset.tid=t.tid;
+      if(t.ntl>=biggest*0.6&&t.ntl>0) r.dataset.big='1';
+      r.append(Object.assign(el('span','cn-tsd'),{textContent:t.side==='B'?'buy':'sell'}),
+        Object.assign(el('span','cn-tn'),{textContent:'$'+fmtC(t.ntl)}),
+        Object.assign(el('span','cn-tp'),{textContent:px(t.px)}),
+        Object.assign(el('span','cn-tt'),{textContent:new Date(t.time)
+          .toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}));
+      return r;
     };
-    render();
+
+    /* One frame per animation frame at most, and only the new rows are built.
+       Existing rows are never touched, so nothing already on screen redraws. */
+    let raf=null;
+    const schedule=()=>{ if(raf) return;
+      raf=requestAnimationFrame(()=>{ raf=null; flush(); }); };
+    function flush(){
+      if(!dirty) return; dirty=false;
+      if(empty.isConnected) empty.remove();
+      const have=new Set([...list.children].map(n=>n.dataset.tid));
+      /* newest first: insert at the top in reverse so order is preserved */
+      for(let i=feed.length-1;i>=0;i--){
+        const t=feed[i];
+        if(have.has(String(t.tid))) continue;
+        const r=rowFor(t);
+        list.insertBefore(r,list.firstChild);
+      }
+      while(list.children.length>CAP) list.removeChild(list.lastChild);
+      status.textContent=count.toLocaleString()+' trades since you opened this page · $'+
+        fmtC(notional)+' crossed · largest $'+fmtC(biggest);
+    }
+
     const connect=()=>{
       try{ ws=new WebSocket('wss://api.hyperliquid.xyz/ws'); }
       catch(e){ status.textContent='The live feed is not reachable from this browser.'; return; }
       ws.onopen=()=>{ live=true;
         ws.send(JSON.stringify({method:'subscribe',subscription:{type:'trades',coin:M.key||name}})); };
       ws.onmessage=e=>{
-        let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
-        if(m.channel!=='trades'||!Array.isArray(m.data)) return;
-        let changed=false;
-        for(const t of m.data){
+        let m2; try{ m2=JSON.parse(e.data); }catch(_){ return; }
+        if(m2.channel!=='trades'||!Array.isArray(m2.data)) return;
+        for(const t of m2.data){
           if(seen.has(t.tid)) continue; seen.add(t.tid);
-          const ntl=+t.px*+t.sz; count++; notional+=ntl;
-          if(biggest.length<cap || ntl>biggest[biggest.length-1].ntl){
-            biggest.push({side:t.side,px:+t.px,sz:+t.sz,ntl,time:t.time});
-            biggest.sort((a,b)=>b.ntl-a.ntl);
-            if(biggest.length>cap) biggest.length=cap;
-            changed=true;
-          }
+          const ntl=+t.px*+t.sz;
+          count++; notional+=ntl; if(ntl>biggest) biggest=ntl;
+          feed.push({side:t.side,px:+t.px,ntl,time:t.time,tid:t.tid});
+          dirty=true;
         }
-        /* the counters move on every message; the list only repaints when the
-           order actually changed, so a busy market does not thrash the DOM */
-        if(changed) render();
-        else status.textContent=count.toLocaleString()+' trades seen · $'+fmtC(notional)+
-          ' crossed since you opened this page · largest '+biggest.length+' shown';
+        if(feed.length>CAP) feed=feed.slice(-CAP);
+        /* the seen-set would grow without bound on a busy market */
+        if(seen.size>4000) seen.clear();
+        if(dirty) schedule();
       };
       ws.onclose=()=>{ live=false;
         if(!retry) retry=setTimeout(()=>{ retry=null; if(tapeHost.isConnected) connect(); },4000); };
@@ -4339,6 +4380,7 @@ ROUTES.coin=async function(args){
     };
     connect();
     ACTIVE.push(()=>{ if(retry) clearTimeout(retry); retry=1;
+      if(raf) cancelAnimationFrame(raf);
       try{ ws&&ws.close(); }catch(e){} });
   }
 

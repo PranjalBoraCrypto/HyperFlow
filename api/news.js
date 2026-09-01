@@ -13,11 +13,21 @@
  * the outlets see one request per hour per coin rather than one per reader.
  */
 
+/* Outlets with newsrooms and mastheads. No aggregators, no press-release
+   wires, no "sponsored" feeds — a headline here should be one somebody stood
+   behind. A feed that fails is skipped and named in `sources`, so a reader can
+   see which ones answered rather than wondering what is missing. */
 const SOURCES = [
-  { name: 'CoinDesk',   url: 'https://www.coindesk.com/arc/outboundfeeds/rss/' },
-  { name: 'The Block',  url: 'https://www.theblock.co/rss.xml' },
-  { name: 'Blockworks', url: 'https://blockworks.co/feed' },
-  { name: 'Decrypt',    url: 'https://decrypt.co/feed' },
+  { name: 'CoinDesk',    url: 'https://www.coindesk.com/arc/outboundfeeds/rss/' },
+  { name: 'The Block',   url: 'https://www.theblock.co/rss.xml' },
+  { name: 'Blockworks',  url: 'https://blockworks.co/feed' },
+  { name: 'Decrypt',     url: 'https://decrypt.co/feed' },
+  { name: 'DL News',     url: 'https://www.dlnews.com/arc/outboundfeeds/rss/' },
+  { name: 'Cointelegraph', url: 'https://cointelegraph.com/rss' },
+  { name: 'CryptoSlate', url: 'https://cryptoslate.com/feed/' },
+  { name: 'Bitcoin Magazine', url: 'https://bitcoinmagazine.com/feed' },
+  { name: 'The Defiant', url: 'https://thedefiant.io/api/feed' },
+  { name: 'Protos',      url: 'https://protos.com/feed/' },
 ];
 
 /* A ticker alone is a bad filter: "SUI" matches "suit", "OP" matches half the
@@ -97,7 +107,7 @@ module.exports = async (req, res) => {
   const names = NAMES[coin] || [];
   const settled = await Promise.allSettled(SOURCES.map(async s => {
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 6000);
+    const t = setTimeout(() => ctl.abort(), 7000);
     try {
       const r = await fetch(s.url, {
         signal: ctl.signal,
@@ -119,7 +129,7 @@ module.exports = async (req, res) => {
     .filter(x => mentions(x, coin, names))
     .filter(x => { const k = x.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
     .sort((a, b) => (b.time || 0) - (a.time || 0))
-    .slice(0, 8);
+    .slice(0, 10);
 
   res.status(200).end(JSON.stringify({
     coin, items, sources: reached, fetched: Date.now(),
