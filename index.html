@@ -1851,7 +1851,11 @@ function sparkSvg(vals,color){
    works the same under a thumb as under a cursor.
    ============================================================ */
 function equityChart(plot, rail, series){
-  const vals=series.map(p=>p[1]), times=series.map(p=>p[0]);
+  /* portfolio returns its values as STRINGS. Without coercing, `LAST>=START`
+     compares lexicographically — "9" >= "10" is true — so the chart could pick
+     the wrong colour and shade the band the wrong way, and Math.abs(START) on a
+     string zero divides the percentage by zero. */
+  const vals=series.map(p=>+p[1]), times=series.map(p=>+p[0]);
   if(plot.__raf){ cancelAnimationFrame(plot.__raf); plot.__raf=null; }
   plot.innerHTML='';
   const cv=el('canvas'); plot.appendChild(cv);
@@ -1920,10 +1924,14 @@ function equityChart(plot, rail, series){
     }
   }
   function paintRail(i){
-    const v=vals[i], d=v-START, dp=START!==0? d/Math.abs(START)*100 : 0;
+    const v=vals[i], d=v-START;
+    /* a percentage against a starting value of zero is not a large number,
+       it is undefined — say so rather than printing Infinity */
+    const meaningful = Math.abs(START) > 1e-6;
+    const dp = meaningful ? d/Math.abs(START)*100 : null;
     const back=vals.length-1-i;
     rail.innerHTML=`<span class="r1">${fmtUsd(v)}</span>
-      <span class="r3 ${d>=0?'up':'down'}">${d>=0?'▲':'▼'} ${fmtUsd(Math.abs(d))} (${d>=0?'+':'−'}${Math.abs(dp).toFixed(1)}%)</span>
+      <span class="r3 ${d>=0?'up':'down'}">${d>=0?'▲':'▼'} ${fmtUsd(Math.abs(d))} ${dp==null?'(started from zero)':`(${d>=0?'+':'−'}${Math.abs(dp).toFixed(1)}%)`}</span>
       <span class="r2">${back===0?'latest sample':back+' sample'+(back===1?'':'s')+' back'} · ${new Date(times[i]).toISOString().slice(0,16).replace('T',' ')}</span>`;
   }
   function anim(){
@@ -2111,8 +2119,10 @@ async function viewWallet(addr){
            f.tenureDays!=null? f.tenureDays+' days':'','','since'),
       tile('Perp all-time PnL', f.perpPnl!=null? fmtUsd(f.perpPnl):'—','this address’s perp account only',
            f.perpPnl>0?'up':f.perpPnl<0?'down':''),
-      tile('Volume incl. spot', f.totalVlmAgrees? '$'+fmtCompact(f.totalVlm):'—',
-           f.totalVlmAgrees? 'portfolio and referral agree':'two endpoints disagree — withheld')
+      tile('Volume incl. spot', f.totalVlmAgrees? '$'+fmtCompact(f.totalVlm):'withheld',
+           f.totalVlmAgrees ? 'portfolio and referral agree exactly'
+             : 'portfolio and referral disagree by $'+fmtCompact(Math.abs((f.totalVlm||0)-(f.refVlm||0)))+
+               ' — no basis to pick one', f.totalVlmAgrees?'':'none')
     );
     body.appendChild(tiles);
     glowTiles(tiles);
