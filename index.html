@@ -241,7 +241,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    WALLET  (wl-)
    ============================================================ */
 .wl-id{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
-.wl-seal{width:76px; height:76px; border-radius:18px; display:block; flex:0 0 auto; background:var(--raised)}
+.wl-seal{width:96px; height:96px; border-radius:22px; display:block; flex:0 0 auto; background:var(--raised)}
 .wl-idt{display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 260px}
 .wl-arch{font-size:clamp(24px,4.4vw,34px); line-height:1.05}
 .wl-tag{color:var(--ink-2); font-size:14px}
@@ -739,7 +739,7 @@ function drawSeal(cv, size, id, seedStr){
   const c=fitCanvas(cv,size,size, size>120?2:1.5);
   const t=CAST[CAST_IX[id]] || CAST[0];
   const R=rng(hashStr((seedStr||'')+id));
-  const detail = size>=88;
+  const detail = size>=80;
   c.clearRect(0,0,size,size);
   // plaque
   c.fillStyle='#062421'; rr(c,0,0,size,size,size*0.22); c.fill();
@@ -1320,7 +1320,7 @@ async function viewWallet(addr){
   id.appendChild(idt);
   b0.body.appendChild(id);
   app.appendChild(b0.node);
-  requestAnimationFrame(()=>drawSeal(seal,76,a.weak?'homestead':a.id,addr));
+  requestAnimationFrame(()=>drawSeal(seal,96,a.weak?'homestead':a.id,addr));
 
   /* ---- headline tiles ---- */
   const b1=blk('Right now','02');
