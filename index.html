@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>HyperFlow — what's worth trading on Hyperliquid right now</title>
-<meta name="description" content="A live read of every Hyperliquid market, ranked by momentum and funding stress, with every indicator on screen. Read-only — never asks to connect a wallet.">
+<meta name="description" content="A live read of every Hyperliquid market, ranked by momentum and funding stress, with every indicator on screen. The board reads only — it holds no funds and places no orders.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="HyperFlow — what's worth trading on Hyperliquid right now">
-<meta property="og:description" content="Every Hyperliquid market ranked live, with the working shown. Read-only, no wallet connect, no signature.">
+<meta property="og:description" content="Every Hyperliquid market ranked live, with the working shown. The board reads only — no funds held, no orders placed.">
 <meta property="og:image" content="/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="HyperFlow — what's worth trading on Hyperliquid right now">
-<meta name="twitter:description" content="Every Hyperliquid market ranked live, with the working shown.">
+<meta name="twitter:description" content="Every Hyperliquid market ranked live, with the working shown. The board reads only.">
 <meta name="twitter:image" content="/og.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
@@ -154,31 +154,59 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 *:not(html)::-webkit-scrollbar-thumb{border-color:transparent}
 
 /* ═══════════════ SHELL ═══════════════ */
-.shell{position:relative;z-index:1;display:grid;grid-template-columns:var(--rail) 1fr;min-height:100vh}
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:var(--railw) 1fr;min-height:100vh;
+  transition:grid-template-columns .36s var(--ease)}
+:root[data-rail="mini"] .shell{grid-template-columns:var(--rail) 1fr}
 
 /* --- the rail. Icons only; labels fly out as pills, so nothing reflows. --- */
 .rail{
-  position:fixed; left:0; top:0; bottom:0; width:var(--rail); z-index:70;
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  padding:14px 0 calc(14px + env(safe-area-inset-bottom));
+  position:fixed; left:0; top:0; bottom:0; width:var(--railw); z-index:70;
+  display:flex; flex-direction:column; align-items:stretch; gap:3px;
+  padding:14px 12px calc(14px + env(safe-area-inset-bottom));
+  transition:width .36s var(--ease), padding .36s var(--ease);
   background:linear-gradient(180deg,var(--g1),var(--g0));
   border-right:1px solid var(--line);
 }
 .rail::after{content:"";position:absolute;top:0;right:-1px;width:1px;height:100%;
   background:linear-gradient(180deg,transparent,var(--mint-glow) 22%,transparent 62%);pointer-events:none}
-.rl-mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none;
-  margin-bottom:12px;transition:transform var(--sp) var(--spring)}
+:root[data-rail="mini"] .rail{width:var(--rail);align-items:center;padding-left:0;padding-right:0}
+.rl-mark{display:flex;align-items:center;gap:11px;flex:none;margin-bottom:14px;padding:0 8px;
+  transition:transform var(--sp) var(--spring),padding .3s var(--ease)}
+:root[data-rail="mini"] .rl-mark{padding:0;justify-content:center}
+.rl-mark:hover{transform:translateY(-1px)}
+.rl-wm{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:17px;letter-spacing:-.05em;
+  white-space:nowrap;overflow:hidden;transition:opacity .2s,max-width .34s var(--ease);max-width:160px}
+.rl-wm em{font-style:normal;color:var(--mint)}
+:root[data-rail="mini"] .rl-wm{opacity:0;max-width:0}
 .rl-mark:hover{transform:scale(1.08) rotate(-4deg)}
 .rl-mark canvas{width:42px;height:42px;display:block;border-radius:13px}
-.rl-b{position:relative;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
-  color:var(--ink-3);flex:none;transition:color var(--sp),background var(--sp),transform var(--sp) var(--spring)}
+.rl-b{position:relative;height:44px;border-radius:13px;display:flex;align-items:center;gap:12px;
+  padding:0 12px;color:var(--ink-3);flex:none;overflow:hidden;
+  transition:color var(--sp),background var(--sp),padding .3s var(--ease)}
+.rl-b .lbl{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;
+  transition:opacity .2s,max-width .34s var(--ease);max-width:170px}
+:root[data-rail="mini"] .rl-b{width:46px;height:46px;padding:0;justify-content:center;align-self:center}
+:root[data-rail="mini"] .rl-b .lbl{opacity:0;max-width:0}
+.rl-b svg{flex:none}
 .rl-b svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;
   stroke-linecap:round;stroke-linejoin:round;transition:transform var(--sp) var(--spring)}
 .rl-b:hover{color:var(--ink);background:var(--g2)}
+.rl-b:hover svg{transform:translateX(1px) scale(1.06)}
 .rl-b:hover svg{transform:translateY(-2px) scale(1.06)}
 .rl-b[aria-current="page"]{color:var(--mint);background:var(--mint-wash)}
-.rl-b[aria-current="page"]::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+.rl-b[aria-current="page"]::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
   width:3px;height:22px;border-radius:0 3px 3px 0;background:var(--mint);box-shadow:0 0 12px var(--mint)}
+:root[data-rail="mini"] .rl-b[aria-current="page"]::before{left:-14px}
+.rl-col{height:42px;border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 12px;
+  color:var(--ink-4);transition:color var(--sp),background var(--sp)}
+.rl-col:hover{color:var(--ink-2);background:var(--g2)}
+.rl-col svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;
+  stroke-linejoin:round;transition:transform .34s var(--ease)}
+:root[data-rail="mini"] .rl-col{width:46px;padding:0;justify-content:center;align-self:center}
+:root[data-rail="mini"] .rl-col svg{transform:rotate(180deg)}
+:root[data-rail="mini"] .rl-col .lbl{opacity:0;max-width:0}
+.rl-col .lbl{font-size:12.5px;white-space:nowrap;overflow:hidden;max-width:150px;
+  transition:opacity .2s,max-width .34s var(--ease)}
 .rl-sp{flex:1}
 .rl-tip{position:fixed;left:-9999px;top:0;z-index:120;pointer-events:none;background:var(--g3);color:var(--ink);
   border:1px solid var(--line-3);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:500;
@@ -295,6 +323,27 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .sec-h .r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .gap-lg{height:clamp(26px,3.4vw,44px)}
 
+/* ═══════════════ HOVER SYSTEM ═══════════════
+   Three things happen together, and none of them is a colour change:
+   the hovered thing lifts and tilts toward the cursor, a light rides its
+   border, and its siblings step back so the one you are pointing at leads. */
+.tilt{transform-style:preserve-3d;will-change:transform}
+.tilt:hover{transform:perspective(1300px)
+  rotateX(calc(var(--py,0) * -2.4deg)) rotateY(calc(var(--px,0) * 3.4deg))
+  translateY(-3px) scale(1.004)}
+/* a light that rides the border rather than washing the whole surface */
+.edge::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),
+    color-mix(in srgb,var(--mint) 78%,transparent), transparent 62%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;opacity:0;transition:opacity var(--sp);pointer-events:none;z-index:1}
+.edge:hover::before{opacity:.85}
+/* siblings step back — the hovered row leads */
+.lead > *{transition:opacity var(--sp-slow) var(--ease),filter var(--sp-slow) var(--ease)}
+.lead:hover > *:not(:hover){opacity:.46;filter:saturate(.55)}
+@media (hover:none){ .lead:hover > *:not(:hover){opacity:1;filter:none} .tilt:hover{transform:none} }
+
 /* ═══════════════ PRIMITIVES ═══════════════ */
 .card{position:relative;background:var(--g1);border:1px solid var(--line);border-radius:var(--r3);
   box-shadow:var(--e1);transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
@@ -319,6 +368,8 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .btn.pri{background:var(--mint);color:var(--on-mint);border-color:transparent;font-weight:700}
 .btn.pri:hover{background:var(--mint);filter:brightness(1.06);box-shadow:0 8px 26px -8px var(--mint)}
 .btn.ghost{background:transparent}
+.mag{will-change:transform}
+@media (prefers-reduced-motion:reduce){ .mag{transform:none!important} }
 .btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 .seg{display:inline-flex;padding:3px;gap:2px;border-radius:13px;background:var(--g1);
@@ -356,10 +407,15 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   margin-bottom:5px;letter-spacing:-.02em}
 
 /* reveal */
-.rv{opacity:0;transform:translateY(14px)}
-.rv[data-in="1"]{animation:rvIn .6s var(--ease-out) forwards;animation-delay:var(--d,0ms)}
-.rv[data-now="1"]{animation:none!important;opacity:1;transform:none}
-@keyframes rvIn{to{opacity:1;transform:none}}
+.rv{opacity:0;transform:translateY(18px) scale(.994);filter:blur(7px)}
+.rv[data-in="1"]{animation:rvIn .74s var(--ease-out) forwards;animation-delay:var(--d,0ms)}
+.rv[data-now="1"]{animation:none!important;opacity:1;transform:none;filter:none}
+@keyframes rvIn{to{opacity:1;transform:none;filter:blur(0)}}
+/* the rule under a section header draws itself in as the section arrives */
+.sec-h{border-bottom:none;position:relative}
+.sec-h::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--line);
+  transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease) .18s}
+.rv[data-in="1"] .sec-h::after,.sec-h.drawn::after{transform:scaleX(1)}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* ═══════════════ SCAN LOADER (sc-) ═══════════════
@@ -414,9 +470,9 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 /* venue pulse strip */
 .rd-pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(178px,100%),1fr));gap:9px;margin-bottom:18px}
 .pl{position:relative;padding:14px 16px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
-  display:flex;flex-direction:column;gap:3px;overflow:hidden;
-  transition:border-color var(--sp),transform var(--sp) var(--ease)}
-.pl:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  display:flex;flex-direction:column;gap:3px;
+  transition:border-color var(--sp),transform var(--sp) var(--ease),opacity var(--sp-slow),filter var(--sp-slow)}
+.pl:hover{border-color:var(--line-2)}
 .pl .k{display:flex;align-items:center;gap:6px}
 .pl .v{font-family:"IBM Plex Mono",monospace;font-size:clamp(18px,2.3vw,23px);font-weight:600;
   letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -431,7 +487,8 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 /* the board */
 .rd-board{display:flex;flex-direction:column;gap:9px}
 .mk{position:relative;border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
-  overflow:hidden;transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+  transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease),
+    opacity var(--sp-slow),filter var(--sp-slow)}
 .mk::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   transition:opacity var(--sp);
   background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),var(--mint-glow),transparent 55%)}
@@ -439,12 +496,13 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .mk:hover::after{opacity:1}
 .mk[data-open="1"]{border-color:var(--mint-2);box-shadow:var(--e3)}
 /* rank stripe encodes the score, not decoration */
-.mk .stripe{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line-2);
-  transform-origin:top;transition:transform .8s var(--ease)}
+.mk .stripe{position:absolute;left:0;top:15px;bottom:15px;width:3px;border-radius:0 3px 3px 0;
+  background:var(--line-2);transition:opacity var(--sp)}
 .mk[data-dir="long"] .stripe{background:linear-gradient(180deg,var(--up),transparent)}
 .mk[data-dir="short"] .stripe{background:linear-gradient(180deg,var(--down),transparent)}
 .mk[data-dir="none"] .stripe{background:linear-gradient(180deg,var(--ink-4),transparent)}
-.mk-h{display:grid;grid-template-columns:34px minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.1fr) auto;
+/* the row no longer clips, so the pressable area carries its own corners */
+.mk-h{border-radius:var(--r3);display:grid;grid-template-columns:34px minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.1fr) auto;
   gap:14px;align-items:center;padding:14px 16px 14px 19px;width:100%;text-align:left;cursor:pointer}
 .mk-h:hover{background:color-mix(in srgb,var(--g2) 60%,transparent)}
 .mk-rank{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;color:var(--ink-3);
@@ -470,6 +528,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   text-transform:uppercase;color:var(--ink-3)}
 .mk-cv{width:19px;height:19px;color:var(--ink-3);transition:transform var(--sp) var(--spring),color var(--sp);flex:none}
 .mk[data-open="1"] .mk-cv{transform:rotate(180deg);color:var(--mint)}
+.mk[data-open="1"] .mk-h{border-radius:var(--r3) var(--r3) 0 0}
 @media (max-width:940px){
   .mk-h{grid-template-columns:28px 1fr auto auto;gap:11px;padding:13px 13px 13px 16px}
   .mk-spark{display:none}
@@ -570,7 +629,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .fb-r{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 14px;
   border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
   transition:border-color var(--sp),transform var(--sp) var(--ease)}
-.fb-r:hover{border-color:var(--line-2);transform:translateX(3px)}
+.fb-r:hover{border-color:var(--line-2);transform:translateX(4px)}
 .fb-r .m{min-width:0;display:flex;flex-direction:column;gap:2px}
 .fb-r .m b{font-size:13.5px;font-weight:600}
 .fb-r .m s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
@@ -583,7 +642,8 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .mt{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:10px}
 .mt-c{padding:16px 18px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
   display:flex;flex-direction:column;gap:7px;transition:border-color var(--sp)}
-.mt-c:hover{border-color:var(--line-2)}
+.mt-c:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.mt-c{transition:border-color var(--sp),transform var(--sp) var(--ease),opacity var(--sp-slow),filter var(--sp-slow)}
 .mt-c b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
 .mt-c p{font-size:12.5px;color:var(--ink-3);line-height:1.6}
 .mt-c code{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--mint-2);
@@ -600,11 +660,21 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .rope .lbl.l{left:12px;color:var(--up)} .rope .lbl.r{right:12px;color:var(--down)}
 
 /* NFA */
-.nfa{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:var(--r2);
-  background:var(--warn-wash);border:1px solid color-mix(in srgb,var(--warn) 26%,transparent)}
-.nfa svg{width:17px;height:17px;flex:none;margin-top:1px;fill:none;stroke:var(--warn);stroke-width:1.8;stroke-linecap:round}
-.nfa p{font-size:12.5px;color:var(--ink-2);line-height:1.55}
-.nfa b{color:var(--warn)}
+.nfa{margin-top:clamp(16px,2.2vw,26px);border-radius:var(--r2);border:1px solid var(--line);
+  background:var(--g1);transition:border-color var(--sp)}
+.nfa:hover{border-color:var(--line-2)}
+.nfa summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;
+  font-size:12.5px;color:var(--ink-3);line-height:1.5}
+.nfa summary::-webkit-details-marker{display:none}
+.nfa summary svg{width:15px;height:15px;flex:none;fill:none;stroke:var(--ink-4);stroke-width:1.7;stroke-linecap:round}
+.nfa summary span{min-width:0}
+.nfa summary i{margin-left:auto;font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);white-space:nowrap;
+  transition:color var(--sp)}
+.nfa summary:hover i,.nfa summary:hover svg{color:var(--mint);stroke:var(--mint)}
+.nfa[open] summary i{color:var(--mint)}
+.nfa p{padding:0 14px 13px 39px;font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:88ch}
+@media (max-width:640px){ .nfa summary i{display:none} .nfa p{padding-left:14px} }
 
 /* referral, disclosed in place */
 .rf{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:19px;border-radius:var(--r3);
@@ -747,13 +817,34 @@ const px=(v)=>{const n=+v; if(!isFinite(n))return '—';
       if(!n.isConnected){live.delete(n);continue;}
       const r=n.getBoundingClientRect();
       if(r.bottom<-200||r.top>innerHeight+200) continue;
-      n.style.setProperty('--mx',((tx-r.left)/r.width*100).toFixed(1)+'%');
-      n.style.setProperty('--my',((ty-r.top)/r.height*100).toFixed(1)+'%');
+      const fx=(tx-r.left)/r.width, fy=(ty-r.top)/r.height;
+      n.style.setProperty('--mx',(fx*100).toFixed(1)+'%');
+      n.style.setProperty('--my',(fy*100).toFixed(1)+'%');
+      /* unitless, so CSS can turn it into degrees without any JS per element */
+      n.style.setProperty('--px',(fx-0.5).toFixed(3));
+      n.style.setProperty('--py',(fy-0.5).toFixed(3));
     }
   }
   window.__field=(n)=>{ live.add(n); };
 })();
-function field(scope){ if(window.__field) $$('.glow,.mk,.pl',scope||document).forEach(window.__field); }
+function field(scope){ if(window.__field) $$('.glow,.mk,.pl,.edge,.tilt',scope||document).forEach(window.__field); }
+/* primary actions pull very slightly toward the cursor and spring back.
+   One listener per button, transform only — never layout. */
+function magnetise(scope){
+  if(!FINE()||RM()) return;
+  $$('.mag',scope||document).forEach(n=>{
+    if(n.__mag) return; n.__mag=1;
+    let raf=null,tx=0,ty=0,cx=0,cy=0;
+    const tick=()=>{ cx+=(tx-cx)*.18; cy+=(ty-cy)*.18;
+      n.style.transform='translate('+cx.toFixed(2)+'px,'+cy.toFixed(2)+'px)';
+      raf=(Math.abs(tx-cx)>.1||Math.abs(ty-cy)>.1)?requestAnimationFrame(tick):null; };
+    const kick=()=>{ if(!raf) raf=requestAnimationFrame(tick); };
+    n.addEventListener('pointermove',e=>{ const r=n.getBoundingClientRect();
+      tx=clamp((e.clientX-r.left-r.width/2)*.22,-9,9);
+      ty=clamp((e.clientY-r.top-r.height/2)*.28,-6,6); kick(); },{passive:true});
+    n.addEventListener('pointerleave',()=>{ tx=0;ty=0;kick(); });
+  });
+}
 
 /* a critically-damped spring, used for anything that should settle rather than ease */
 function spring(get,set,{k=0.14,d=0.78}={}){
@@ -837,16 +928,24 @@ function fit(cv,w,h,cap){const d=Math.min(devicePixelRatio||1,cap||2);
   const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return c;}
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
   c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
-function blob(c,S,col,sq){
-  const k=S/100,q=sq==null?1:sq; c.fillStyle=col; c.beginPath();
-  c.moveTo(20*k,50*k);
-  c.bezierCurveTo(20*k,(50-22*q)*k,30*k,(50-28*q)*k,40*k,(50-12*q)*k);
-  c.bezierCurveTo(48*k,(50-1*q)*k,54*k,(50-30*q)*k,66*k,(50-30*q)*k);
-  c.bezierCurveTo(80*k,(50-30*q)*k,86*k,(50-14*q)*k,86*k,50*k);
-  c.bezierCurveTo(86*k,(50+14*q)*k,80*k,(50+30*q)*k,66*k,(50+30*q)*k);
-  c.bezierCurveTo(54*k,(50+30*q)*k,48*k,(50+1*q)*k,40*k,(50+12*q)*k);
-  c.bezierCurveTo(30*k,(50+28*q)*k,20*k,(50+22*q)*k,20*k,50*k);
-  c.closePath();c.fill();
+/* C · Stack — an order book seen edge-on. Four rungs of unequal reach around
+   the spread line. Drawn, never imported, and drawn from one set of numbers so
+   the favicon, the rail and the share image cannot drift apart. */
+function stackMark(c,S,col,opts){
+  const k=S/100, o=opts||{};
+  const rung=(x,y,w,h,a)=>{ c.globalAlpha=a; c.fillStyle=col;
+    rr(c,x*k,y*k,w*k,h*k,(h/2)*k); c.fill(); };
+  const small = S<26;                      /* at favicon size only three marks survive */
+  if(small){
+    rung(14,12,56,18,.55); rung(14,62,70,18,1); c.globalAlpha=1;
+    c.fillStyle=col; rr(c,6*k,42*k,88*k,8*k,4*k); c.fill();
+  } else {
+    rung(18,16,52,11,.45); rung(18,33,34,11,.7);
+    rung(18,56,64,11,1);   rung(18,73,40,11,.7);
+    c.globalAlpha=1; c.fillStyle=col;
+    rr(c,10*k,47*k,80*k,4*k,2*k); c.fill();
+  }
+  c.globalAlpha=1;
 }
 function paintMark(cv,size){
   const c=fit(cv,size,size,2);
@@ -854,7 +953,7 @@ function paintMark(cv,size){
   const g=c.createLinearGradient(0,0,size,size);
   g.addColorStop(0,'#0A2C25'); g.addColorStop(1,'#051A16');
   c.fillStyle=g; rr(c,0,0,size,size,size*.31); c.fill();
-  c.save(); c.translate(size*.02,0); c.scale(.92,.92); blob(c,size,'#96FCE4',1); c.restore();
+  c.save(); c.scale(.94,.94); c.translate(size*.032,size*.032); stackMark(c,size,'#7DFCDD'); c.restore();
   c.strokeStyle='rgba(150,252,228,.18)'; c.lineWidth=1;
   rr(c,.5,.5,size-1,size-1,size*.31-.5); c.stroke();
 }
@@ -887,20 +986,36 @@ const DOCK=['radar','whales','wallet','run'];
 
 (function buildNav(){
   const rail=$('#rail');
+  try{ if(localStorage.getItem('hf.rail')==='mini') document.documentElement.dataset.rail='mini'; }catch(e){}
   const mk=el('a','rl-mark'); mk.href='#/radar'; mk.setAttribute('aria-label','HyperFlow home');
-  const mcv=el('canvas'); mk.appendChild(mcv); rail.appendChild(mk); paintMark(mcv,42);
+  const mcv=el('canvas'); mk.appendChild(mcv);
+  const wm=el('span','rl-wm'); wm.innerHTML='hyper<em>flow</em>'; mk.appendChild(wm);
+  rail.appendChild(mk); paintMark(mcv,42);
   document.addEventListener('hf:theme',()=>paintMark(mcv,42));
   NAV.forEach(n=>{
     const a=el('a','rl-b'); a.href='#/'+n.id; a.dataset.nav=n.id;
     a.setAttribute('aria-label',n.label);
-    a.innerHTML='<svg viewBox="0 0 24 24">'+IC[n.id]+'</svg>';
-    a.addEventListener('pointerenter',e=>railTip(a,n));
+    a.innerHTML='<svg viewBox="0 0 24 24">'+IC[n.id]+'</svg><span class="lbl">'+n.label+'</span>';
+    /* the fly-out label is only useful once the rail is collapsed */
+    a.addEventListener('pointerenter',()=>{ if(isMini()) railTip(a,n); });
     a.addEventListener('pointerleave',hideRailTip);
-    a.addEventListener('focus',()=>railTip(a,n));
+    a.addEventListener('focus',()=>{ if(isMini()) railTip(a,n); });
     a.addEventListener('blur',hideRailTip);
     rail.appendChild(a);
   });
   rail.appendChild(el('div','rl-sp'));
+  const col=el('button','rl-col'); col.type='button';
+  col.innerHTML='<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/><path d="M4 5v14" opacity=".55"/></svg>'+
+                '<span class="lbl">Collapse</span>';
+  col.setAttribute('aria-label','Collapse the sidebar');
+  col.addEventListener('click',()=>{
+    const mini=!isMini();
+    document.documentElement.dataset.rail = mini?'mini':'wide';
+    try{ localStorage.setItem('hf.rail', mini?'mini':'wide'); }catch(e){}
+    col.setAttribute('aria-label', mini?'Expand the sidebar':'Collapse the sidebar');
+    if(!mini) hideRailTip();
+  });
+  rail.appendChild(col);
 
   const dock=$('#dock');
   DOCK.forEach(id=>{
@@ -922,6 +1037,7 @@ const DOCK=['radar','whales','wallet','run'];
   });
   $('#sheet .scrim').addEventListener('click',()=>$('#sheet').dataset.on='0');
 })();
+const isMini=()=>document.documentElement.dataset.rail==='mini';
 let _rtT=null;
 function railTip(a,n){
   clearTimeout(_rtT);
@@ -1248,10 +1364,10 @@ function fundingStress(m,a){
 
 const LENS={
   momentum:{id:'momentum',label:'Momentum',calc:momentum,
-    blurb:'Ranked by how much of the trend picture agrees, confirmed by how far price has actually travelled and whether volume paid for it.',
+    blurb:'How much of the trend picture agrees, confirmed by travel and volume.',
     leanLabel:'what the trend measures read'},
   funding:{id:'funding',label:'Funding stress',calc:fundingStress,
-    blurb:'Ranked by how hard one side is paying to hold, weighted by the open interest standing behind that rate.',
+    blurb:'How hard one side is paying to hold, weighted by the size behind the rate.',
     leanLabel:'which side is being paid'}
 };
 
@@ -1470,12 +1586,12 @@ function refBlock(kind){
   const t=el('div','t');
   const copy = kind==='board'
     ? {h:'Reading is free. Trading needs an account.',
-       p:'HyperFlow only ever reads — it cannot place an order and never will. The exchange is where the trade happens, and signing up through a referral takes 4% off your taker fees.'}
+       p:'The board reads the exchange — it holds no funds and places no orders. The trade itself happens on Hyperliquid, and signing up through a referral takes 4% off your taker fees.'}
     : {h:'None of this is worth anything without an account',
-       p:'Every number above comes from the exchange itself. If you want to act on any of it, you need an account there — a referral link takes 4% off your taker fees.'};
+       p:'Every number above comes from the exchange itself. Acting on any of it needs an account there — a referral link takes 4% off your taker fees.'};
   t.append(el('h3',null,copy.h), el('p',null,copy.p));
   t.append(el('p','disc','Pranjal’s referral link — he earns a share if you use it. The 4% is the referralDiscount the exchange publishes in its own fee schedule, visible in any userFees response, so you can check it rather than take our word. Nothing on this site changes depending on whether you use it.'));
-  const a=el('a','btn pri','Open Hyperliquid');
+  const a=el('a','btn pri mag','Open Hyperliquid');
   a.href=REF; a.target='_blank'; a.rel='noopener';
   a.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Open Hyperliquid';
   a.addEventListener('click',()=>track('ref:'+kind));
@@ -1493,6 +1609,7 @@ function refBlock(kind){
 let LENS_ID='momentum', DEPTH=10;
 try{ LENS_ID=localStorage.getItem('hf.lens')||'momentum'; }catch(e){}
 let RADAR={t:0,U:null,short:null,det:null};
+let PASSED=[];
 
 function universe(meta,ctxs){
   return meta.universe.map((u,i)=>{
@@ -1539,6 +1656,7 @@ function flick(box){
 }
 function secHead(title, sub, right){
   const h=el('div','sec-h');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>h.classList.add('drawn')));
   const l=el('div','l'); l.append(el('h2',null,title)); if(sub) l.append(el('p',null,sub));
   h.append(l);
   if(right) h.append(right);
@@ -1551,7 +1669,7 @@ ROUTES.radar=async function(args){
   const head=el('div','rd-head');
   const L=el('div');
   const h1=el('h1','rd-h1'); h1.innerHTML='What is worth <em>watching</em> right now.';
-  L.append(h1, el('p','rd-sub','Every Hyperliquid perp, ranked live from the exchange in your own browser. Nothing here is a signal — each row shows the measures behind it, and you can see exactly why it sits where it does.'));
+  L.append(h1, el('p','rd-sub','Every Hyperliquid perp, ranked live in your browser. Open any row to see the measures behind it.'));
   head.appendChild(L); wrap.appendChild(head);
 
   const pulse=el('div','rd-pulse');
@@ -1577,19 +1695,15 @@ ROUTES.radar=async function(args){
     for(let i=0;i<U.length;i++) ld.light(i);
     await new Promise(r=>setTimeout(r,240));
     ld.step(1,'done','20 weight');
-    const shortlist=preselect(U,LENS_ID);
-    ld.step(2,'run','0 / '+shortlist.length);
-    const now=Date.now();
-    for(let i=0;i<shortlist.length;i++){
-      const m=shortlist[i]; ld.say('reading '+m.name);
-      try{
-        const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
-          startTime:now-230*3600*1000,endTime:now}},{ttl:60000});
-        if(Array.isArray(bars)&&bars.length>30) detail[m.name]=analyse(m,bars);
-      }catch(e){}
-      ld.step(2,'run',(i+1)+' / '+shortlist.length);
-    }
-    ld.step(2,'done',shortlist.length+' charts · '+Math.round(shortlist.length*24)+' weight');
+    ld.step(2,'run','0 / '+DEPTH);
+    const built=await fillBoard(U,LENS_ID,detail,(coin,found,pulled)=>{
+      if(coin) ld.say('reading '+coin);
+      ld.step(2,'run',found+' / '+DEPTH);
+    });
+    const shortlist=built.chosen;
+    PASSED=built.passed;
+    ld.step(2,'done',built.pulled+' charts · '+Math.round(built.pulled*24)+' weight'+
+      (built.passed.length? ' · '+built.passed.length+' passed over':''));
     ld.step(3,'run'); ld.say('');
     await new Promise(r=>setTimeout(r,180));
     ld.step(3,'done',Math.round(performance.now()-t0)+' ms total');
@@ -1604,15 +1718,48 @@ ROUTES.radar=async function(args){
       ? 'Rate limits are per IP, so this is about this browser and not the site. A full board scan costs about 260 weight against a budget of 1,200 a minute. Give it a minute.'
       : 'The request did not complete. The exchange may be briefly unreachable.');
     p.style.cssText='color:var(--ink-2);margin-top:8px'; c.appendChild(p);
-    const b=el('button','btn pri','Try again'); b.style.marginTop='14px';
+    const b=el('button','btn pri mag','Try again'); b.style.marginTop='14px';
     b.addEventListener('click',()=>route()); c.appendChild(b);
     mount.appendChild(c);
   }
 
-  function preselect(all,lensId){
-    return lensId==='funding'
-      ? all.filter(m=>m.oiNtl>3e5).sort((a,b)=>Math.abs(b.fundingApr)*Math.log10(1+b.oiNtl)-Math.abs(a.fundingApr)*Math.log10(1+a.oiNtl)).slice(0,DEPTH)
-      : all.filter(m=>m.vol>2e6).sort((a,b)=>Math.abs(b.chg)*Math.log10(1+b.vol)-Math.abs(a.chg)*Math.log10(1+a.vol)).slice(0,DEPTH);
+  function preselect(all,lensId,n){
+    return (lensId==='funding'
+      ? all.filter(m=>m.oiNtl>3e5).sort((a,b)=>Math.abs(b.fundingApr)*Math.log10(1+b.oiNtl)-Math.abs(a.fundingApr)*Math.log10(1+a.oiNtl))
+      : all.filter(m=>m.vol>2e6).sort((a,b)=>Math.abs(b.chg)*Math.log10(1+b.vol)-Math.abs(a.chg)*Math.log10(1+a.vol))
+    ).slice(0,n||DEPTH);
+  }
+
+  /* A market whose measures disagree has nothing to say — putting it on a board
+     headed "top ten right now" wastes one of ten slots on a shrug. So the walk
+     goes down the ranked pool chart by chart and only keeps markets that come
+     back with a direction, stopping as soon as ten are found. The pool is
+     deliberately larger than ten; the extra charts are only pulled when they
+     are actually needed, so the usual cost stays near ten. */
+  async function fillBoard(all, lensId, det, onStep){
+    const lens=LENS[lensId]||LENS.momentum;
+    const pool=preselect(all,lensId,DEPTH+14);
+    const chosen=[], passed=[];
+    let pulled=0;
+    for(let i=0;i<pool.length && chosen.length<DEPTH;i++){
+      const m=pool[i];
+      if(!det[m.name]){
+        onStep && onStep(m.name, chosen.length, pulled);
+        try{
+          const now=Date.now();
+          const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
+            startTime:now-230*3600*1000,endTime:now}},{ttl:60000});
+          if(Array.isArray(bars)&&bars.length>30) det[m.name]=analyse(m,bars);
+        }catch(e){}
+        pulled++;
+      }
+      const a=det[m.name]; if(!a) continue;
+      const r=lens.calc(m,a);
+      if(r.dir==='none'){ passed.push(m.name); continue; }
+      chosen.push(m);
+      onStep && onStep(null, chosen.length, pulled);
+    }
+    return {chosen, passed, pulled};
   }
 
   function render(all, shortlist, det){
@@ -1626,8 +1773,8 @@ ROUTES.radar=async function(args){
     const widest=all.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
     const churn=all.filter(m=>m.oiNtl>1e6&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
     const totalOi=all.reduce((s,m)=>s+m.oiNtl,0);
-    pulse.innerHTML='';
-    const P=(k,v,s,tip,cls)=>{ const n=el('div','pl');
+    pulse.innerHTML=''; pulse.classList.add('lead');
+    const P=(k,v,s,tip,cls)=>{ const n=el('div','pl tilt edge');
       const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
       n.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); pulse.appendChild(n); };
     P('Board direction',Math.round(upN/all.length*100)+'% up', upN+' of '+all.length+' above yesterday’s close');
@@ -1637,10 +1784,19 @@ ROUTES.radar=async function(args){
     field(pulse);
 
     /* ── NFA ── */
-    const nfa=el('div','nfa rv');
-    nfa.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 8.5v5M12 16.6v.2"/><path d="M10.3 3.9 2.5 17.4A2 2 0 0 0 4.2 20.4h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'+
-      '<p><b>Not financial advice, and not a signal.</b> Everything below is arithmetic on public exchange data with the inputs shown. It describes what the measures currently read — it does not know what price does next, and none of it accounts for your position size, your risk, or the next hour.</p>';
-    nfa.style.marginTop='clamp(20px,2.6vw,32px)';
+    /* This has to be present and has to be honest. It does not have to shout —
+       a four-line amber box above the content was the loudest thing on the page
+       and the least useful. One quiet line, and the detail is one tap away. */
+    const nfa=el('details','nfa rv');
+    const sum=el('summary');
+    sum.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.4M12 7.8v.2"/></svg>'+
+      '<span>Not advice, and not a signal — this is arithmetic on public data, with every input shown.</span>'+
+      '<i>What it cannot do</i>';
+    const nfaBody=el('p');
+    nfaBody.textContent='It does not know what price does next. It does not account for your position size, '+
+      'your risk, or the next hour. Scores are a sort order inside the selected lens, not a rating of the '+
+      'market and not a probability.';
+    nfa.append(sum,nfaBody);
     mount.appendChild(nfa);
 
     /* ── SECTION 1 · the board ── */
@@ -1654,11 +1810,14 @@ ROUTES.radar=async function(args){
       seg.appendChild(b);
     });
     segWrap.appendChild(seg);
-    s1.appendChild(secHead('Top '+scored.length+' right now', lens.blurb, segWrap));
+    s1.appendChild(secHead('Top '+scored.length+' right now',
+      lens.blurb + (PASSED.length
+        ? '  ·  ' + PASSED.length + ' passed over for having no trend: ' + PASSED.slice(0,5).join(', ')
+        : ''), segWrap));
     function movePill(){ const on=$('button.on',seg); if(!on) return;
       pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
     requestAnimationFrame(movePill); setTimeout(movePill,80);
-    const board=el('div','rd-board');
+    const board=el('div','rd-board lead');
     scored.forEach((x,i)=>board.appendChild(row(x,i,lens)));
     s1.appendChild(board);
     mount.appendChild(s1); field(board);
@@ -1666,19 +1825,19 @@ ROUTES.radar=async function(args){
     /* ── SECTION 2 · funding board ── */
     const s2=el('section','sec rv');
     s2.appendChild(secHead('Who is paying to hold',
-      'Funding settles every hour across the whole venue. A market pays whichever side is less crowded — this is where that is worth the most right now, weighted against the size standing behind the rate.'));
+      'Funding settles hourly. Markets with real size behind the rate, both directions.'));
     const liq=all.filter(m=>m.oiNtl>1e6);
     const payShorts=liq.filter(m=>m.fundingApr>0).sort((a,b)=>b.fundingApr-a.fundingApr).slice(0,6);
     const payLongs =liq.filter(m=>m.fundingApr<0).sort((a,b)=>a.fundingApr-b.fundingApr).slice(0,6);
     const fb=el('div','fb');
     [['Shorts collect',payShorts,'up','longs are paying'],
      ['Longs collect', payLongs,'down','shorts are paying']].forEach(([t,list,cls,why])=>{
-      const col=el('div','fb-col');
+      const col=el('div','fb-col lead');
       const hd=el('div','fb-hd'); hd.append(el('span','chip '+cls,t), el('span','micro',why));
       col.appendChild(hd);
       const mx=Math.max(...list.map(m=>Math.abs(m.fundingApr)),1);
       list.forEach(m=>{
-        const r=el('div','fb-r');
+        const r=el('div','fb-r edge');
         const mm=el('div','m'); mm.append(el('b',null,m.name), el('s',null,'$'+fmtC(m.oiNtl)+' OI'));
         const bar=el('div','bar'); const bi=el('i'); bi.style.background='var(--'+cls+')'; bar.appendChild(bi);
         r.append(mm,bar,el('div','a',pct(m.fundingApr,0)));
@@ -1701,7 +1860,7 @@ ROUTES.radar=async function(args){
     search.style.cssText='height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
       'color:var(--ink);font-family:\'IBM Plex Mono\',monospace;font-size:13px;padding:0 13px;outline:none;min-width:0;width:min(220px,60vw)';
     filt.appendChild(search);
-    s3.appendChild(secHead('Every market', 'All '+all.length+' perps from the same single call. Sortable, and the shortlist above is drawn from here. No charts are pulled for this table — that is what keeps it free.', filt));
+    s3.appendChild(secHead('Every market', 'All '+all.length+' perps, from the same single call. Sortable.', filt));
     const tw=el('div','tw');
     const pg=el('div','pgr');
     let sortKey='vol', sortDir=-1, tPage=0, TPER=15, query='';
@@ -1719,7 +1878,7 @@ ROUTES.radar=async function(args){
         '<th class="'+(c[2]?'r':'')+'" data-k="'+c[0]+'"'+(c[0]===sortKey?' data-sort="1"':'')+'>'+c[1]+
         '<span class="ar">'+(c[0]===sortKey?(sortDir<0?'▼':'▲'):'')+'</span></th>').join('')+
         '</tr></thead><tbody></tbody></table>';
-      const tb=$('tbody',tw);
+      const tb=$('tbody',tw); tb.classList.add('lead');
       rows.slice(tPage*TPER,(tPage+1)*TPER).forEach(m=>{
         const tr=el('tr'); tr.dataset.coin=m.name;
         tr.innerHTML='<td><b>'+m.name+'</b></td>'+
@@ -1747,27 +1906,29 @@ ROUTES.radar=async function(args){
 
     /* ── SECTION 4 · referral ── */
     const s4=el('section','sec rv');
-    s4.appendChild(secHead('Reading is free. Trading needs an account.',
-      'HyperFlow only ever reads — it cannot place an order and never will.'));
+    s4.appendChild(secHead('Reading is free. Trading needs an account.'));
     s4.appendChild(refBlock('board'));
     mount.appendChild(s4);
 
     /* ── SECTION 5 · how this is built ── */
     const s5=el('section','sec rv');
     s5.appendChild(secHead('How this board is built',
-      'Every number here is one API call away from you. Nothing is stored, nothing is precomputed, and nothing passes through a server of ours.'));
-    const mt=el('div','mt');
+      'Every number is one API call away from you. Nothing is stored, nothing passes through us.'));
+    const mt=el('div','mt lead');
     [['One call for the universe','<code>metaAndAssetCtxs</code> returns all '+all.length+' markets with price, 24h change, funding, open interest, volume and the oracle gap. Twenty rate-limit weight, about a second.'],
      ['Charts only for the shortlist','<code>candleSnapshot</code> at 1h for the top '+DEPTH+' only. Charting all '+all.length+' would cost 5,592 weight — 4.7 minutes of the 1,200-per-minute budget — so it is not attempted.'],
      ['Measured on completed bars','The hour in progress has only partly happened. Its price is used; its volume is not, because comparing a part-hour against full hours makes every market look unconfirmed.'],
+     ['No-trend markets are skipped','If the measures disagree, the market is passed over and the next one down takes the slot. A board headed "top ten" should not spend a row telling you it has nothing to say — but they are named above, so nothing disappears silently.'],
      ['Nothing is predicted','Scores are a sort order inside the selected lens, not a rating of the market and not a probability. Switch lens and the same market moves.'],
      ['Your browser, not our server','Requests go from your device straight to the exchange. We never see which market or wallet you looked at, because it never reaches us.'],
+     ['The board holds nothing','It reads public endpoints and computes. It takes no custody, moves no funds and places no orders — everything on this page is arithmetic on data anyone can fetch.'],
      ['Refreshed on demand','Data is cached for 45 seconds. Reload the page or switch lens to pull it again.']]
-      .forEach(([t,p])=>{ const c=el('div','mt-c'); c.append(el('b',null,t));
+      .forEach(([t,p])=>{ const c=el('div','mt-c tilt edge'); c.append(el('b',null,t));
         const pp=el('p'); pp.innerHTML=p; c.appendChild(pp); mt.appendChild(c); });
     s5.appendChild(mt);
     mount.appendChild(s5);
 
+    field(mount); magnetise(mount);
     reveal(mount);
     if(args&&args[0]){ const t=$$('.mk',board).find(n=>n.dataset.coin===args[0]);
       if(t){ t.dataset.open='1'; buildBody(t); setTimeout(()=>t.scrollIntoView({block:'center'}),80); } }
@@ -1778,28 +1939,20 @@ ROUTES.radar=async function(args){
     LENS_ID=id; try{ localStorage.setItem('hf.lens',id); }catch(e){}
     $$('button',seg).forEach(y=>y.classList.toggle('on',y.dataset.lens===id));
     const on=$('button.on',seg); if(on){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
-    const nextShort=preselect(RADAR.U,id);
-    const need=nextShort.filter(m=>!RADAR.det[m.name]);
-    if(!need.length){ quietly(()=>render(RADAR.U,nextShort,RADAR.det)); return; }
     /* skeleton in the exact shape of the board, so nothing jumps */
     const skel=el('div','sk-board');
     for(let i=0;i<DEPTH;i++) skel.appendChild(el('div','sk sk-row'));
     mount.innerHTML=''; mount.appendChild(skel);
     (async()=>{
-      const now2=Date.now();
-      for(const m of need){
-        try{ const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
-          startTime:now2-230*3600*1000,endTime:now2}},{ttl:60000});
-          if(Array.isArray(bars)&&bars.length>30) RADAR.det[m.name]=analyse(m,bars); }catch(e){}
-      }
-      RADAR.short=nextShort;
-      quietly(()=>render(RADAR.U,nextShort,RADAR.det));
+      const built=await fillBoard(RADAR.U,id,RADAR.det);
+      RADAR.short=built.chosen; PASSED=built.passed;
+      quietly(()=>render(RADAR.U,built.chosen,RADAR.det));
     })();
   }
 
   function row(x,i,lens){
     const {m,a,r}=x;
-    const n=el('div','mk'); n.dataset.dir=r.dir; n.dataset.coin=m.name;
+    const n=el('div','mk tilt edge'); n.dataset.dir=r.dir; n.dataset.coin=m.name;
     n.appendChild(el('div','stripe'));
     const h=el('button','mk-h'); h.type='button';
     h.appendChild(el('div','mk-rank',String(i+1).padStart(2,'0')));
@@ -1879,14 +2032,14 @@ ROUTES.radar=async function(args){
     body.appendChild(ropeWrap);
     tensionRope(rope,()=>clamp(clamp(m.fundingApr/60,-1,1)*0.7+clamp(m.oracleGap/0.25,-1,1)*0.3,-1,1));
 
-    const a1=el('a','btn ghost');
+    const a1=el('a','btn ghost mag');
     a1.href=REF; a1.target='_blank'; a1.rel='noopener';
     a1.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Trade '+m.name+' on Hyperliquid';
     a1.style.alignSelf='flex-start';
     a1.addEventListener('click',()=>track('ref:row'));
     body.appendChild(a1);
     body.appendChild(Object.assign(el('p','rd-count','Referral link — Pranjal earns a share, you get 4% off taker fees. It changes nothing above.'),{}));
-    field(body);
+    field(body); magnetise(body);
   }
 };
 
