@@ -2051,11 +2051,17 @@ function heroField(host, markets){
 
   function size(){
     const r=host.getBoundingClientRect(); if(!r.width||!r.height) return false;
-    W=r.width; H=r.height; c=fit(cv,W,H,1.75);
-    nodes=[];
-    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
-      const rx=(x/(COLS-1))*W, ry=(y/(ROWS-1))*H;
-      nodes.push({gx:x,gy:y,rx,ry,x:rx,y:ry,vx:0,vy:0,q:0});
+    const same = Math.abs(r.width-W)<0.5 && Math.abs(r.height-H)<0.5 && nodes.length;
+    W=r.width; H=r.height;
+    /* Markets landing mid-flight must not reset the mesh under the reader's
+       cursor, so the lattice is only rebuilt when the box actually changed. */
+    if(!same){
+      c=fit(cv,W,H,1.75);
+      nodes=[];
+      for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+        const rx=(x/(COLS-1))*W, ry=(y/(ROWS-1))*H;
+        nodes.push({gx:x,gy:y,rx,ry,x:rx,y:ry,vx:0,vy:0,q:0});
+      }
     }
     /* Radius encodes open interest as area^0.35 — big enough a difference to
        read at a glance, gentle enough that BTC doesn't swallow the box. The
@@ -2092,6 +2098,10 @@ function heroField(host, markets){
     if(!run) return;
     raf=requestAnimationFrame(frame);
     if(!cv.isConnected){ run=false; cancelAnimationFrame(raf); return; }
+    step();
+  }
+
+  function step(){
     if(!W&&!size()) return;
     speed*=0.9;
     T+=0.016;
@@ -2148,7 +2158,16 @@ function heroField(host, markets){
     if(grab>=0){ const b=bodies[grab];
       b.vx=(mx-b.x)*0.3; b.vy=(my-b.y)*0.3; b.x=mx; b.y=my; }
 
-    /* draw */
+    draw();
+  }
+
+  /* Drawing is split from stepping so the surface can be painted once with no
+     animation frame at all. A canvas that only ever paints inside rAF is blank
+     in any context that suspends frames — a background tab, a hidden pane, a
+     reduced-motion setting — and blank looks like a bug, not a preference. */
+  function draw(){
+    if(!W&&!size()) return;
+    const R=Math.min(W,H)*0.42;
     const mint=tok('--mint'), line=tok('--line-3'), ink=tok('--ink'), up=tok('--up'), dn=tok('--down');
     c.clearRect(0,0,W,H);
     c.lineJoin='round'; c.lineCap='round';
@@ -2197,21 +2216,39 @@ function heroField(host, markets){
       c.fillText((b.chg>=0?'+':'−')+Math.abs(b.chg).toFixed(1)+'%', b.x, b.y+Math.max(9,b.r*.36));
     }
   }
+  /* Paint before anything is scheduled: one settled frame that stands on its
+     own if no animation frame ever arrives. */
+  const paintOnce=()=>{ if(!size()) return false; step(); draw(); return true; };
+  let retry=null;
+  if(!paintOnce()){
+    /* The stage can still have no height on first mount. Retry on a timer, not
+       an animation frame: timers keep running in the contexts where frames are
+       suspended, which are exactly the contexts this fallback exists for. */
+    let tries=0;
+    retry=setInterval(()=>{ if(!cv.isConnected||paintOnce()||++tries>60) { clearInterval(retry); retry=null; } },50);
+  }
   const io=new IntersectionObserver(es=>{
     const on=es[0].isIntersecting&&!RM();
     if(on&&!run){ if(size()){ run=true; raf=requestAnimationFrame(frame); } }
     else if(!on&&run){ run=false; cancelAnimationFrame(raf); }
   },{threshold:0});
   io.observe(host);
-  if(!RM()&&size()){ run=true; raf=requestAnimationFrame(frame); }
-  else if(size()){ run=true; frame(); run=false; }
-  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected)size();},150);};
+  if(!RM()&&W){ run=true; raf=requestAnimationFrame(frame); }
+  /* If the pane is hidden or the tab is backgrounded, rAF never fires. Repaint
+     when it comes back, so a reader who switches to the tab sees the surface
+     immediately rather than waiting on the next frame. */
+  const onVis=()=>{ if(!document.hidden && cv.isConnected){ paintOnce();
+    if(!run&&!RM()){ run=true; raf=requestAnimationFrame(frame); } } };
+  document.addEventListener('visibilitychange',onVis);
+  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected){size(); if(!run) draw();}},150);};
   addEventListener('resize',onR);
-  ACTIVE.push(()=>{ run=false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize',onR); });
+  ACTIVE.push(()=>{ run=false; cancelAnimationFrame(raf); io.disconnect(); if(retry) clearInterval(retry);
+    removeEventListener('resize',onR); document.removeEventListener('visibilitychange',onVis); });
   /* The mesh runs from the first frame with no data at all, and the markets
      drop into it when the call lands. A hero that is an empty box until the
      network answers is a worse first impression than no hero. */
-  return { setMarkets(list){ markets=list||[]; size(); } };
+  return { setMarkets(list){ markets=list||[]; if(size()){ step(); draw(); } },
+           state(){ return {run, W, H, nodes:nodes.length, bodies:bodies.length}; } };
 }
 
 ROUTES.home=async function(){
