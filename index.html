@@ -59,7 +59,10 @@ window.va('beforeSend',function(e){try{var u=new URL(e.url);return Object.assign
   --e4:0 30px 80px rgba(0,0,0,.66);
   /* geometry */
   --r1:8px; --r2:12px; --r3:18px; --r4:26px;
-  --rail:74px; --railw:246px; --top:60px;
+  /* The rail was 246px for labels whose longest is "Leaderboard"; 210px still
+     clears it and hands 36px back to the content, which is where the reading
+     happens. */
+  --rail:74px; --railw:210px; --top:60px;
   /* motion */
   --sp-fast:.16s; --sp:.24s; --sp-slow:.42s;
   --ease:cubic-bezier(.2,.8,.25,1);
@@ -267,7 +270,10 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 
 /* --- main --- */
 .main{grid-column:2;min-width:0;display:flex;flex-direction:column}
-.page{padding:clamp(18px,2.6vw,34px) clamp(14px,2.4vw,26px) 120px;max-width:1520px;width:100%;margin:0 auto}
+/* Side gutters were capped at 26px, so on a wide screen the content ran almost
+   edge to edge against the rail and the window. Doubled, with the rail's 36px
+   paying for most of it. */
+.page{padding:clamp(18px,2.6vw,34px) clamp(16px,3.6vw,56px) 120px;max-width:1520px;width:100%;margin:0 auto}
 .page[data-enter="1"]{animation:pgEnter .5s var(--ease-out) both}
 @keyframes pgEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -503,9 +509,12 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .sk-strip{height:74px;border-radius:var(--r3)}
 
 /* ═══════════════ HOME (hm-) ═══════════════ */
+/* The first screen carries its own gutter on top of the page's. It is the one
+   section that is mostly air, and air is what makes it read as a hero rather
+   than as the top of a list. */
 .hm-hero{position:relative;min-height:clamp(440px,72vh,660px);display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;
-  padding:clamp(12px,3vw,40px) 0}
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4.4vw,72px);align-items:center;
+  padding:clamp(12px,3vw,40px) clamp(0px,2.2vw,44px)}
 .hm-copy{position:relative;z-index:2;display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);min-width:0}
 .hm-h1{font-size:clamp(38px,7vw,76px);line-height:.94;letter-spacing:-.05em}
 .hm-h1 em{font-style:normal;color:var(--mint)}
@@ -529,9 +538,29 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   color:var(--ink-4);letter-spacing:.06em;transition:opacity .5s var(--ease)}
 .hm-stage.touched .hm-hint{opacity:0}
 @media (max-width:900px){
-  .hm-hero{grid-template-columns:1fr;min-height:0;gap:22px}
+  .hm-hero{grid-template-columns:1fr;min-height:0;gap:22px;padding:clamp(8px,2vw,20px) 0}
   .hm-stage{min-height:min(56vw,300px);order:2}
   .hm-copy{order:1}
+}
+/* Phone. The hero is the first thing anyone sees and it has to fit the screen
+   without scrolling to find the buttons, so the headline gives back some of
+   its size, the stats wrap to two rows instead of four, and the two CTAs sit
+   side by side at full tap height rather than stacking into a wall. */
+@media (max-width:560px){
+  .hm-hero{gap:18px}
+  .hm-h1{font-size:clamp(34px,10.2vw,46px);line-height:.98;letter-spacing:-.04em}
+  .hm-sub{font-size:15px;max-width:38ch;line-height:1.5}
+  .hm-copy{gap:15px}
+  .hm-cta{gap:9px}
+  .hm-cta .btn{flex:1 1 0;min-width:0;height:48px;padding:0 14px;font-size:14.5px}
+  .hm-live{gap:7px}
+  .hm-live .u{font-size:11px;height:28px;padding:0 10px}
+  .hm-stage{min-height:min(62vw,260px)}
+  .hm-hint{right:9px;bottom:9px;font-size:9px;padding:4px 8px}
+}
+@media (max-width:360px){
+  .hm-cta{flex-direction:column}
+  .hm-cta .btn{flex:none;width:100%}
 }
 /* ── the board, live: the radar's rows at a third of the weight ── */
 .hm-mini{display:flex;flex-direction:column;gap:9px}
@@ -615,10 +644,14 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .hm-werr{margin-top:11px;font-size:13px;color:var(--down)}
 @media (max-width:560px){
   /* Stacking flips the main axis, so `flex:1` starts meaning HEIGHT: basis 0
-     beat the 50px and collapsed the field to 18px on every phone. */
-  .hm-wf{flex-direction:column;align-items:stretch}
-  .hm-wf input{flex:none;height:50px;width:100%}
-  .hm-wf .btn{width:100%}
+     beat the 50px and collapsed the field to 18px on every phone.
+     The field is also the thing being used here, so on a phone it carries the
+     same weight as the button rather than reading as a caption above it. */
+  .hm-wf{flex-direction:column;align-items:stretch;gap:9px}
+  .hm-wf input{flex:none;height:54px;width:100%;font-size:15px;padding:0 15px;
+    border-color:var(--line-3);background:var(--g1)}
+  .hm-wf .btn{width:100%;height:54px}
+  .hm-wal{padding:16px}
 }
 /* three things it does — icons, not paragraphs */
 .hm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:11px}
@@ -803,6 +836,23 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .tw td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
 .tw td.r,.tw th.r{text-align:right}
 .tw td b{font-weight:600}
+/* the market name is the way out to the exchange; the rest of the row still
+   opens the reading on this site */
+.tw-name{display:inline-flex;align-items:center;gap:4px;color:inherit;text-decoration:none;
+  border-radius:8px;margin:-6px -7px;padding:6px 7px;min-height:32px;
+  transition:color var(--sp),background var(--sp)}
+.tw-name svg{width:12px;height:12px;opacity:0;transform:translate(-2px,2px);
+  transition:opacity var(--sp),transform var(--sp) var(--ease)}
+.tw-name:hover{color:var(--mint);background:var(--mint-wash)}
+.tw-name:hover svg{opacity:1;transform:none}
+.tw-name:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+@media (hover:none){
+  .tw-name{min-height:44px;margin:-8px;padding:8px;color:var(--mint)}
+  .tw-name svg{opacity:.8;transform:none}
+}
+.tw tbody tr[data-dead] td{color:var(--ink-4)}
+.tw tbody tr[data-dead] .tw-name{color:var(--ink-3)}
+.chip.dead{margin-left:7px;background:transparent;border:1px solid var(--line-3);color:var(--ink-4)}
 .tw .up{color:var(--up)} .tw .down{color:var(--down)} .tw .dim{color:var(--ink-3)}
 .pgr{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding-top:13px;margin-top:13px;
   border-top:1px solid var(--line)}
@@ -831,12 +881,18 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .fb-hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
 .fb-r{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 14px;
   border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+  color:inherit;text-decoration:none;min-height:44px;
   transition:border-color var(--sp),transform var(--sp) var(--ease)}
 .fb-r:hover{border-color:var(--line-2);transform:translateX(4px)}
 .fb-r .m{min-width:0;display:flex;flex-direction:column;gap:2px}
 .fb-r .m b{font-size:13.5px;font-weight:600}
 .fb-r .m s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
-.fb-r .a{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.fb-r .a{display:inline-flex;align-items:center;gap:5px;
+  font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.fb-r .a svg{width:12px;height:12px;opacity:0;transform:translate(-2px,2px);color:var(--ink-4);
+  transition:opacity var(--sp),transform var(--sp) var(--ease)}
+.fb-r:hover .a svg{opacity:1;transform:none;color:var(--mint)}
+@media (hover:none){ .fb-r .a svg{opacity:.7;transform:none} }
 .fb-r .bar{width:56px;height:5px;border-radius:99px;background:var(--g3);overflow:hidden;flex:none}
 .fb-r .bar i{display:block;height:100%;border-radius:99px;transform-origin:left;transform:scaleX(0);
   transition:transform .8s var(--ease)}
@@ -1808,7 +1864,12 @@ function universe(meta,ctxs){
   return meta.universe.map((u,i)=>{
     const c=ctxs[i]||{}, mark=+c.markPx, prev=+c.prevDayPx, oi=+c.openInterest;
     const imp=(c.impactPxs||[]).map(Number);
-    return {name:u.name, maxLev:u.maxLeverage,
+    /* The exchange keeps delisted perps in the universe response — 56 of the
+       233 at the time of writing. They return a last price and zeroes for
+       everything else, which is not missing data, it is a market that no
+       longer trades. Carrying the flag lets the table say so instead of
+       showing a wall of $0.00. */
+    return {name:u.name, maxLev:u.maxLeverage, delisted:!!u.isDelisted,
       mark, oracle:+c.oraclePx,
       chg: prev? (mark-prev)/prev*100 : 0,
       fundingHr:+c.funding*100, fundingApr:+c.funding*24*365*100,
@@ -1942,7 +2003,10 @@ ROUTES.radar=async function(args){
     const cap=n||DEPTH;
     const key = lensId==='funding' ? (m=>m.oiNtl) : (m=>m.vol);
     const floor= lensId==='funding' ? FUND_FLOOR : VOL_FLOOR;
-    const byLiq=all.slice().sort((a,b)=>key(b)-key(a));
+    /* a delisted market cannot be traded, so it can never be an answer to
+       "what is worth trading now" — even on a day quiet enough to hit the
+       BOARD_MIN fallback below */
+    const byLiq=all.filter(m=>!m.delisted).sort((a,b)=>key(b)-key(a));
     const liquid=byLiq.filter(m=>key(m)>floor);
     return (liquid.length>=BOARD_MIN ? liquid : byLiq.slice(0,BOARD_MIN)).slice(0,cap);
   }
@@ -2056,12 +2120,19 @@ ROUTES.radar=async function(args){
       const hd=el('div','fb-hd'); hd.append(el('span','chip '+cls,t), el('span','micro',why)); col.appendChild(hd);
       const mx=Math.max(...list.map(m=>Math.abs(m.fundingApr)),1);
       list.forEach(m=>{
-        const r=el('div','fb-r edge');
-        const mm=el('div','m'); mm.append(el('b',null,m.name), el('s',null,'$'+fmtC(m.oiNtl)+' OI'));
+        /* This row is a market, so it goes to that market on the exchange in a
+           new tab — it used to route back into this same page, which is where
+           the reader already was. */
+        const r=el('a','fb-r edge');
+        r.href=TRADE_URL(m.name); r.target='_blank'; r.rel='noopener';
+        r.title='Open '+m.name+' on Hyperliquid';
+        const mm=el('div','m');
+        mm.append(el('b',null,m.name), el('s',null,'$'+fmtC(m.oiNtl)+' OI'));
         const bar=el('div','bar'); const bi=el('i'); bi.style.background='var(--'+cls+')'; bar.appendChild(bi);
-        r.append(mm,bar,el('div','a',pct(m.fundingApr,0)));
-        r.style.cursor='pointer';
-        r.addEventListener('click',()=>{ location.hash='#/radar/'+m.name; });
+        const amt=el('div','a');
+        amt.innerHTML=pct(m.fundingApr,0)+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+          'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5l7-7M9.5 8.5H16v6.5"/></svg>';
+        r.append(mm,bar,amt);
         col.appendChild(r);
         void bi.offsetWidth; bi.style.transform='scaleX('+(Math.abs(m.fundingApr)/mx)+')';
       });
@@ -2077,31 +2148,73 @@ ROUTES.radar=async function(args){
     search.setAttribute('aria-label','Filter markets');
     search.style.cssText='height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
       'color:var(--ink);font-family:\'IBM Plex Mono\',monospace;font-size:13px;padding:0 13px;outline:none;min-width:0;width:min(220px,60vw)';
+    /* 56 of the 233 are delisted: a last price and zeroes for everything else.
+       They are still the exchange's own answer, so they stay reachable behind
+       a toggle rather than being quietly dropped — but they are not what
+       "every market" means to anyone reading it. */
+    const nDead=all.filter(m=>m.delisted).length;
+    const deadBtn=el('button','chip','Show '+nDead+' delisted'); deadBtn.type='button';
+    deadBtn.style.cssText='cursor:pointer;height:38px;padding:0 13px';
+    if(nDead) filt.appendChild(deadBtn);
     filt.appendChild(search);
-    s3.appendChild(secHead('Every market','All '+all.length+' perps, from the same single call. Sortable.',filt));
+    const live=all.length-nDead;
+    /* state first: the subtitle is built from it, so it cannot be declared
+       after the header that reads it */
+    let sortKey='vol', sortDir=-1, tPage=0, query='', showDead=false;
+    const tableSub=()=>'All '+live+' perps trading right now, from the same single call. Sortable.'+
+      (!nDead? '' : showDead
+        ? '  ·  showing the '+nDead+' delisted markets too — the exchange still lists them, but nothing trades on them.'
+        : '  ·  '+nDead+' delisted markets are hidden — the exchange still lists them, but they have no volume and no open interest.');
+    s3.appendChild(secHead('Every market',tableSub(),filt));
     const tw=el('div','tw'), pg=el('div','pgr');
-    let sortKey='vol', sortDir=-1, tPage=0, query='';
+    const tableSubEl=$('.sec-h p',s3);
+    const setSub=()=>{ if(tableSubEl) tableSubEl.textContent=tableSub(); };
+    setSub();
+    deadBtn.addEventListener('click',()=>{
+      showDead=!showDead; tPage=0;
+      deadBtn.textContent=showDead? 'Hide '+nDead+' delisted' : 'Show '+nDead+' delisted';
+      deadBtn.classList.toggle('warn',showDead);
+      setSub(); paintTable();
+    });
     const TPER=15;
     const COLS=[['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
                 ['oiNtl','Open interest',1],['fundingApr','Funding APR',1],['volOverOi','Vol / OI',1],['spreadPct','Spread',1]];
     function paintTable(){
-      const rows=all.filter(m=>!query||m.name.toLowerCase().includes(query))
+      const rows=all.filter(m=>(showDead||!m.delisted)&&(!query||m.name.toLowerCase().includes(query)))
+        /* The sign was backwards. sortDir=-1 is meant to be descending, and the
+           header arrow renders ▼ for it, but the comparator was sortDir*(y-x),
+           which makes -1 ASCENDING — so the default view of the table was the
+           233 markets smallest-first, i.e. fifteen rows of $0.00, under a ▼
+           that claimed the opposite. It is sortDir*(x-y) now.
+           Nulls sink to the bottom in both directions rather than flipping to
+           the top when the arrow turns. */
         .slice().sort((a,b)=>{ const x=a[sortKey],y=b[sortKey];
           if(sortKey==='name') return sortDir*String(x).localeCompare(String(y));
-          return sortDir*((y==null?-Infinity:y)-(x==null?-Infinity:x)); });
+          if(x==null&&y==null) return 0;
+          if(x==null) return 1;
+          if(y==null) return -1;
+          return sortDir*(x-y); });
       const pages=Math.ceil(rows.length/TPER)||1; tPage=clamp(tPage,0,pages-1);
       tw.innerHTML='<table><thead><tr>'+COLS.map(c=>
         '<th class="'+(c[2]?'r':'')+'" data-k="'+c[0]+'"'+(c[0]===sortKey?' data-sort="1"':'')+'>'+c[1]+
         '<span class="ar">'+(c[0]===sortKey?(sortDir<0?'▼':'▲'):'')+'</span></th>').join('')+'</tr></thead><tbody></tbody></table>';
       const tb=$('tbody',tw); tb.classList.add('lead');
       rows.slice(tPage*TPER,(tPage+1)*TPER).forEach(m=>{
-        const tr=el('tr'); tr.dataset.coin=m.name;
-        tr.innerHTML='<td><b>'+m.name+'</b></td><td class="n r">'+px(m.mark)+'</td>'+
-          '<td class="n r '+(m.chg>=0?'up':'down')+'">'+pct(m.chg)+'</td>'+
-          '<td class="n r">$'+fmtC(m.vol)+'</td><td class="n r">$'+fmtC(m.oiNtl)+'</td>'+
-          '<td class="n r '+(m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+pct(m.fundingApr,1)+'</td>'+
+        const tr=el('tr'); tr.dataset.coin=m.name; if(m.delisted) tr.dataset.dead='1';
+        /* a delisted row shows an em dash, not $0.00 — nothing traded, rather
+           than a real measurement that happens to be zero */
+        const z=v=>m.delisted?'—':v;
+        tr.innerHTML='<td><a class="tw-name" href="'+TRADE_URL(m.name)+'" target="_blank" rel="noopener">'+
+            '<b>'+m.name+'</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '+
+            'stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5l7-7M9.5 8.5H16v6.5"/></svg></a>'+
+            (m.delisted?'<span class="chip dead">delisted</span>':'')+'</td>'+
+          '<td class="n r">'+px(m.mark)+'</td>'+
+          '<td class="n r '+(m.delisted?'dim':m.chg>=0?'up':'down')+'">'+z(pct(m.chg))+'</td>'+
+          '<td class="n r">'+z('$'+fmtC(m.vol))+'</td><td class="n r">'+z('$'+fmtC(m.oiNtl))+'</td>'+
+          '<td class="n r '+(m.delisted?'dim':m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+z(pct(m.fundingApr,1))+'</td>'+
           '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
           '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
+        $('.tw-name',tr).addEventListener('click',e=>e.stopPropagation());
         tr.addEventListener('click',()=>{ location.hash='#/radar/'+m.name; });
         tb.appendChild(tr);
       });
@@ -2342,9 +2455,18 @@ function heroField(host, markets){
     bodies=markets.slice(0,N).map((m,i)=>{
       const rel=Math.pow(Math.max(m.oiNtl,1)/maxOi,0.35);
       const r0=clamp(S*0.052+rel*S*0.048, 17, S*0.115);
+      /* Uniform random start clumps: with seven discs in a box, three of them
+         landing in one corner is the common case, not the unlucky one, and the
+         first frame is the whole first impression. A golden-angle spiral from
+         the centre spreads them evenly every time and still looks unplanned,
+         with a little jitter so it is not visibly a pattern. */
       const b=bodies[i], pad=r0*1.36;
+      const ang=i*2.39996323, rad=Math.sqrt((i+0.55)/N);
+      const jx=(Math.random()-.5)*S*0.05, jy=(Math.random()-.5)*S*0.05;
+      const sx=clamp(W/2+Math.cos(ang)*rad*(W/2-pad)+jx, pad, Math.max(pad,W-pad));
+      const sy=clamp(H/2+Math.sin(ang)*rad*(H/2-pad)+jy, pad, Math.max(pad,H-pad));
       return {n:m.name, chg:m.chg, r:r0,
-        x:b?b.x:(pad+Math.random()*Math.max(1,W-2*pad)), y:b?b.y:(pad+Math.random()*Math.max(1,H-2*pad)),
+        x:b?b.x:sx, y:b?b.y:sy,
         vx:b?b.vx:(Math.random()-.5)*.4, vy:b?b.vy:(Math.random()-.5)*.4};
     });
     return true;
@@ -2594,6 +2716,9 @@ ROUTES.home=async function(){
   const wbox=el('form','hm-wal card pad');
   const wf2=el('div','hm-wf');
   const wi=el('input'); wi.type='text'; wi.spellcheck=false; wi.autocomplete='off';
+  /* a hex address is not a sentence: no autocorrect, no capitalisation, and
+     no dictionary suggestions over the top of it on a phone keyboard */
+  wi.autocapitalize='off'; wi.setAttribute('autocorrect','off');
   wi.placeholder='0x… paste any address';
   wi.setAttribute('aria-label','Wallet address');
   const wb=el('button','btn pri mag','Read wallet'); wb.type='submit';
