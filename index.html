@@ -460,6 +460,54 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .sk-row{height:96px;border-radius:var(--r3)}
 .sk-strip{height:74px;border-radius:var(--r3)}
 
+/* ═══════════════ HOME (hm-) ═══════════════ */
+.hm-hero{position:relative;min-height:clamp(440px,72vh,660px);display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center;
+  padding:clamp(12px,3vw,40px) 0}
+.hm-copy{position:relative;z-index:2;display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);min-width:0}
+.hm-h1{font-size:clamp(38px,7vw,76px);line-height:.94;letter-spacing:-.05em}
+.hm-h1 em{font-style:normal;color:var(--mint)}
+.hm-sub{font-size:clamp(15px,1.9vw,19px);color:var(--ink-2);max-width:34ch;line-height:1.5}
+.hm-cta{display:flex;gap:10px;flex-wrap:wrap}
+.hm-cta .btn{height:50px;padding:0 22px;font-size:15px;border-radius:14px}
+.hm-live{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.hm-live .u{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--g1);font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  color:var(--ink-2);white-space:nowrap;transition:border-color var(--sp),transform var(--sp) var(--ease)}
+.hm-live .u:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.hm-live .u b{color:var(--mint);font-weight:600}
+.hm-live .u i{width:5px;height:5px;border-radius:99px;background:var(--mint);
+  animation:pulseDot 1.7s ease-in-out infinite;flex:none}
+.hm-stage{position:relative;min-height:clamp(280px,44vh,520px);border-radius:var(--r4);overflow:hidden;
+  border:1px solid var(--line);background:linear-gradient(160deg,var(--g1),var(--g0));touch-action:none}
+.hm-stage canvas{display:block;width:100%;height:100%;cursor:grab}
+.hm-stage canvas:active{cursor:grabbing}
+.hm-hint{position:absolute;right:12px;bottom:11px;pointer-events:none;z-index:2;
+  padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--g0);
+  color:var(--ink-4);letter-spacing:.06em;transition:opacity .5s var(--ease)}
+.hm-stage.touched .hm-hint{opacity:0}
+@media (max-width:900px){
+  .hm-hero{grid-template-columns:1fr;min-height:0;gap:22px}
+  .hm-stage{min-height:min(56vw,300px);order:2}
+  .hm-copy{order:1}
+}
+/* three things it does — icons, not paragraphs */
+.hm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:11px}
+.hm-c{position:relative;padding:22px;border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
+  display:flex;flex-direction:column;gap:11px;text-decoration:none;overflow:hidden;
+  transition:border-color var(--sp),transform var(--sp) var(--ease),opacity var(--sp-slow),filter var(--sp-slow)}
+.hm-c:hover{border-color:var(--line-2)}
+.hm-c .ico{width:46px;height:46px;border-radius:14px;background:var(--mint-wash);display:grid;place-items:center;
+  color:var(--mint);transition:transform var(--sp) var(--spring),background var(--sp)}
+.hm-c:hover .ico{transform:translateY(-3px) rotate(-6deg) scale(1.06)}
+.hm-c .ico svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hm-c b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:700;letter-spacing:-.03em}
+.hm-c p{font-size:13.5px;color:var(--ink-3);line-height:1.55}
+.hm-c .go{margin-top:auto;display:inline-flex;align-items:center;gap:7px;font-family:"IBM Plex Mono",monospace;
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);transition:color var(--sp),gap var(--sp)}
+.hm-c:hover .go{color:var(--mint);gap:11px}
+.hm-c[data-soon="1"] .go{color:var(--ink-4)}
+
 /* ═══════════════ RADAR (rd-) ═══════════════ */
 .rd-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
   margin-bottom:16px}
@@ -793,6 +841,20 @@ const RM=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FINE=()=>matchMedia('(pointer:fine)').matches;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+/* Colour + alpha. Accepts #rgb, #rrggbb, rgb()/rgba(); returns rgba(). Canvas
+   strokes read theme tokens, which resolve to hex, so this is how we fade them. */
+function hexA(col,a){
+  col=(col||'').trim();
+  if(col[0]==='#'){
+    let h=col.slice(1);
+    if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    if(h.length>=6){ const n=parseInt(h.slice(0,6),16);
+      if(isFinite(n)) return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+    return col;
+  }
+  if(col.startsWith('rgb')) return col.replace(/rgba?\(([^)]+)\)/,(m,g)=>`rgba(${g.split(',').slice(0,3).map(s=>s.trim()).join(',')},${a})`);
+  return col;
+}
 const fmtN=(v,d=2)=>{const n=+v; return isFinite(n)? n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';};
 const fmtC=v=>{const n=+v,a=Math.abs(n); if(!isFinite(n))return '—';
   if(a>=1e9)return (n/1e9).toFixed(2)+'B'; if(a>=1e6)return (n/1e6).toFixed(2)+'M';
@@ -962,6 +1024,7 @@ function paintMark(cv,size){
    4 · navigation
    ═══════════════════════════════════════════════════════════════ */
 const IC={
+  home:'<path d="M4 11.2 12 4.5l8 6.7"/><path d="M6.4 10.2V19a1 1 0 0 0 1 1h9.2a1 1 0 0 0 1-1v-8.8"/><path d="M10 20v-5h4v5"/>',
   radar:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/>',
   whales:'<path d="M3 14c3 0 3-3 6-3s3 3 6 3 3-3 6-3"/><path d="M4.5 8.5c1.6-2.6 4.4-4 7.5-4 4.9 0 8 3.2 8 7.5"/><circle cx="15" cy="9" r="1"/>',
   wallet:'<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14" r="1.4"/>',
@@ -973,6 +1036,7 @@ const IC={
   more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'
 };
 const NAV=[
+  {id:'home',    label:'Home',       hint:'What this is',               key:'0'},
   {id:'radar',   label:'Radar',      hint:'What is worth watching now', key:'1'},
   {id:'whales',  label:'Whales',     hint:'What the biggest books hold', key:'2'},
   {id:'wallet',  label:'Wallet',     hint:'Read any address',            key:'3'},
@@ -982,12 +1046,12 @@ const NAV=[
   {id:'leaders', label:'Leaderboard',hint:'Ranked traders',              key:'7'},
   {id:'learn',   label:'Hyperliquid',hint:'How the venue actually works',key:'8'}
 ];
-const DOCK=['radar','whales','wallet','run'];
+const DOCK=['home','radar','whales','wallet'];
 
 (function buildNav(){
   const rail=$('#rail');
   try{ if(localStorage.getItem('hf.rail')==='mini') document.documentElement.dataset.rail='mini'; }catch(e){}
-  const mk=el('a','rl-mark'); mk.href='#/radar'; mk.setAttribute('aria-label','HyperFlow home');
+  const mk=el('a','rl-mark'); mk.href='#/home'; mk.setAttribute('aria-label','HyperFlow home');
   const mcv=el('canvas'); mk.appendChild(mcv);
   const wm=el('span','rl-wm'); wm.innerHTML='hyper<em>flow</em>'; mk.appendChild(wm);
   rail.appendChild(mk); paintMark(mcv,42);
@@ -1169,13 +1233,13 @@ function setNav(id){
 function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page:String(name)}}); }catch(e){} }
 const ROUTES={};
 async function route(){
-  const h=(location.hash||'#/radar').replace(/^#\/?/,'');
+  const h=(location.hash||'#/home').replace(/^#\/?/,'');
   const parts=h.split('/').filter(Boolean);
-  const id=parts[0]||'radar';
+  const id=parts[0]||'home';
   killActive(); setNav(id); track(id); progress(.2);
   PAGE.innerHTML=''; PAGE.dataset.enter='1';
   scrollTo({top:0,behavior:RM()?'auto':'instant'});
-  const fn=ROUTES[id]||ROUTES.radar;
+  const fn=ROUTES[id]||ROUTES.home;
   try{ await fn(parts.slice(1)); } finally { progress(1); }
 }
 addEventListener('hashchange',route);
@@ -1375,83 +1439,9 @@ const LENS={
    11 · the scan loader — the lattice IS the universe, and each
    cell lights when that market's data actually lands
    ═══════════════════════════════════════════════════════════════ */
-function scanLoader(mount,total,steps){
-  const wrap=el('div','sc');
-  const stage=el('div','sc-stage'); const cv=el('canvas'); cv.setAttribute('aria-hidden','true');
-  const pctBox=el('div','sc-pct'); const pb=el('b','','0%'); const ps=el('s',null,'scanned');
-  pctBox.append(pb,ps); stage.append(cv,pctBox);
-  const side=el('div','sc-side');
-  side.append(el('h2',null,'Reading the board'));
-  const stepBox=el('div','sc-steps');
-  const stepNodes=steps.map((s,i)=>{
-    const n=el('div','sc-st'); n.dataset.s='wait';
-    n.append(el('span','d'), el('span',null,s), el('span','n','—'));
-    stepBox.appendChild(n); return n;
-  });
-  const now=el('div','sc-now','');
-  side.append(stepBox,now);
-  wrap.append(stage,side); mount.appendChild(wrap);
+/* The scan-loader curtain is gone. Nothing waits for everything: the page
+   paints from the first call and the ranked rows fill in under a skeleton. */
 
-  let W=0,H=0,c=null,lit=new Set(),raf=null,t0=performance.now(),done=false,prog=0;
-  const cols=Math.ceil(Math.sqrt(total*1.25)), rows=Math.ceil(total/cols);
-  function size(){ const r=stage.getBoundingClientRect(); if(!r.width) return false;
-    W=r.width;H=r.height;c=fit(cv,W,H,1.75); return true; }
-  size();
-  function frame(t){
-    raf=requestAnimationFrame(frame);
-    if(!cv.isConnected){ cancelAnimationFrame(raf); return; }
-    if(!W&&!size()) return;
-    const e=(t-t0)/1000;
-    prog += ((done?1:Math.max(prog,lit.size/total*0.94)) - prog)*0.12;
-    const mint=tok('--mint'), line=tok('--line-2'), ink=tok('--ink-4');
-    c.clearRect(0,0,W,H);
-    const pad=10, gw=(W-pad*2)/cols, gh=(H-pad*2)/rows, s=Math.min(gw,gh)*0.62;
-    const cx=W/2, cy=H/2;
-    /* the sweep */
-    const ang=e*1.5;
-    const grad=c.createConicGradient? c.createConicGradient(ang,cx,cy):null;
-    if(grad){ grad.addColorStop(0,'rgba(125,252,221,.20)'); grad.addColorStop(.10,'rgba(125,252,221,0)');
-      grad.addColorStop(1,'rgba(125,252,221,0)');
-      c.fillStyle=grad; c.beginPath(); c.arc(cx,cy,Math.min(W,H)*.5,0,7); c.fill(); }
-    for(let i=0;i<total;i++){
-      const r=Math.floor(i/cols), col=i%cols;
-      const x=pad+col*gw+gw/2, y=pad+r*gh+gh/2;
-      const on=lit.has(i);
-      c.fillStyle= on? mint : line;
-      c.globalAlpha= on? .95 : .30;
-      c.beginPath(); c.arc(x,y,on? s*.30 : s*.16, 0, 7); c.fill();
-      if(on){ c.globalAlpha=.16; c.beginPath(); c.arc(x,y,s*.62,0,7); c.fill(); }
-    }
-    c.globalAlpha=1;
-    /* the ring, drawn as real progress */
-    const R=Math.min(W,H)*0.46;
-    c.strokeStyle=line; c.lineWidth=2.5;
-    c.beginPath(); c.arc(cx,cy,R,0,6.283); c.stroke();
-    c.strokeStyle=mint; c.lineWidth=3; c.lineCap='round';
-    c.beginPath(); c.arc(cx,cy,R,-1.5708,-1.5708+6.283*prog); c.stroke();
-    const ha=-1.5708+6.283*prog;
-    c.fillStyle=mint; c.beginPath(); c.arc(cx+Math.cos(ha)*R,cy+Math.sin(ha)*R,4,0,7); c.fill();
-    pb.textContent=Math.round(prog*100)+'%';
-  }
-  if(!RM()) raf=requestAnimationFrame(frame); else pb.textContent='…';
-  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected)size();},150);};
-  addEventListener('resize',onR);
-  return {
-    light(i){ lit.add(i); },
-    step(i,state,n){ const nd=stepNodes[i]; if(!nd) return; nd.dataset.s=state;
-      if(n!=null) nd.lastChild.textContent=n; },
-    say(t){ now.textContent=t||''; },
-    finish(){ done=true; },
-    destroy(){ done=true; cancelAnimationFrame(raf); removeEventListener('resize',onR); wrap.remove(); }
-  };
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   12 · the tension rope — verlet integration with distance
-   constraints, not a CSS transition dressed up as physics.
-   Anchored at both ends; the load hangs where funding and basis
-   put it; you can grab it and it settles back to the true point.
-   ═══════════════════════════════════════════════════════════════ */
 function tensionRope(host, biasFn){
   const cv=el('canvas'); host.appendChild(cv);
   let W=0,H=0,c=null,raf=null,run=false;
@@ -1627,6 +1617,15 @@ function universe(meta,ctxs){
   }).filter(m=>isFinite(m.mark)&&m.mark>0);
 }
 
+/* run n at a time and keep going — twelve 250ms calls cost 3.8s queued and
+   about 1.1s overlapped, for exactly the same rate-limit weight */
+async function inParallel(items, n, fn){
+  let i=0;
+  await Promise.all(Array.from({length:Math.min(n,items.length)}, async()=>{
+    while(i<items.length){ const k=i++; await fn(items[k],k); }
+  }));
+}
+
 /* a pager that re-flicks its list, so a page change reads as movement */
 function pager(host, total, per, page, onPage){
   host.innerHTML='';
@@ -1677,50 +1676,51 @@ ROUTES.radar=async function(args){
   wrap.appendChild(pulse);
 
   const mount=el('div'); wrap.appendChild(mount);
-  const steps=['Reading every market from one call','Ranking the universe','Pulling charts for the shortlist','Computing the measures'];
-  let ld=null, U=[], detail={};
+  let U=[], detail={}, boardHost=null, progHost=null;
 
+  /* Nothing waits for everything any more. The universe call lands in about
+     800ms and already carries price, change, funding, open interest and volume
+     for every market — enough to paint the pulse, the funding board and the
+     whole 233-row table immediately. Only the ten ranked rows need charts, and
+     they fill in underneath a skeleton of their own shape. */
   if(RADAR.U && Date.now()-RADAR.t < 45000){
     U=RADAR.U; detail=RADAR.det;
-    quietly(()=>render(RADAR.U,RADAR.short,RADAR.det));
+    quietly(()=>{ render(U,RADAR.det); paintBoard(RADAR.short,RADAR.det); });
     return;
   }
   try{
     const t0=performance.now();
-    ld=scanLoader(mount,233,steps);
-    ld.step(0,'run');
+    mount.appendChild(pageSkeleton());
     const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
     U=universe(meta,ctxs);
-    ld.step(0,'done',U.length+' markets'); ld.step(1,'run');
-    for(let i=0;i<U.length;i++) ld.light(i);
-    await new Promise(r=>setTimeout(r,240));
-    ld.step(1,'done','20 weight');
-    ld.step(2,'run','0 / '+DEPTH);
-    const built=await fillBoard(U,LENS_ID,detail,(coin,found,pulled)=>{
-      if(coin) ld.say('reading '+coin);
-      ld.step(2,'run',found+' / '+DEPTH);
+    render(U,detail);                                   /* everything except the ranked rows */
+    const built=await fillBoard(U,LENS_ID,detail,(done,total)=>{
+      if(progHost) progHost.textContent='reading charts · '+done+' of '+total;
     });
-    const shortlist=built.chosen;
     PASSED=built.passed;
-    ld.step(2,'done',built.pulled+' charts · '+Math.round(built.pulled*24)+' weight'+
-      (built.passed.length? ' · '+built.passed.length+' passed over':''));
-    ld.step(3,'run'); ld.say('');
-    await new Promise(r=>setTimeout(r,180));
-    ld.step(3,'done',Math.round(performance.now()-t0)+' ms total');
-    ld.finish(); await new Promise(r=>setTimeout(r,400)); ld.destroy();
-    RADAR={t:Date.now(),U,short:shortlist,det:detail};
-    render(U,shortlist,detail);
+    RADAR={t:Date.now(),U,short:built.chosen,det:detail};
+    paintBoard(built.chosen,detail);
+    if(progHost) progHost.textContent=Math.round(performance.now()-t0)+' ms · '+
+      (built.pulled+1)+' calls · '+(20+built.pulled*24)+' weight';
   }catch(e){
-    if(ld) ld.destroy();
+    mount.innerHTML='';
     const c=el('div','card pad');
     c.append(el('h2',null, e.code==='RATE'?'The exchange rate-limited this browser':'Could not read the board'));
     const p=el('p',null, e.code==='RATE'
-      ? 'Rate limits are per IP, so this is about this browser and not the site. A full board scan costs about 260 weight against a budget of 1,200 a minute. Give it a minute.'
+      ? 'Rate limits are per IP, so this is about this browser and not the site. A board scan costs about 260 weight against a budget of 1,200 a minute. Give it a minute.'
       : 'The request did not complete. The exchange may be briefly unreachable.');
     p.style.cssText='color:var(--ink-2);margin-top:8px'; c.appendChild(p);
     const b=el('button','btn pri mag','Try again'); b.style.marginTop='14px';
     b.addEventListener('click',()=>route()); c.appendChild(b);
-    mount.appendChild(c);
+    mount.appendChild(c); magnetise(c);
+  }
+
+  function pageSkeleton(){
+    const s=el('div');
+    const a=el('div','sk-board'); a.style.marginTop='26px';
+    for(let i=0;i<6;i++) a.appendChild(el('div','sk sk-row'));
+    s.appendChild(a);
+    return s;
   }
 
   function preselect(all,lensId,n){
@@ -1730,21 +1730,23 @@ ROUTES.radar=async function(args){
     ).slice(0,n||DEPTH);
   }
 
-  /* A market whose measures disagree has nothing to say — putting it on a board
-     headed "top ten right now" wastes one of ten slots on a shrug. So the walk
-     goes down the ranked pool chart by chart and only keeps markets that come
-     back with a direction, stopping as soon as ten are found. The pool is
-     deliberately larger than ten; the extra charts are only pulled when they
-     are actually needed, so the usual cost stays near ten. */
-  async function fillBoard(all, lensId, det, onStep){
+  /* A market whose measures disagree has nothing to say, so the walk goes down
+     the ranked pool and keeps only markets that come back with a direction.
+     Charts are pulled four at a time: twelve calls of ~250ms each cost 3.8s
+     end to end when queued and about 1.1s when overlapped, for identical
+     rate-limit weight. */
+  async function fillBoard(all, lensId, det, onProg){
     const lens=LENS[lensId]||LENS.momentum;
     const pool=preselect(all,lensId,DEPTH+14);
     const chosen=[], passed=[];
-    let pulled=0;
-    for(let i=0;i<pool.length && chosen.length<DEPTH;i++){
-      const m=pool[i];
-      if(!det[m.name]){
-        onStep && onStep(m.name, chosen.length, pulled);
+    let pulled=0, cursor=0;
+    const CONC=4;
+    while(chosen.length<DEPTH && cursor<pool.length){
+      const need=DEPTH-chosen.length;
+      const slice=pool.slice(cursor, cursor+need+2);
+      cursor+=slice.length;
+      const missing=slice.filter(m=>!det[m.name]);
+      await inParallel(missing, CONC, async m=>{
         try{
           const now=Date.now();
           const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
@@ -1752,23 +1754,22 @@ ROUTES.radar=async function(args){
           if(Array.isArray(bars)&&bars.length>30) det[m.name]=analyse(m,bars);
         }catch(e){}
         pulled++;
+        onProg && onProg(Math.min(DEPTH,chosen.length+pulled), DEPTH);
+      });
+      for(const m of slice){
+        if(chosen.length>=DEPTH) break;
+        const a=det[m.name]; if(!a) continue;
+        if(lens.calc(m,a).dir==='none'){ passed.push(m.name); continue; }
+        chosen.push(m);
       }
-      const a=det[m.name]; if(!a) continue;
-      const r=lens.calc(m,a);
-      if(r.dir==='none'){ passed.push(m.name); continue; }
-      chosen.push(m);
-      onStep && onStep(null, chosen.length, pulled);
     }
     return {chosen, passed, pulled};
   }
 
-  function render(all, shortlist, det){
+  function render(all, det){
     mount.innerHTML='';
     const lens=LENS[LENS_ID]||LENS.momentum;
-    const scored=shortlist.map(m=>({m,a:det[m.name],r:det[m.name]?lens.calc(m,det[m.name]):null}))
-      .filter(x=>x.r).sort((a,b)=>b.r.score-a.r.score);
 
-    /* ── venue pulse ── */
     const upN=all.filter(m=>m.chg>0).length;
     const widest=all.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
     const churn=all.filter(m=>m.oiNtl>1e6&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
@@ -1783,10 +1784,6 @@ ROUTES.radar=async function(args){
     if(churn) P('Most turnover',churn.volOverOi.toFixed(1)+'×', churn.name+' — volume against open interest','vsoi');
     field(pulse);
 
-    /* ── NFA ── */
-    /* This has to be present and has to be honest. It does not have to shout —
-       a four-line amber box above the content was the loudest thing on the page
-       and the least useful. One quiet line, and the detail is one tap away. */
     const nfa=el('details','nfa rv');
     const sum=el('summary');
     sum.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.4M12 7.8v.2"/></svg>'+
@@ -1796,10 +1793,9 @@ ROUTES.radar=async function(args){
     nfaBody.textContent='It does not know what price does next. It does not account for your position size, '+
       'your risk, or the next hour. Scores are a sort order inside the selected lens, not a rating of the '+
       'market and not a probability.';
-    nfa.append(sum,nfaBody);
-    mount.appendChild(nfa);
+    nfa.append(sum,nfaBody); mount.appendChild(nfa);
 
-    /* ── SECTION 1 · the board ── */
+    /* ── the board ── */
     const s1=el('section','sec rv');
     const segWrap=el('div','r');
     const seg=el('div','seg'); const pill=el('div','pill'); seg.appendChild(pill);
@@ -1810,22 +1806,20 @@ ROUTES.radar=async function(args){
       seg.appendChild(b);
     });
     segWrap.appendChild(seg);
-    s1.appendChild(secHead('Top '+scored.length+' right now',
-      lens.blurb + (PASSED.length
-        ? '  ·  ' + PASSED.length + ' passed over for having no trend: ' + PASSED.slice(0,5).join(', ')
-        : ''), segWrap));
-    function movePill(){ const on=$('button.on',seg); if(!on) return;
-      pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
+    s1.appendChild(secHead('Top '+DEPTH+' right now',
+      lens.blurb + (PASSED.length ? '  ·  '+PASSED.length+' passed over for having no trend: '+PASSED.slice(0,5).join(', ') : ''),
+      segWrap));
+    const movePill=()=>{ const on=$('button.on',seg); if(on){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; } };
     requestAnimationFrame(movePill); setTimeout(movePill,80);
-    const board=el('div','rd-board lead');
-    scored.forEach((x,i)=>board.appendChild(row(x,i,lens)));
-    s1.appendChild(board);
-    mount.appendChild(s1); field(board);
+    boardHost=el('div','rd-board lead');
+    progHost=el('div','rd-count'); progHost.style.marginTop='10px';
+    s1.append(boardHost,progHost);
+    mount.appendChild(s1);
+    boardSkeleton();
 
-    /* ── SECTION 2 · funding board ── */
+    /* ── who is paying ── */
     const s2=el('section','sec rv');
-    s2.appendChild(secHead('Who is paying to hold',
-      'Funding settles hourly. Markets with real size behind the rate, both directions.'));
+    s2.appendChild(secHead('Who is paying to hold','Funding settles hourly. Markets with real size behind the rate, both directions.'));
     const liq=all.filter(m=>m.oiNtl>1e6);
     const payShorts=liq.filter(m=>m.fundingApr>0).sort((a,b)=>b.fundingApr-a.fundingApr).slice(0,6);
     const payLongs =liq.filter(m=>m.fundingApr<0).sort((a,b)=>a.fundingApr-b.fundingApr).slice(0,6);
@@ -1833,8 +1827,7 @@ ROUTES.radar=async function(args){
     [['Shorts collect',payShorts,'up','longs are paying'],
      ['Longs collect', payLongs,'down','shorts are paying']].forEach(([t,list,cls,why])=>{
       const col=el('div','fb-col lead');
-      const hd=el('div','fb-hd'); hd.append(el('span','chip '+cls,t), el('span','micro',why));
-      col.appendChild(hd);
+      const hd=el('div','fb-hd'); hd.append(el('span','chip '+cls,t), el('span','micro',why)); col.appendChild(hd);
       const mx=Math.max(...list.map(m=>Math.abs(m.fundingApr)),1);
       list.forEach(m=>{
         const r=el('div','fb-r edge');
@@ -1849,10 +1842,9 @@ ROUTES.radar=async function(args){
       if(!list.length) col.appendChild(el('p','rd-count','No market with meaningful size is paying this side right now.'));
       fb.appendChild(col);
     });
-    s2.appendChild(fb);
-    mount.appendChild(s2);
+    s2.appendChild(fb); mount.appendChild(s2);
 
-    /* ── SECTION 3 · the whole board ── */
+    /* ── every market ── */
     const s3=el('section','sec rv');
     const filt=el('div','r');
     const search=el('input'); search.type='search'; search.placeholder='Filter markets';
@@ -1860,32 +1852,27 @@ ROUTES.radar=async function(args){
     search.style.cssText='height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
       'color:var(--ink);font-family:\'IBM Plex Mono\',monospace;font-size:13px;padding:0 13px;outline:none;min-width:0;width:min(220px,60vw)';
     filt.appendChild(search);
-    s3.appendChild(secHead('Every market', 'All '+all.length+' perps, from the same single call. Sortable.', filt));
-    const tw=el('div','tw');
-    const pg=el('div','pgr');
-    let sortKey='vol', sortDir=-1, tPage=0, TPER=15, query='';
+    s3.appendChild(secHead('Every market','All '+all.length+' perps, from the same single call. Sortable.',filt));
+    const tw=el('div','tw'), pg=el('div','pgr');
+    let sortKey='vol', sortDir=-1, tPage=0, query='';
+    const TPER=15;
     const COLS=[['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
                 ['oiNtl','Open interest',1],['fundingApr','Funding APR',1],['volOverOi','Vol / OI',1],['spreadPct','Spread',1]];
     function paintTable(){
       const rows=all.filter(m=>!query||m.name.toLowerCase().includes(query))
-        .slice().sort((a,b)=>{
-          const x=a[sortKey], y=b[sortKey];
+        .slice().sort((a,b)=>{ const x=a[sortKey],y=b[sortKey];
           if(sortKey==='name') return sortDir*String(x).localeCompare(String(y));
-          return sortDir*((y==null?-Infinity:y)-(x==null?-Infinity:x));
-        });
+          return sortDir*((y==null?-Infinity:y)-(x==null?-Infinity:x)); });
       const pages=Math.ceil(rows.length/TPER)||1; tPage=clamp(tPage,0,pages-1);
       tw.innerHTML='<table><thead><tr>'+COLS.map(c=>
         '<th class="'+(c[2]?'r':'')+'" data-k="'+c[0]+'"'+(c[0]===sortKey?' data-sort="1"':'')+'>'+c[1]+
-        '<span class="ar">'+(c[0]===sortKey?(sortDir<0?'▼':'▲'):'')+'</span></th>').join('')+
-        '</tr></thead><tbody></tbody></table>';
+        '<span class="ar">'+(c[0]===sortKey?(sortDir<0?'▼':'▲'):'')+'</span></th>').join('')+'</tr></thead><tbody></tbody></table>';
       const tb=$('tbody',tw); tb.classList.add('lead');
       rows.slice(tPage*TPER,(tPage+1)*TPER).forEach(m=>{
         const tr=el('tr'); tr.dataset.coin=m.name;
-        tr.innerHTML='<td><b>'+m.name+'</b></td>'+
-          '<td class="n r">'+px(m.mark)+'</td>'+
+        tr.innerHTML='<td><b>'+m.name+'</b></td><td class="n r">'+px(m.mark)+'</td>'+
           '<td class="n r '+(m.chg>=0?'up':'down')+'">'+pct(m.chg)+'</td>'+
-          '<td class="n r">$'+fmtC(m.vol)+'</td>'+
-          '<td class="n r">$'+fmtC(m.oiNtl)+'</td>'+
+          '<td class="n r">$'+fmtC(m.vol)+'</td><td class="n r">$'+fmtC(m.oiNtl)+'</td>'+
           '<td class="n r '+(m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+pct(m.fundingApr,1)+'</td>'+
           '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
           '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
@@ -1895,7 +1882,7 @@ ROUTES.radar=async function(args){
       flick(tb);
       $$('thead th',tw).forEach(th=>th.addEventListener('click',()=>{
         const k=th.dataset.k;
-        if(k===sortKey) sortDir*=-1; else { sortKey=k; sortDir = k==='name'?1:-1; }
+        if(k===sortKey) sortDir*=-1; else { sortKey=k; sortDir=k==='name'?1:-1; }
         tPage=0; paintTable();
       }));
       pager(pg, rows.length, TPER, tPage, i=>{ tPage=i; paintTable(); });
@@ -1904,33 +1891,44 @@ ROUTES.radar=async function(args){
       sT=setTimeout(()=>{ query=search.value.trim().toLowerCase(); tPage=0; paintTable(); },130); });
     s3.append(tw,pg); mount.appendChild(s3); paintTable();
 
-    /* ── SECTION 4 · referral ── */
     const s4=el('section','sec rv');
     s4.appendChild(secHead('Reading is free. Trading needs an account.'));
-    s4.appendChild(refBlock('board'));
-    mount.appendChild(s4);
+    s4.appendChild(refBlock('board')); mount.appendChild(s4);
 
-    /* ── SECTION 5 · how this is built ── */
     const s5=el('section','sec rv');
-    s5.appendChild(secHead('How this board is built',
-      'Every number is one API call away from you. Nothing is stored, nothing passes through us.'));
+    s5.appendChild(secHead('How this board is built','Every number is one API call away from you. Nothing is stored, nothing passes through us.'));
     const mt=el('div','mt lead');
-    [['One call for the universe','<code>metaAndAssetCtxs</code> returns all '+all.length+' markets with price, 24h change, funding, open interest, volume and the oracle gap. Twenty rate-limit weight, about a second.'],
-     ['Charts only for the shortlist','<code>candleSnapshot</code> at 1h for the top '+DEPTH+' only. Charting all '+all.length+' would cost 5,592 weight — 4.7 minutes of the 1,200-per-minute budget — so it is not attempted.'],
+    [['One call for the universe','<code>metaAndAssetCtxs</code> returns all '+all.length+' markets with price, 24h change, funding, open interest, volume and the oracle gap. Twenty weight, about a second — and it paints this whole page before any chart is fetched.'],
+     ['Charts only for the shortlist','<code>candleSnapshot</code> at 1h for the ranked rows only, four at a time. Charting all '+all.length+' would cost 5,592 weight — 4.7 minutes of the 1,200-per-minute budget — so it is not attempted.'],
      ['Measured on completed bars','The hour in progress has only partly happened. Its price is used; its volume is not, because comparing a part-hour against full hours makes every market look unconfirmed.'],
-     ['No-trend markets are skipped','If the measures disagree, the market is passed over and the next one down takes the slot. A board headed "top ten" should not spend a row telling you it has nothing to say — but they are named above, so nothing disappears silently.'],
+     ['No-trend markets are skipped','If the measures disagree the market is passed over and the next one down takes the slot — but they are named above, so nothing disappears silently.'],
      ['Nothing is predicted','Scores are a sort order inside the selected lens, not a rating of the market and not a probability. Switch lens and the same market moves.'],
-     ['Your browser, not our server','Requests go from your device straight to the exchange. We never see which market or wallet you looked at, because it never reaches us.'],
-     ['The board holds nothing','It reads public endpoints and computes. It takes no custody, moves no funds and places no orders — everything on this page is arithmetic on data anyone can fetch.'],
-     ['Refreshed on demand','Data is cached for 45 seconds. Reload the page or switch lens to pull it again.']]
+     ['The board holds nothing','It reads public endpoints and computes. It takes no custody, moves no funds and places no orders — everything here is arithmetic on data anyone can fetch.']]
       .forEach(([t,p])=>{ const c=el('div','mt-c tilt edge'); c.append(el('b',null,t));
         const pp=el('p'); pp.innerHTML=p; c.appendChild(pp); mt.appendChild(c); });
-    s5.appendChild(mt);
-    mount.appendChild(s5);
+    s5.appendChild(mt); mount.appendChild(s5);
 
-    field(mount); magnetise(mount);
-    reveal(mount);
-    if(args&&args[0]){ const t=$$('.mk',board).find(n=>n.dataset.coin===args[0]);
+    field(mount); magnetise(mount); reveal(mount);
+  }
+
+  function boardSkeleton(){
+    if(!boardHost) return;
+    boardHost.innerHTML='';
+    for(let i=0;i<DEPTH;i++){ const r=el('div','sk sk-row');
+      r.style.opacity=String(1-i*0.055); boardHost.appendChild(r); }
+  }
+
+  function paintBoard(list, det){
+    if(!boardHost) return;
+    const lens=LENS[LENS_ID]||LENS.momentum;
+    const scored=list.map(m=>({m,a:det[m.name],r:det[m.name]?lens.calc(m,det[m.name]):null}))
+      .filter(x=>x.r).sort((a,b)=>b.r.score-a.r.score);
+    boardHost.innerHTML='';
+    scored.forEach((x,i)=>boardHost.appendChild(row(x,i,lens)));
+    flick(boardHost); field(boardHost);
+    const sh=$('.sec-h h2',boardHost.closest('section'));
+    if(sh) sh.textContent='Top '+scored.length+' right now';
+    if(args&&args[0]){ const t=$$('.mk',boardHost).find(n=>n.dataset.coin===args[0]);
       if(t){ t.dataset.open='1'; buildBody(t); setTimeout(()=>t.scrollIntoView({block:'center'}),80); } }
   }
 
@@ -1939,14 +1937,14 @@ ROUTES.radar=async function(args){
     LENS_ID=id; try{ localStorage.setItem('hf.lens',id); }catch(e){}
     $$('button',seg).forEach(y=>y.classList.toggle('on',y.dataset.lens===id));
     const on=$('button.on',seg); if(on){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
-    /* skeleton in the exact shape of the board, so nothing jumps */
-    const skel=el('div','sk-board');
-    for(let i=0;i<DEPTH;i++) skel.appendChild(el('div','sk sk-row'));
-    mount.innerHTML=''; mount.appendChild(skel);
+    boardSkeleton();
     (async()=>{
-      const built=await fillBoard(RADAR.U,id,RADAR.det);
+      const built=await fillBoard(RADAR.U,id,RADAR.det,(d,t)=>{ if(progHost) progHost.textContent='reading charts · '+d+' of '+t; });
       RADAR.short=built.chosen; PASSED=built.passed;
-      quietly(()=>render(RADAR.U,built.chosen,RADAR.det));
+      paintBoard(built.chosen,RADAR.det);
+      if(progHost) progHost.textContent='';
+      const sub=$('.sec-h p',boardHost.closest('section'));
+      if(sub) sub.textContent=(LENS[id].blurb)+(PASSED.length?'  ·  '+PASSED.length+' passed over for having no trend: '+PASSED.slice(0,5).join(', '):'');
     })();
   }
 
@@ -1989,15 +1987,11 @@ ROUTES.radar=async function(args){
     return n;
   }
 
-  /* The expanded row is deliberately short. The seven measures are the promise
-     — they stay. Everything that was a calculator has gone: a trader reading a
-     board does not want to type a position size into it. */
   function buildBody(n){
     const body=$('.mk-body',n);
     if(body.dataset.built==='1') return;
     body.dataset.built='1';
     const {m,a,r}=n.__x;
-
     const wk=el('div','wk');
     r.votes.forEach(v=>{
       const i=el('div','wk-i'); i.dataset.v=v.vote;
@@ -2007,14 +2001,13 @@ ROUTES.radar=async function(args){
       wk.appendChild(i);
     });
     body.appendChild(wk);
-
     const grid=el('div','pr-grid');
     const P=(k,v,s,tip,cls)=>{ const n2=el('div','pr');
       const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
       n2.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); grid.appendChild(n2); };
     const atrPct=a.atr? a.atr/a.last*100 : null;
     const cost=(TAKER*2*100)+(m.spreadPct||0);
-    P('Expected move', atrPct? atrPct.toFixed(2)+'%':'—', '1×ATR · '+(a.atr?px(a.atr):'—'),'atrmove');
+    P('Expected move', atrPct? atrPct.toFixed(2)+'%':'—','1×ATR · '+(a.atr?px(a.atr):'—'),'atrmove');
     P('Volatility', a.atrExp? a.atrExp.toFixed(2)+'×':'—',
       a.atrExp? (a.atrExp>1.25?'above its own average':a.atrExp<0.8?'unusually quiet':'about normal'):'—','atr',
       a.atrExp>1.25?'warn':'');
@@ -2022,24 +2015,275 @@ ROUTES.radar=async function(args){
       m.fundingApr>0?'down':m.fundingApr<0?'up':'');
     P('Cost to trade', cost.toFixed(3)+'%','taker both ways plus the impact spread','breakeven',cost>0.2?'warn':'');
     body.appendChild(grid);
-
     const ropeWrap=el('div');
     ropeWrap.append(Object.assign(el('div','micro','Positioning tension — drag it'),{style:'margin-bottom:7px'}));
     const rope=el('div','rope');
     rope.innerHTML='<span class="lbl l">longs</span><span class="lbl r">shorts</span>'+
       '<span class="hint micro">the load hangs toward whichever side is paying</span>';
-    ropeWrap.appendChild(rope);
-    body.appendChild(ropeWrap);
+    ropeWrap.appendChild(rope); body.appendChild(ropeWrap);
     tensionRope(rope,()=>clamp(clamp(m.fundingApr/60,-1,1)*0.7+clamp(m.oracleGap/0.25,-1,1)*0.3,-1,1));
-
     const a1=el('a','btn ghost mag');
     a1.href=REF; a1.target='_blank'; a1.rel='noopener';
     a1.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Trade '+m.name+' on Hyperliquid';
     a1.style.alignSelf='flex-start';
     a1.addEventListener('click',()=>track('ref:row'));
     body.appendChild(a1);
-    body.appendChild(Object.assign(el('p','rd-count','Referral link — Pranjal earns a share, you get 4% off taker fees. It changes nothing above.'),{}));
+    body.appendChild(el('p','rd-count','Referral link — Pranjal earns a share, you get 4% off taker fees. It changes nothing above.'));
     field(body); magnetise(body);
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   14 · HOME
+   The hero is a spring mesh with real markets falling through it.
+   The grid is a chart grid; the discs are markets, massed by open
+   interest. The cursor is a mass that bends the mesh, and the push
+   on the discs is gated by cursor SPEED — sweep fast to scatter
+   them, rest the pointer and you can read one.
+   ═══════════════════════════════════════════════════════════════ */
+function heroField(host, markets){
+  markets=markets||[];
+  const cv=el('canvas'); host.appendChild(cv);
+  let W=0,H=0,c=null,raf=null,run=false;
+  const COLS=17, ROWS=11;
+  let nodes=[], bodies=[];
+  let mx=-1e4,my=-1e4,lx=-1e4,ly=-1e4,speed=0,grab=-1,T=Math.random()*100;
+
+  function size(){
+    const r=host.getBoundingClientRect(); if(!r.width||!r.height) return false;
+    W=r.width; H=r.height; c=fit(cv,W,H,1.75);
+    nodes=[];
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){
+      const rx=(x/(COLS-1))*W, ry=(y/(ROWS-1))*H;
+      nodes.push({gx:x,gy:y,rx,ry,x:rx,y:ry,vx:0,vy:0,q:0});
+    }
+    /* Radius encodes open interest as area^0.35 — big enough a difference to
+       read at a glance, gentle enough that BTC doesn't swallow the box. The
+       discs are furniture on top of the mesh, so they stay small. */
+    const S=Math.min(W,H), N=W<520?5:7;
+    const maxOi=Math.max(...markets.map(m=>m.oiNtl),1);
+    bodies=markets.slice(0,N).map((m,i)=>{
+      const rel=Math.pow(Math.max(m.oiNtl,1)/maxOi,0.35);
+      const r0=clamp(S*0.052+rel*S*0.048, 17, S*0.115);
+      const b=bodies[i], pad=r0*1.36;
+      return {n:m.name, chg:m.chg, r:r0,
+        x:b?b.x:(pad+Math.random()*Math.max(1,W-2*pad)), y:b?b.y:(pad+Math.random()*Math.max(1,H-2*pad)),
+        vx:b?b.vx:(Math.random()-.5)*.4, vy:b?b.vy:(Math.random()-.5)*.4};
+    });
+    return true;
+  }
+  size();
+
+  const nearBody=(x,y)=>{ for(let i=0;i<bodies.length;i++){ const b=bodies[i];
+    if(Math.hypot(b.x-x,b.y-y)<b.r) return i; } return -1; };
+  host.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect();
+    mx=e.clientX-r.left; my=e.clientY-r.top; grab=nearBody(mx,my);
+    if(grab>=0){ host.setPointerCapture(e.pointerId); e.preventDefault(); } });
+  host.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect();
+    host.classList.add('touched');           /* the hint has done its job */
+    const nx=e.clientX-r.left, ny=e.clientY-r.top;
+    if(lx>-1e3) speed=Math.min(70, Math.hypot(nx-lx,ny-ly)*3.4 + speed*0.55);
+    lx=nx; ly=ny; mx=nx; my=ny; },{passive:true});
+  const release=()=>{ grab=-1; };
+  ['pointerup','pointercancel'].forEach(ev=>host.addEventListener(ev,release));
+  host.addEventListener('pointerleave',()=>{ release(); mx=my=-1e4; lx=ly=-1e4; speed=0; });
+
+  function frame(){
+    if(!run) return;
+    raf=requestAnimationFrame(frame);
+    if(!cv.isConnected){ run=false; cancelAnimationFrame(raf); return; }
+    if(!W&&!size()) return;
+    speed*=0.9;
+    T+=0.016;
+
+    /* the mesh: every node is a spring back to its rest position, pushed away
+       from the pointer with a smooth falloff. A slow two-harmonic swell rides
+       on top of the rest positions so the surface is alive before anyone
+       touches it — on a phone, that swell is the whole animation. */
+    const R=Math.min(W,H)*0.42, R2=R*R;
+    const AMB=Math.min(W,H)*0.014, REACH=Math.min(W,H)*0.085;
+    for(const n of nodes){
+      let px=0,py=0;
+      if(mx>-1e3){
+        const dx=n.rx-mx, dy=n.ry-my, d2=dx*dx+dy*dy;
+        if(d2<R2){ const d=Math.sqrt(d2)||1, f=(1-d/R); const push=f*f*REACH;
+          px=dx/d*push; py=dy/d*push; }
+      }
+      const wy=Math.sin(n.gx*0.78+T*0.85)*AMB + Math.sin(n.gy*1.16-T*0.57)*AMB*0.62;
+      const wx=Math.sin(n.gy*0.64+T*0.48)*AMB*0.5;
+      const tx=n.rx+px+wx, ty=n.ry+py+wy;
+      n.vx=(n.vx+(tx-n.x)*0.16)*0.82;
+      n.vy=(n.vy+(ty-n.y)*0.16)*0.82;
+      n.x+=n.vx; n.y+=n.vy;
+      /* how far this node has been dragged off rest, past the ambient swell —
+         0 at rest, 1 under the cursor. This drives colour, not position. */
+      n.q=clamp((Math.hypot(n.x-n.rx,n.y-n.ry)-AMB*1.35)/(REACH*0.62),0,1);
+    }
+
+    /* the markets: elastic collisions, walls, and a push gated by cursor speed */
+    for(const b of bodies){
+      if(mx>-1e3){
+        const dx=b.x-mx, dy=b.y-my, d=Math.hypot(dx,dy)||1;
+        if(d<b.r+110){ const push=(speed/70)*(1-d/(b.r+110))*2.9;
+          b.vx+=dx/d*push; b.vy+=dy/d*push; }
+      }
+      b.x+=b.vx; b.y+=b.vy; b.vx*=0.985; b.vy*=0.985;
+      /* bounce on the halo, not the disc — otherwise the soft ring clips the box */
+      const p=b.r*1.36;
+      if(b.x<p){b.x=p;b.vx=Math.abs(b.vx)*.8}
+      if(b.x>W-p){b.x=W-p;b.vx=-Math.abs(b.vx)*.8}
+      if(b.y<p){b.y=p;b.vy=Math.abs(b.vy)*.8}
+      if(b.y>H-p){b.y=H-p;b.vy=-Math.abs(b.vy)*.8}
+    }
+    for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++){
+      const a=bodies[i], b2=bodies[j];
+      const dx=b2.x-a.x, dy=b2.y-a.y, d=Math.hypot(dx,dy)||1, min=a.r+b2.r;
+      if(d<min){
+        const nx=dx/d, ny=dy/d, ov=(min-d)/2;
+        a.x-=nx*ov; a.y-=ny*ov; b2.x+=nx*ov; b2.y+=ny*ov;
+        const p=(a.vx-b2.vx)*nx+(a.vy-b2.vy)*ny;     /* equal-mass elastic exchange */
+        a.vx-=p*nx; a.vy-=p*ny; b2.vx+=p*nx; b2.vy+=p*ny;
+      }
+    }
+    if(grab>=0){ const b=bodies[grab];
+      b.vx=(mx-b.x)*0.3; b.vy=(my-b.y)*0.3; b.x=mx; b.y=my; }
+
+    /* draw */
+    const mint=tok('--mint'), line=tok('--line-3'), ink=tok('--ink'), up=tok('--up'), dn=tok('--down');
+    c.clearRect(0,0,W,H);
+    c.lineJoin='round'; c.lineCap='round';
+
+    /* pass 1 — the resting grid, one stroke per line */
+    c.lineWidth=1;
+    for(let y=0;y<ROWS;y++){ c.beginPath();
+      for(let x=0;x<COLS;x++){ const n=nodes[y*COLS+x]; x?c.lineTo(n.x,n.y):c.moveTo(n.x,n.y); }
+      const t=Math.abs(0.5-y/(ROWS-1))*2;                     /* fade toward top and bottom edges */
+      c.strokeStyle=hexA(line,.62-t*0.26); c.stroke(); }
+    for(let x=0;x<COLS;x++){ c.beginPath();
+      for(let y=0;y<ROWS;y++){ const n=nodes[y*COLS+x]; y?c.lineTo(n.x,n.y):c.moveTo(n.x,n.y); }
+      const t=Math.abs(0.5-x/(COLS-1))*2;
+      c.strokeStyle=hexA(line,.50-t*0.22); c.stroke(); }
+
+    /* pass 2 — energy. Only the segments actually bent get restroked in mint,
+       brightness and weight proportional to how far they were pulled. Typically
+       a few dozen segments, so this is cheap; at rest it draws nothing. */
+    const seg=(a,b2)=>{ const q=(a.q+b2.q)/2; if(q<0.06) return;
+      c.lineWidth=1+q*1.5; c.strokeStyle=hexA(mint,0.18+q*0.72);
+      c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b2.x,b2.y); c.stroke(); };
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS-1;x++) seg(nodes[y*COLS+x],nodes[y*COLS+x+1]);
+    for(let x=0;x<COLS;x++) for(let y=0;y<ROWS-1;y++) seg(nodes[y*COLS+x],nodes[(y+1)*COLS+x]);
+    for(const n of nodes){ if(n.q<0.34) continue;
+      c.fillStyle=hexA(mint,(n.q-0.34)*1.2); c.beginPath(); c.arc(n.x,n.y,1.1+n.q*1.7,0,7); c.fill(); }
+
+    if(mx>-1e3){
+      const g=c.createRadialGradient(mx,my,0,mx,my,R*0.8);
+      g.addColorStop(0,hexA(mint,.15)); g.addColorStop(1,hexA(mint,0));
+      c.fillStyle=g; c.beginPath(); c.arc(mx,my,R*0.8,0,7); c.fill();
+    }
+    for(const b of bodies){
+      const hov=Math.hypot(b.x-mx,b.y-my)<b.r;
+      const col=b.chg>=0?up:dn;
+      c.globalAlpha=.16; c.fillStyle=col;
+      c.beginPath(); c.arc(b.x,b.y,b.r*1.34,0,7); c.fill(); c.globalAlpha=1;
+      c.fillStyle=hov?col:tok('--g2');
+      c.beginPath(); c.arc(b.x,b.y,b.r,0,7); c.fill();
+      c.lineWidth=1.4; c.strokeStyle=col; c.globalAlpha=hov?1:.7; c.stroke(); c.globalAlpha=1;
+      c.fillStyle=hov?tok('--on-mint'):ink;
+      c.font='600 '+Math.max(10,Math.min(14,b.r*.36))+'px "IBM Plex Mono", monospace';
+      c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(b.n,b.x,b.y-3);
+      c.font='500 '+Math.max(8,Math.min(11,b.r*.28))+'px "IBM Plex Mono", monospace';
+      c.fillStyle=hov?tok('--on-mint'):col;
+      c.fillText((b.chg>=0?'+':'−')+Math.abs(b.chg).toFixed(1)+'%', b.x, b.y+Math.max(9,b.r*.36));
+    }
+  }
+  const io=new IntersectionObserver(es=>{
+    const on=es[0].isIntersecting&&!RM();
+    if(on&&!run){ if(size()){ run=true; raf=requestAnimationFrame(frame); } }
+    else if(!on&&run){ run=false; cancelAnimationFrame(raf); }
+  },{threshold:0});
+  io.observe(host);
+  if(!RM()&&size()){ run=true; raf=requestAnimationFrame(frame); }
+  else if(size()){ run=true; frame(); run=false; }
+  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected)size();},150);};
+  addEventListener('resize',onR);
+  ACTIVE.push(()=>{ run=false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize',onR); });
+  /* The mesh runs from the first frame with no data at all, and the markets
+     drop into it when the call lands. A hero that is an empty box until the
+     network answers is a worse first impression than no hero. */
+  return { setMarkets(list){ markets=list||[]; size(); } };
+}
+
+ROUTES.home=async function(){
+  const hero=el('section','hm-hero');
+  const copy=el('div','hm-copy');
+  const h1=el('h1','hm-h1'); h1.innerHTML='See the whole <em>board</em>.';
+  copy.appendChild(h1);
+  copy.appendChild(el('p','hm-sub','Every Hyperliquid market, read live in your own browser — and every measure behind the reading, shown.'));
+  const cta=el('div','hm-cta');
+  const go=el('a','btn pri mag'); go.href='#/radar';
+  go.innerHTML='Open the radar<svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+  const wal=el('a','btn ghost mag'); wal.href='#/wallet';
+  wal.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg>Read a wallet';
+  cta.append(go,wal); copy.appendChild(cta);
+  const live=el('div','hm-live');
+  live.appendChild(Object.assign(el('span','u'),{innerHTML:'<i></i>reading the exchange…'}));
+  copy.appendChild(live);
+
+  const stage=el('div','hm-stage');
+  /* the hint has to name a gesture the reader actually has */
+  const heroHint=Object.assign(el('span','hm-hint micro'),
+    {textContent: FINE()? 'sweep to scatter · rest to read · drag one' : 'drag a market'});
+  stage.appendChild(heroHint);
+  hero.append(copy,stage);
+  PAGE.appendChild(hero);
+
+  const cards=el('section','sec rv');
+  const grid=el('div','hm-cards lead');
+  [['radar','Read the board','233 markets ranked by momentum or funding stress, with every input on screen.','#/radar','Open the radar',0],
+   ['wallet','Read a wallet','Paste an address: what it holds, what it traded, and the type of trader the record says it is.','#/wallet','Read a wallet',1],
+   ['run','Replay a trade','Watch a single position play out bar by bar, from entry to the closing verdict.','#/run','Replay a trade',1]
+  ].forEach(([ic,t,p,href,go2,soon])=>{
+    const a=el('a','hm-c tilt edge'); a.href=href; if(soon) a.dataset.soon='1';
+    const i=el('div','ico'); i.innerHTML='<svg viewBox="0 0 24 24">'+IC[ic]+'</svg>';
+    a.append(i, el('b',null,t), el('p',null,p));
+    const g=el('span','go');
+    g.innerHTML=(soon?'Coming next':go2)+'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h12M12 6l6 6-6 6"/></svg>';
+    a.appendChild(g); grid.appendChild(a);
+  });
+  cards.appendChild(grid);
+  PAGE.appendChild(cards);
+
+  const ref=el('section','sec rv');
+  ref.appendChild(secHead('Reading is free. Trading needs an account.'));
+  ref.appendChild(refBlock('home'));
+  PAGE.appendChild(ref);
+
+  field(PAGE); magnetise(PAGE); reveal(PAGE);
+  const mesh=heroField(stage, []);          /* alive immediately, empty for now */
+  window.__mesh=mesh;                       /* handle for the render tests */
+
+  /* one call. It fills the live strip, feeds the hero, and warms the cache the
+     radar reads from — so clicking through costs nothing. */
+  try{
+    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
+    const U=universe(meta,ctxs);
+    RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
+    const oi=U.reduce((s,m)=>s+m.oiNtl,0);
+    const up=U.filter(m=>m.chg>0).length;
+    const wf=U.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
+    live.innerHTML='';
+    const U2=(html)=>{ const n=el('span','u'); n.innerHTML=html; live.appendChild(n); };
+    U2('<i></i><b>'+U.length+'</b> markets live');
+    U2('<b>$'+fmtC(oi)+'</b> open interest');
+    U2('<b>'+Math.round(up/U.length*100)+'%</b> above yesterday');
+    if(wf) U2('widest funding <b>'+pct(wf.fundingApr,0)+'</b> on '+wf.name);
+    mesh.setMarkets(U.slice().sort((a,b)=>b.vol-a.vol));
+  }catch(e){
+    live.innerHTML='';
+    const n=el('span','u'); n.textContent='the exchange is not answering right now';
+    live.appendChild(n);
+    if(heroHint) heroHint.textContent='sweep the mesh';   /* nothing to drag yet */
   }
 };
 
@@ -2051,7 +2295,7 @@ function soon(title,copy,bullets){
     const p=el('p',null,copy); p.style.cssText='color:var(--ink-2);margin-top:10px;font-size:15px'; c.appendChild(p);
     if(bullets){ const u=el('ul'); u.style.cssText='margin:14px 0 0;padding-left:19px;color:var(--ink-2);font-size:14px;display:flex;flex-direction:column;gap:6px';
       bullets.forEach(b=>{ const li=el('li'); li.innerHTML=b; u.appendChild(li); }); c.appendChild(u); }
-    const b=el('a','btn pri','Back to the radar'); b.href='#/radar'; b.style.marginTop='18px';
+    const b=el('a','btn pri mag','Back to the radar'); b.href='#/radar'; b.style.marginTop='18px';
     c.appendChild(b);
     PAGE.appendChild(c); reveal(PAGE);
   };
