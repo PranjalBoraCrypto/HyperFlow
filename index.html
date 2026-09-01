@@ -1802,7 +1802,7 @@ function refBlock(kind){
 let LENS_ID='momentum', DEPTH=10;
 try{ LENS_ID=localStorage.getItem('hf.lens')||'momentum'; }catch(e){}
 let RADAR={t:0,U:null,short:null,det:null};
-let PASSED=[];
+let PASSED=[], READN=0;
 
 function universe(meta,ctxs){
   return meta.universe.map((u,i)=>{
@@ -1900,7 +1900,7 @@ ROUTES.radar=async function(args){
     const built=await fillBoard(U,LENS_ID,detail,(done,total)=>{
       if(progHost) progHost.textContent='reading charts · '+done+' of '+total;
     });
-    PASSED=built.passed;
+    PASSED=built.passed; READN=built.read;
     RADAR={t:Date.now(),U,short:built.chosen,det:detail};
     paintBoard(built.chosen,detail);
   }catch(e){
@@ -1979,7 +1979,12 @@ ROUTES.radar=async function(args){
       scored.push({m,score:r.score});
     }
     scored.sort((a,b)=>b.score-a.score);
-    return {chosen:scored.slice(0,DEPTH).map(x=>x.m), passed, pulled, pool:pool.length};
+    /* `read` is every market this scan actually charted — not the ten that
+       reached the board. Counting the shown rows instead said "3 of 13" when
+       the scan had read 24, which understates the work and misstates the odds
+       of a market having no trend. */
+    return {chosen:scored.slice(0,DEPTH).map(x=>x.m), passed, pulled,
+            read:scored.length+passed.length};
   }
 
   function render(all, det){
@@ -2175,7 +2180,7 @@ ROUTES.radar=async function(args){
       try{
         const built=await fillBoard(RADAR.U,id,RADAR.det,(d,t)=>{
           if(progHost) progHost.textContent='reading charts · '+d+' of '+t; });
-        RADAR.short=built.chosen; PASSED=built.passed;
+        RADAR.short=built.chosen; PASSED=built.passed; READN=built.read;
         delete boardHost.dataset.busy;
         paintBoard(built.chosen,RADAR.det);
       } finally { delete boardHost.dataset.busy; }
@@ -2185,11 +2190,10 @@ ROUTES.radar=async function(args){
   /* Which markets were dropped and why, under the rows rather than above them. */
   function boardNote(){
     if(!progHost) return;
-    /* "of N read", not "of N liquid" — N is the pool this scan charted, which
-       is not the same as every market above the volume floor. */
-    const read=PASSED.length+$$('.mk',boardHost).length;
+    /* "of N read", not "of N liquid": N is the pool this scan charted, which
+       is neither the ten shown nor every market above the volume floor. */
     progHost.textContent = PASSED.length
-      ? PASSED.length+' of the '+read+' markets read were passed over for having no trend: '+
+      ? PASSED.length+' of the '+(READN||PASSED.length)+' markets read were passed over for having no trend: '+
         PASSED.slice(0,6).join(', ')+(PASSED.length>6?' and '+(PASSED.length-6)+' more':'')
       : '';
   }
