@@ -462,6 +462,8 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   color:var(--ink);opacity:0;transform:translateY(5px) scale(.98);pointer-events:none;
   transition:opacity var(--sp-fast),transform var(--sp-fast) var(--ease-out)}
 .tip[data-on="1"]{opacity:1;transform:none}
+.tip em{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--line-2);
+  font-style:normal;color:var(--ink);font-weight:500}
 .tip b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:13px;
   margin-bottom:5px;letter-spacing:-.02em}
 
@@ -2114,6 +2116,7 @@ function analyse(m, bars){
    ═══════════════════════════════════════════════════════════════ */
 const MEANING={
   ma20:(v,m,a)=>({
+    brief:'Price against its own average over roughly the last day. Above it, buyers have been paying up.',
     what:'The 20-bar average is roughly the last day of hourly trading, smoothed. Price above it means buyers have been paying up recently; below it means sellers have been hitting bids. It is the quickest of the three averages, so it turns first — and it gives the most false turns.',
     now: a.s20==null ? 'There are not enough bars yet to have a 20-bar average.'
       : (v.vote==='for'
@@ -2121,6 +2124,7 @@ const MEANING={
         : 'Price is '+v.val.replace('−','')+' below it, so the last day of trading reads down.')
   }),
   ma50:(v,m,a)=>({
+    brief:'The same test over about two days, so a single loud hour barely moves it.',
     what:'About two days of hourly bars. Slower than the 20, so one loud hour barely moves it — this is closer to the direction of the week than the direction of the morning.',
     now: a.s50==null ? 'Not enough history yet for a 50-bar average.'
       : (v.vote==='for'
@@ -2128,6 +2132,7 @@ const MEANING={
         : 'Price sits '+v.val.replace('−','')+' below it, which is the shape of a decline that has lasted more than a session.')
   }),
   ma100:(v,m,a)=>({
+    brief:'The same test over about four days. The slow one — it only turns when a move has lasted.',
     what:'About four days. This is the slow one, and it only changes its mind when a move has really persisted. When price and the 100 disagree with the faster averages, the disagreement itself is the information.',
     now: a.s100==null ? 'Not enough history yet for a 100-bar average.'
       : (v.vote==='for'
@@ -2135,6 +2140,7 @@ const MEANING={
         : 'Price is '+v.val.replace('−','')+' below it — the longer backdrop reads down.')
   }),
   stack:(v,m,a)=>({
+    brief:'Whether the fast average sits above the slow one. Short above long is the textbook uptrend.',
     what:'Whether the fast average sits above the slow one. Short above long means recent prices are higher than older prices, which is as close to a definition of an uptrend as this gets. Stacked the other way is a downtrend. It is the single most-used trend test there is, which also means everyone else can see it.',
     now: (a.s20==null||a.s50==null) ? 'Not enough bars to compare the two averages.'
       : (v.vote==='for'
@@ -2142,6 +2148,7 @@ const MEANING={
         : 'The 50 is above the 20, so the stack reads down.')
   }),
   rsi:(v,m,a)=>({
+    brief:'How one-sided the last 14 hours were, 0 to 100. Over 70 is called overbought, under 30 oversold.',
     what:'How one-sided the last 14 bars have been, on a 0 to 100 scale. Above 70 gets called overbought and below 30 oversold, but a strong trend can sit pinned at either end for days — so it describes pressure, not a turning point.',
     now: a.rsi==null ? 'Not enough bars to compute it.'
       : a.rsi>70 ? 'At '+a.rsi.toFixed(1)+' it is in the range usually called overbought: buying has been persistent, which reads up while it lasts and unwinds quickly when it stops.'
@@ -2151,6 +2158,7 @@ const MEANING={
       : 'At '+a.rsi.toFixed(1)+' it is squarely in the middle. Neither side has had the upper hand, so this one casts no vote.'
   }),
   chg24:(v,m,a)=>({
+    brief:'Where price is against this time yesterday. Says nothing about whether the move is still going.',
     what:'Where price is against this time yesterday. It is the number every other site leads with, and on its own it says nothing about whether the move is still going — a market can be up 8% and have spent the last six hours giving it back.',
     now: v.vote==='flat'
       ? 'At '+v.val+' it has barely moved in a day, so it casts no vote here.'
@@ -2159,6 +2167,7 @@ const MEANING={
         : 'Down '+v.val.replace('−','')+' on the day, which reads down — the averages above say whether that is still in progress.')
   }),
   rvol:(v,m,a)=>({
+    brief:'How busy the last full hour was against its own average. Heavy means people are acting; light means drifting.',
     what:'How much traded in the last finished hour, against the twenty hours before it. This is the confirmation measure: a move on heavy volume is people acting, and a move on almost none is a price drifting because nobody is on the other side. The hour in progress is excluded, because only part of it has happened.',
     now: a.rvol==null ? 'Not enough completed hours to compare against.'
       : a.rvol>1.25 ? 'At '+a.rvol.toFixed(2)+'× normal, real size is behind this move — it confirms whichever way price went.'
@@ -2170,6 +2179,16 @@ const MEANING={
       : 'At '+a.rvol.toFixed(2)+'× normal this is ordinary participation — neither confirmation nor a warning, so it casts no vote.'
   })
 };
+/* A tooltip has room for a sentence, not a paragraph: what the measure is,
+   then what it currently reads. The old one said "Price vs 50-bar average —
+   50-bar SMA $5.391", which restates the label and hands over a raw number. */
+function meaningTip(v,m,a){
+  const mn=meaningFor(v,m,a);
+  if(!mn) return v.label+' — '+v.why+'.';
+  /* two parts, visibly: what the measure is, then what it currently reads.
+     Run together they read as one long sentence nobody finishes. */
+  return '<b>'+v.label+'</b>'+(mn.brief||'')+'<em>'+mn.now+'</em>';
+}
 function meaningFor(v,m,a){
   const f=MEANING[v.id];
   if(!f) return null;
@@ -3029,7 +3048,7 @@ ROUTES.radar=async function(args){
     const wk=el('div','wk');
     r.votes.forEach(v=>{
       const i=el('div','wk-i'); i.dataset.v=v.vote;
-      i.setAttribute('data-tip', v.label+' — '+v.why+'.');
+      i.setAttribute('data-tip', meaningTip(v,m,a));
       i.append(el('div','v', v.vote==='for'?'↑':v.vote==='against'?'↓':'·'),
                el('b',null,v.label), el('div','n',v.val));
       wk.appendChild(i);
