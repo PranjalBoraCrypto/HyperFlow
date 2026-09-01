@@ -1151,7 +1151,7 @@ function refBlock(kind){
   a.href=REF; a.target='_blank'; a.rel='noopener';
   a.addEventListener('click',()=>track('ref:'+kind));
   box.append(t,a);
-  requestAnimationFrame(()=>drawSeal(cv,60,'homestead','ref'));
+  drawSeal(cv,60,'homestead','ref');
   return box;
 }
 
@@ -1215,7 +1215,7 @@ function viewHome(){
     b.append(cv,tx);
     b.addEventListener('click',()=>go(t.a));
     tries.appendChild(b);
-    requestAnimationFrame(()=>drawSeal(cv,28,seal,t.a));
+    drawSeal(cv,28,seal,t.a);
   });
   b1.body.append(lab,tries);
   app.appendChild(b1.node);
@@ -1253,12 +1253,12 @@ function viewCast(you){
     const c=el('div','cast-c'); if(you===t.id) c.dataset.you='1';
     const cv=el('canvas'); c.append(cv, el('b',null,t.name), el('span',null,t.tag));
     grid.appendChild(c);
-    requestAnimationFrame(()=>drawSeal(cv,64,t.id,'cast'));
+    drawSeal(cv,64,t.id,'cast');
   });
   const proof=el('div');
   proof.append(el('div','lab','the same art at leaderboard-row size — legibility checked at the small end first'));
   const mini=el('div','cast-mini');
-  CAST.forEach(t=>{ const cv=el('canvas'); mini.appendChild(cv); requestAnimationFrame(()=>drawSeal(cv,28,t.id,'cast')); });
+  CAST.forEach(t=>{ const cv=el('canvas'); mini.appendChild(cv); drawSeal(cv,28,t.id,'cast'); });
   proof.appendChild(mini);
   b.body.append(h,p,grid,proof);
   app.appendChild(b.node); reveal(app);
@@ -1320,7 +1320,7 @@ async function viewWallet(addr){
   id.appendChild(idt);
   b0.body.appendChild(id);
   app.appendChild(b0.node);
-  requestAnimationFrame(()=>drawSeal(seal,96,a.weak?'homestead':a.id,addr));
+  drawSeal(seal,96,a.weak?'homestead':a.id,addr);
 
   /* ---- headline tiles ---- */
   const b1=blk('Right now','02');
@@ -1397,7 +1397,7 @@ async function viewWallet(addr){
     const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
     e.append(el('h3',null,'Nothing open'), el('p',null,'This wallet has no perp position on the main book right now. That is a fact about this moment, not a judgement — it may still be staking, holding spot, or trading elsewhere.'));
     b3.body.appendChild(e);
-    requestAnimationFrame(()=>drawSeal(cv,88,'anchor',addr));
+    drawSeal(cv,88,'anchor',addr);
   }
   app.appendChild(b3.node);
 
@@ -1436,7 +1436,7 @@ async function viewWallet(addr){
   } else {
     const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
     e.append(el('h3',null,'No fills in reach'), el('p',null,'The exchange returned no fills for this address. Either it has never traded, or its trading sits in subaccounts — check the block below.'));
-    b4.body.append(e, refBlock('nofills')); requestAnimationFrame(()=>drawSeal(cv,88,'ember',addr));
+    b4.body.append(e, refBlock('nofills')); drawSeal(cv,88,'ember',addr);
   }
   app.appendChild(b4.node);
 
@@ -1456,7 +1456,7 @@ async function viewWallet(addr){
   } else {
     const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
     e.append(el('h3',null,'Hasn’t staked'), el('p',null,'No delegation history for this address. That is missing data, not a zero — the staking component of the depth score is shown as missing above.'));
-    b5.body.appendChild(e); requestAnimationFrame(()=>drawSeal(cv,88,'anchor',addr));
+    b5.body.appendChild(e); drawSeal(cv,88,'anchor',addr);
   }
   app.appendChild(b5.node);
 
