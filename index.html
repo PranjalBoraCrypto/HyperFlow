@@ -4333,11 +4333,17 @@ ROUTES.coin=async function(args){
       return r;
     };
 
-    /* One frame per animation frame at most, and only the new rows are built.
-       Existing rows are never touched, so nothing already on screen redraws. */
-    let raf=null;
-    const schedule=()=>{ if(raf) return;
-      raf=requestAnimationFrame(()=>{ raf=null; flush(); }); };
+    /* Coalesced on a TIMER, not requestAnimationFrame. rAF does not fire in a
+       view the browser is not painting — a background tab, an occluded pane —
+       so a tape gated behind it receives every trade and renders none of them,
+       which is exactly what happened: the socket took 47 trades and the list
+       stayed on "waiting for the first print". Fourth time in this project
+       that hanging work off a frame callback has produced silent emptiness.
+       A timer also bounds the DOM work better than the frame rate does: at
+       most one insert pass every 220ms however busy the market gets. */
+    let timer=null;
+    const schedule=()=>{ if(timer) return;
+      timer=setTimeout(()=>{ timer=null; flush(); },220); };
     function flush(){
       if(!dirty) return; dirty=false;
       if(empty.isConnected) empty.remove();
@@ -4372,7 +4378,9 @@ ROUTES.coin=async function(args){
         if(feed.length>CAP) feed=feed.slice(-CAP);
         /* the seen-set would grow without bound on a busy market */
         if(seen.size>4000) seen.clear();
-        if(dirty) schedule();
+        if(!dirty) return;
+        if(!list.querySelector('.cn-tr')) flush();   /* first print: no delay */
+        else schedule();
       };
       ws.onclose=()=>{ live=false;
         if(!retry) retry=setTimeout(()=>{ retry=null; if(tapeHost.isConnected) connect(); },4000); };
@@ -4380,7 +4388,7 @@ ROUTES.coin=async function(args){
     };
     connect();
     ACTIVE.push(()=>{ if(retry) clearTimeout(retry); retry=1;
-      if(raf) cancelAnimationFrame(raf);
+      if(timer) clearTimeout(timer);
       try{ ws&&ws.close(); }catch(e){} });
   }
 
