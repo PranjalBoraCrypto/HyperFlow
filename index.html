@@ -15,6 +15,11 @@
 <meta name="twitter:title" content="HyperFlow — what's worth trading on Hyperliquid right now">
 <meta name="twitter:description" content="Every Hyperliquid market ranked live, with the working shown.">
 <meta name="twitter:image" content="/og.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#030C0A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
@@ -127,11 +132,20 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
 .micro{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.17em;
   text-transform:uppercase; color:var(--ink-3); font-weight:500}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* scrollbars belong to the theme, not the OS */
+html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 *{scrollbar-width:thin; scrollbar-color:var(--line-3) transparent}
-*::-webkit-scrollbar{width:11px;height:11px}
-*::-webkit-scrollbar-track{background:transparent}
-*::-webkit-scrollbar-thumb{background:var(--line-3);border-radius:99px;border:3px solid var(--g0)}
-*::-webkit-scrollbar-thumb:hover{background:var(--mint-3)}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--g1);border-left:1px solid var(--line)}
+::-webkit-scrollbar-corner{background:var(--g1)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--line-3),var(--line-2));
+  border-radius:99px;border:3px solid var(--g1);background-clip:padding-box;min-height:44px}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--mint-3),var(--line-3));
+  background-clip:padding-box}
+::-webkit-scrollbar-thumb:active{background:var(--mint-3);background-clip:padding-box}
+*:not(html)::-webkit-scrollbar{width:10px;height:10px}
+*:not(html)::-webkit-scrollbar-track{background:transparent;border:0}
+*:not(html)::-webkit-scrollbar-thumb{border-color:transparent}
 
 /* ═══════════════ SHELL ═══════════════ */
 .shell{position:relative;z-index:1;display:grid;grid-template-columns:var(--rail) 1fr;min-height:100vh}
@@ -261,6 +275,19 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
 .sheet .it[aria-current="page"]{border-color:var(--mint-2);color:var(--mint);background:var(--mint-wash)}
 .sheet .it svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;flex:none}
 .sheet .it b{font-size:13.5px;font-weight:600}
+
+/* ═══════════════ SECTION RHYTHM ═══════════════
+   One scale for the space between sections, so nothing is ever
+   spaced by feel. Sections breathe more than the blocks inside them. */
+.sec{margin-top:clamp(44px,6vw,86px)}
+.sec:first-child{margin-top:0}
+.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-bottom:clamp(14px,1.8vw,20px);padding-bottom:13px;border-bottom:1px solid var(--line)}
+.sec-h .l{min-width:0;display:flex;flex-direction:column;gap:5px}
+.sec-h h2{font-size:clamp(19px,2.6vw,27px)}
+.sec-h p{font-size:13.5px;color:var(--ink-3);max-width:66ch}
+.sec-h .r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gap-lg{height:clamp(26px,3.4vw,44px)}
 
 /* ═══════════════ PRIMITIVES ═══════════════ */
 .card{position:relative;background:var(--g1);border:1px solid var(--line);border-radius:var(--r3);
@@ -450,23 +477,24 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
 /* the working */
 .mk-body{display:none;padding:0 16px 17px 19px;flex-direction:column;gap:14px}
 .mk[data-open="1"] .mk-body{display:flex;animation:pgIn .34s var(--ease-out)}
-.wk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(268px,100%),1fr));gap:9px}
-.wk-i{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;padding:11px 13px;
-  border-radius:var(--r2);background:var(--g2);border:1px solid var(--line);
-  transition:border-color var(--sp),background var(--sp)}
-.wk-i:hover{border-color:var(--line-2);background:var(--g3)}
-.wk-i .v{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+/* the working: one line per measure. The reasoning moved into the tooltip —
+   seven paragraphs of justification on screen is not transparency, it is noise. */
+.wk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(238px,100%),1fr));gap:1px 22px;
+  background:var(--g2);border:1px solid var(--line);border-radius:var(--r2);padding:5px 4px}
+.wk-i{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;padding:8px 10px;
+  border-radius:9px;transition:background var(--sp);cursor:help}
+.wk-i:hover{background:var(--g3)}
+.wk-i .v{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700}
 .wk-i[data-v="for"] .v{background:var(--up-wash);color:var(--up)}
 .wk-i[data-v="against"] .v{background:var(--down-wash);color:var(--down)}
-.wk-i[data-v="flat"] .v{background:var(--g3);color:var(--ink-3)}
-.wk-i .t{min-width:0;display:flex;flex-direction:column;gap:1px}
-.wk-i .t b{font-size:12.5px;font-weight:600}
-.wk-i .t s{text-decoration:none;font-size:11px;color:var(--ink-3);line-height:1.35}
-.wk-i .n{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;
-  white-space:nowrap}
+.wk-i[data-v="flat"] .v{background:var(--g3);color:var(--ink-4)}
+.wk-i b{font-size:12.5px;font-weight:500;color:var(--ink-2);min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-i .n{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;
+  font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
 
 /* practical panel: what it costs, what it moves */
-.pr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:9px}
+.pr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(158px,100%),1fr));gap:9px}
 .pr{padding:12px 14px;border-radius:var(--r2);background:var(--g2);border:1px solid var(--line);
   display:flex;flex-direction:column;gap:3px;min-width:0}
 .pr .k{display:flex;align-items:center;gap:6px}
@@ -491,8 +519,72 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
   transition:border-color var(--sp),color var(--sp),transform var(--sp) var(--spring)}
 .szbox .pre button:hover{border-color:var(--mint-2);color:var(--mint);transform:translateY(-1px)}
 
+/* ═══════════════ TABLE + PAGER ═══════════════ */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r3);background:var(--g1)}
+.tw table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+.tw th,.tw td{padding:11px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+.tw thead th{position:sticky;top:0;z-index:2;background:var(--g2);font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  cursor:pointer;user-select:none;transition:color var(--sp)}
+.tw thead th:hover{color:var(--mint)}
+.tw thead th .ar{opacity:0;font-size:9px;margin-left:4px}
+.tw thead th[data-sort] .ar{opacity:1;color:var(--mint)}
+.tw tbody tr{transition:background var(--sp-fast);cursor:pointer}
+.tw tbody tr:hover{background:var(--g2)}
+.tw tbody tr:last-child td{border-bottom:none}
+.tw td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.tw td.r,.tw th.r{text-align:right}
+.tw td b{font-weight:600}
+.tw .up{color:var(--up)} .tw .down{color:var(--down)} .tw .dim{color:var(--ink-3)}
+.pgr{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding-top:13px;margin-top:13px;
+  border-top:1px solid var(--line)}
+.pgb{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;
+  border:1px solid var(--line-2);background:var(--g1);color:var(--ink-2);
+  transition:color var(--sp),border-color var(--sp),transform var(--sp) var(--spring)}
+.pgb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pgb:hover:not(:disabled){color:var(--mint);border-color:var(--mint-2);transform:translateY(-2px)}
+.pgb:active:not(:disabled){transform:scale(.92)}
+.pgb:disabled{opacity:.3;cursor:default}
+.pgd{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pgd button{width:8px;height:8px;border-radius:99px;background:var(--line-3);flex:none;
+  transition:background var(--sp),width var(--sp) var(--spring)}
+.pgd button:hover{background:var(--ink-3)}
+.pgd button.on{background:var(--mint);width:22px;border-radius:99px}
+.pgn{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums}
+@media (max-width:640px){ .pgb{width:44px;height:44px} .pgn{margin-left:0;width:100%} }
+@keyframes pgFlick{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* funding board */
+.fb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:820px){ .fb{grid-template-columns:1fr} }
+.fb-col{display:flex;flex-direction:column;gap:7px}
+.fb-hd{display:flex;align-items:center;gap:8px;padding:0 2px 4px}
+.fb-hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
+.fb-r{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 14px;
+  border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+  transition:border-color var(--sp),transform var(--sp) var(--ease)}
+.fb-r:hover{border-color:var(--line-2);transform:translateX(3px)}
+.fb-r .m{min-width:0;display:flex;flex-direction:column;gap:2px}
+.fb-r .m b{font-size:13.5px;font-weight:600}
+.fb-r .m s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
+.fb-r .a{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.fb-r .bar{width:56px;height:5px;border-radius:99px;background:var(--g3);overflow:hidden;flex:none}
+.fb-r .bar i{display:block;height:100%;border-radius:99px;transform-origin:left;transform:scaleX(0);
+  transition:transform .8s var(--ease)}
+
+/* method / provenance */
+.mt{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:10px}
+.mt-c{padding:16px 18px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+  display:flex;flex-direction:column;gap:7px;transition:border-color var(--sp)}
+.mt-c:hover{border-color:var(--line-2)}
+.mt-c b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
+.mt-c p{font-size:12.5px;color:var(--ink-3);line-height:1.6}
+.mt-c code{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--mint-2);
+  background:var(--g2);border-radius:5px;padding:1px 5px}
+
 /* ═══ the tension rope — verlet chain, real constraint solving ═══ */
-.rope{position:relative;height:150px;border-radius:var(--r2);background:var(--g2);border:1px solid var(--line);
+.rope{position:relative;height:132px;border-radius:var(--r2);background:var(--g2);border:1px solid var(--line);
   overflow:hidden;touch-action:none;cursor:grab}
 .rope:active{cursor:grabbing}
 .rope canvas{display:block;width:100%;height:100%}
@@ -1235,88 +1327,95 @@ function scanLoader(mount,total,steps){
 function tensionRope(host, biasFn){
   const cv=el('canvas'); host.appendChild(cv);
   let W=0,H=0,c=null,raf=null,run=false;
-  const N=26, pts=[], rest=[];
-  function size(){ const r=host.getBoundingClientRect(); if(!r.width) return false;
+  const N=22, pts=[]; let rest=0, anchorY=0;
+  function size(){
+    const r=host.getBoundingClientRect(); if(!r.width) return false;
     W=r.width;H=r.height;c=fit(cv,W,H,1.6);
-    const y=H*0.42, span=W-44;
-    for(let i=0;i<N;i++){ const x=22+span*(i/(N-1));
-      if(!pts[i]) pts[i]={x,y,px:x,py:y}; }
-    for(let i=0;i<N-1;i++) rest[i]=span/(N-1)*1.06;   /* slight slack, so it sags */
-    return true; }
+    const span=W-48; anchorY=H*0.34;
+    /* only 1.5% slack. The first version used 6% with heavy gravity and five
+       relaxation passes, which could not hold it — the middle fell out of the
+       box entirely and the "rope" rendered as two diagonal lines. */
+    rest=span/(N-1)*1.015;
+    for(let i=0;i<N;i++){
+      const x=24+span*(i/(N-1));
+      if(!pts[i]) pts[i]={x,y:anchorY+10,px:x,py:anchorY+10};
+    }
+    return true;
+  }
   size();
-  let grab=-1, mx=0, my=0, mvx=0, mvy=0;
-  function nearest(x,y){ let b=-1,bd=999; pts.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y); if(d<bd){bd=d;b=i;}});
-    return bd<38? b : -1; }
-  host.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect();
-    mx=e.clientX-r.left; my=e.clientY-r.top; grab=nearest(mx,my);
-    if(grab>=0) host.setPointerCapture(e.pointerId); });
+  let grab=-1,mx=0,my=0,mvx=0,mvy=0;
+  const near=(x,y)=>{ let b=-1,bd=1e9;
+    pts.forEach((p,i)=>{ if(i===0||i===N-1) return; const d=Math.hypot(p.x-x,p.y-y); if(d<bd){bd=d;b=i;} });
+    return bd<44?b:-1; };
+  host.addEventListener('pointerdown',e=>{
+    const r=cv.getBoundingClientRect(); mx=e.clientX-r.left; my=e.clientY-r.top;
+    grab=near(mx,my); if(grab>=0){ host.setPointerCapture(e.pointerId); e.preventDefault(); } });
   host.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect();
     const nx=e.clientX-r.left, ny=e.clientY-r.top; mvx=nx-mx; mvy=ny-my; mx=nx; my=ny; },{passive:true});
-  const release=()=>{ if(grab>=0){ const p=pts[grab]; p.px=p.x-mvx*1.4; p.py=p.y-mvy*1.4; } grab=-1; };
-  host.addEventListener('pointerup',release); host.addEventListener('pointercancel',release);
-  host.addEventListener('pointerleave',release);
+  const release=()=>{ if(grab>=0){ const p=pts[grab]; p.px=p.x-clamp(mvx,-14,14); p.py=p.y-clamp(mvy,-14,14); } grab=-1; };
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>host.addEventListener(ev,release));
 
   function frame(){
     if(!run) return;
     raf=requestAnimationFrame(frame);
     if(!cv.isConnected){ run=false; cancelAnimationFrame(raf); return; }
     if(!W&&!size()) return;
-    const bias=clamp(biasFn(),-1,1);                  /* −1 all long, +1 all short */
-    const loadI=Math.round((N-1)*(0.5+bias*0.38));
-    /* verlet step */
+    const bias=clamp(biasFn(),-1,1);
+    const loadI=Math.round((N-1)*(0.5+bias*0.34));
+    const G=0.12;                                   /* gentle — the rope is taut, not a swing */
     for(let i=1;i<N-1;i++){
       const p=pts[i];
-      const vx=(p.x-p.px)*0.985, vy=(p.y-p.py)*0.985;
-      p.px=p.x; p.py=p.y;
-      p.x+=vx; p.y+=vy+0.34;                          /* gravity */
-      if(i===loadI) p.y+=1.5*Math.abs(bias)+0.5;      /* the load hangs here */
+      const vx=clamp((p.x-p.px)*0.97,-9,9), vy=clamp((p.y-p.py)*0.97,-9,9);
+      p.px=p.x; p.py=p.y; p.x+=vx; p.y+=vy+G;
+      if(i===loadI) p.y+=0.34+Math.abs(bias)*0.5;   /* the load, where funding puts it */
     }
-    if(grab>=0 && grab>0 && grab<N-1){ pts[grab].x=mx; pts[grab].y=my; }
-    /* constraint relaxation */
-    for(let k=0;k<5;k++){
+    if(grab>0&&grab<N-1){ pts[grab].x=clamp(mx,10,W-10); pts[grab].y=clamp(my,10,H-10); }
+    /* 16 relaxation passes, and a pinned neighbour hands its whole share to the
+       free one — half-corrections against a fixed anchor never converge */
+    for(let k=0;k<16;k++){
       for(let i=0;i<N-1;i++){
-        const a=pts[i], b=pts[i+1];
-        const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1;
-        const diff=(d-rest[i])/d*0.5;
-        const ox=dx*diff, oy=dy*diff;
-        if(i!==0 && !(grab===i)){ a.x+=ox; a.y+=oy; }
-        if(i+1!==N-1 && !(grab===i+1)){ b.x-=ox; b.y-=oy; }
+        const a=pts[i], b2=pts[i+1];
+        const aFixed = i===0 || grab===i, bFixed = i+1===N-1 || grab===i+1;
+        if(aFixed&&bFixed) continue;
+        const dx=b2.x-a.x, dy=b2.y-a.y, d=Math.hypot(dx,dy)||1;
+        const diff=(d-rest)/d;
+        const wA = aFixed?0 : (bFixed?1:0.5), wB = bFixed?0 : (aFixed?1:0.5);
+        a.x+=dx*diff*wA; a.y+=dy*diff*wA;
+        b2.x-=dx*diff*wB; b2.y-=dy*diff*wB;
       }
-      pts[0].x=22; pts[0].y=H*0.34; pts[N-1].x=W-22; pts[N-1].y=H*0.34;
+      pts[0].x=24; pts[0].y=anchorY; pts[N-1].x=W-24; pts[N-1].y=anchorY;
     }
-    /* draw */
+    /* nothing leaves the box, ever */
+    for(let i=1;i<N-1;i++){ pts[i].x=clamp(pts[i].x,6,W-6); pts[i].y=clamp(pts[i].y,8,H-8); }
+
     const up=tok('--up'), dn=tok('--down'), line=tok('--line-2'), ink3=tok('--ink-3');
     c.clearRect(0,0,W,H);
-    c.strokeStyle=line; c.lineWidth=1;
-    c.beginPath(); c.moveTo(W/2,10); c.lineTo(W/2,H-10); c.stroke();
-    /* posts */
-    [[22,up],[W-22,dn]].forEach(([x,col])=>{
-      c.strokeStyle=col; c.lineWidth=3; c.globalAlpha=.55;
-      c.beginPath(); c.moveTo(x,H*0.34); c.lineTo(x,H-14); c.stroke(); c.globalAlpha=1;
-      c.fillStyle=col; c.beginPath(); c.arc(x,H*0.34,4.5,0,7); c.fill();
+    c.strokeStyle=line; c.lineWidth=1; c.setLineDash([3,5]);
+    c.beginPath(); c.moveTo(W/2,12); c.lineTo(W/2,H-12); c.stroke(); c.setLineDash([]);
+    [[24,up],[W-24,dn]].forEach(([x,col])=>{
+      c.strokeStyle=col; c.globalAlpha=.4; c.lineWidth=2.5;
+      c.beginPath(); c.moveTo(x,anchorY); c.lineTo(x,H-12); c.stroke(); c.globalAlpha=1;
+      c.fillStyle=col; c.beginPath(); c.arc(x,anchorY,4.5,0,7); c.fill();
     });
-    /* the rope, coloured by which way it is pulled */
-    const g=c.createLinearGradient(22,0,W-22,0);
-    g.addColorStop(0,up); g.addColorStop(1,dn);
-    c.strokeStyle=g; c.lineWidth=2.6; c.lineJoin='round'; c.lineCap='round';
-    c.beginPath();
-    pts.forEach((p,i)=>{ if(!i) c.moveTo(p.x,p.y);
-      else { const q=pts[i-1]; c.quadraticCurveTo(q.x,q.y,(q.x+p.x)/2,(q.y+p.y)/2); } });
-    c.stroke();
-    /* the load */
-    const L=pts[loadI];
-    const col = bias>0? dn : bias<0? up : ink3;
-    c.fillStyle=col; c.beginPath(); c.arc(L.x,L.y,8,0,7); c.fill();
-    c.fillStyle=tok('--g1'); c.beginPath(); c.arc(L.x,L.y,3.4,0,7); c.fill();
-    c.globalAlpha=.2; c.fillStyle=col; c.beginPath(); c.arc(L.x,L.y,16,0,7); c.fill(); c.globalAlpha=1;
+    const g=c.createLinearGradient(24,0,W-24,0);
+    g.addColorStop(0,up); g.addColorStop(.5,ink3); g.addColorStop(1,dn);
+    c.strokeStyle=g; c.lineWidth=2.4; c.lineJoin='round'; c.lineCap='round';
+    c.beginPath(); c.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<N-1;i++){ const p=pts[i],q=pts[i+1];
+      c.quadraticCurveTo(p.x,p.y,(p.x+q.x)/2,(p.y+q.y)/2); }
+    c.lineTo(pts[N-1].x,pts[N-1].y); c.stroke();
+    const L=pts[loadI], col=bias>0?dn:bias<0?up:ink3;
+    c.globalAlpha=.18; c.fillStyle=col; c.beginPath(); c.arc(L.x,L.y,15,0,7); c.fill(); c.globalAlpha=1;
+    c.fillStyle=col; c.beginPath(); c.arc(L.x,L.y,7,0,7); c.fill();
+    c.fillStyle=tok('--g2'); c.beginPath(); c.arc(L.x,L.y,2.8,0,7); c.fill();
   }
   const io=new IntersectionObserver(es=>{
-    const on=es[0].isIntersecting && !RM();
+    const on=es[0].isIntersecting&&!RM();
     if(on&&!run){ if(size()){ run=true; raf=requestAnimationFrame(frame); } }
     else if(!on&&run){ run=false; cancelAnimationFrame(raf); }
   },{threshold:.05});
   io.observe(host);
-  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected)size();},150);};
+  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected){pts.length=0;size();}},150);};
   addEventListener('resize',onR);
   ACTIVE.push(()=>{ run=false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize',onR); });
   if(RM()&&size()){ run=true; frame(); run=false; }
@@ -1366,17 +1465,16 @@ function refBlock(kind){
    only the shortlist gets charts. That constraint is on the page,
    not hidden behind it.
    ═══════════════════════════════════════════════════════════════ */
-let LENS_ID='momentum', DEPTH=12, NOTIONAL=10000;
-/* the scan is expensive; a lens switch is a re-sort of data already in hand */
-let RADAR={t:0,U:null,short:null,det:null};
+let LENS_ID='momentum', DEPTH=10;
 try{ LENS_ID=localStorage.getItem('hf.lens')||'momentum'; }catch(e){}
+let RADAR={t:0,U:null,short:null,det:null};
 
 function universe(meta,ctxs){
   return meta.universe.map((u,i)=>{
     const c=ctxs[i]||{}, mark=+c.markPx, prev=+c.prevDayPx, oi=+c.openInterest;
     const imp=(c.impactPxs||[]).map(Number);
-    return {name:u.name, maxLev:u.maxLeverage, szDec:u.szDecimals,
-      mark, oracle:+c.oraclePx, mid:+c.midPx,
+    return {name:u.name, maxLev:u.maxLeverage,
+      mark, oracle:+c.oraclePx,
       chg: prev? (mark-prev)/prev*100 : 0,
       fundingHr:+c.funding*100, fundingApr:+c.funding*24*365*100,
       oiNtl: oi*mark, vol:+c.dayNtlVlm,
@@ -1387,28 +1485,58 @@ function universe(meta,ctxs){
   }).filter(m=>isFinite(m.mark)&&m.mark>0);
 }
 
+/* a pager that re-flicks its list, so a page change reads as movement */
+function pager(host, total, per, page, onPage){
+  host.innerHTML='';
+  const pages=Math.ceil(total/per)||1;
+  if(pages<2){ host.hidden=true; return; }
+  host.hidden=false;
+  const mk=(d,lbl,path)=>{ const b=el('button','pgb'); b.setAttribute('aria-label',lbl);
+    b.innerHTML='<svg viewBox="0 0 24 24"><path d="'+path+'"/></svg>';
+    b.disabled = d<0 ? page===0 : page>=pages-1;
+    b.addEventListener('click',()=>onPage(clamp(page+d,0,pages-1))); return b; };
+  host.appendChild(mk(-1,'Previous page','M15 18l-6-6 6-6'));
+  if(pages<=14){
+    const d=el('div','pgd');
+    for(let i=0;i<pages;i++){ const b=el('button'); if(i===page) b.className='on';
+      b.setAttribute('aria-label','Page '+(i+1));
+      b.addEventListener('click',()=>onPage(i)); d.appendChild(b); }
+    host.appendChild(d);
+  } else host.appendChild(el('span','pgn','page '+(page+1)+' of '+pages));
+  host.appendChild(mk(1,'Next page','M9 6l6 6-6 6'));
+  const from=page*per+1, to=Math.min(total,(page+1)*per);
+  host.appendChild(el('span','pgn',from+'–'+to+' of '+total));
+}
+function flick(box){
+  if(RM()) return;
+  [...box.children].forEach((n,i)=>{ n.style.animation='none'; void n.offsetWidth;
+    n.style.animation='pgFlick .3s var(--ease-out) '+Math.min(i,9)*20+'ms both'; });
+}
+function secHead(title, sub, right){
+  const h=el('div','sec-h');
+  const l=el('div','l'); l.append(el('h2',null,title)); if(sub) l.append(el('p',null,sub));
+  h.append(l);
+  if(right) h.append(right);
+  return h;
+}
+
 ROUTES.radar=async function(args){
-  const wrap=el('div');
-  PAGE.appendChild(wrap);
+  const wrap=el('div'); PAGE.appendChild(wrap);
 
   const head=el('div','rd-head');
   const L=el('div');
   const h1=el('h1','rd-h1'); h1.innerHTML='What is worth <em>watching</em> right now.';
-  const sub=el('p','rd-sub','Every Hyperliquid perp, ranked live from the exchange in your own browser. Nothing here is a signal — each row shows the measures behind it, and you can see exactly why it sits where it does.');
-  L.append(h1,sub); head.appendChild(L);
-  wrap.appendChild(head);
+  L.append(h1, el('p','rd-sub','Every Hyperliquid perp, ranked live from the exchange in your own browser. Nothing here is a signal — each row shows the measures behind it, and you can see exactly why it sits where it does.'));
+  head.appendChild(L); wrap.appendChild(head);
 
   const pulse=el('div','rd-pulse');
-  ['Markets scanned','Board direction','Widest funding','Most turnover'].forEach(()=>{
-    const s=el('div','pl'); s.appendChild(el('div','sk',' ')); s.firstChild.style.height='46px'; pulse.appendChild(s);
-  });
+  for(let i=0;i<4;i++){ const s=el('div','pl'); const k=el('div','sk'); k.style.height='52px'; s.appendChild(k); pulse.appendChild(s); }
   wrap.appendChild(pulse);
 
   const mount=el('div'); wrap.appendChild(mount);
   const steps=['Reading every market from one call','Ranking the universe','Pulling charts for the shortlist','Computing the measures'];
   let ld=null, U=[], detail={};
 
-  /* re-entering the page inside the cache window skips the scan entirely */
   if(RADAR.U && Date.now()-RADAR.t < 45000){
     U=RADAR.U; detail=RADAR.det;
     quietly(()=>render(RADAR.U,RADAR.short,RADAR.det));
@@ -1424,18 +1552,11 @@ ROUTES.radar=async function(args){
     for(let i=0;i<U.length;i++) ld.light(i);
     await new Promise(r=>setTimeout(r,240));
     ld.step(1,'done','20 weight');
-
-    const lens=LENS[LENS_ID]||LENS.momentum;
-    const pre = LENS_ID==='funding'
-      ? U.filter(m=>m.oiNtl>3e5).sort((a,b)=>Math.abs(b.fundingApr)*Math.log10(1+b.oiNtl)-Math.abs(a.fundingApr)*Math.log10(1+a.oiNtl))
-      : U.filter(m=>m.vol>2e6).sort((a,b)=>Math.abs(b.chg)*Math.log10(1+b.vol)-Math.abs(a.chg)*Math.log10(1+a.vol));
-    const shortlist=pre.slice(0,DEPTH);
-
+    const shortlist=preselect(U,LENS_ID);
     ld.step(2,'run','0 / '+shortlist.length);
     const now=Date.now();
     for(let i=0;i<shortlist.length;i++){
-      const m=shortlist[i];
-      ld.say('reading '+m.name);
+      const m=shortlist[i]; ld.say('reading '+m.name);
       try{
         const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
           startTime:now-230*3600*1000,endTime:now}},{ttl:60000});
@@ -1447,9 +1568,7 @@ ROUTES.radar=async function(args){
     ld.step(3,'run'); ld.say('');
     await new Promise(r=>setTimeout(r,180));
     ld.step(3,'done',Math.round(performance.now()-t0)+' ms total');
-    ld.finish();
-    await new Promise(r=>setTimeout(r,420));
-    ld.destroy();
+    ld.finish(); await new Promise(r=>setTimeout(r,400)); ld.destroy();
     RADAR={t:Date.now(),U,short:shortlist,det:detail};
     render(U,shortlist,detail);
   }catch(e){
@@ -1457,12 +1576,18 @@ ROUTES.radar=async function(args){
     const c=el('div','card pad');
     c.append(el('h2',null, e.code==='RATE'?'The exchange rate-limited this browser':'Could not read the board'));
     const p=el('p',null, e.code==='RATE'
-      ? 'Rate limits are per IP, so this is about this browser and not the site. A full board scan costs about 310 weight against a budget of 1,200 a minute. Give it a minute.'
+      ? 'Rate limits are per IP, so this is about this browser and not the site. A full board scan costs about 260 weight against a budget of 1,200 a minute. Give it a minute.'
       : 'The request did not complete. The exchange may be briefly unreachable.');
-    p.style.color='var(--ink-2)'; p.style.marginTop='8px'; c.appendChild(p);
+    p.style.cssText='color:var(--ink-2);margin-top:8px'; c.appendChild(p);
     const b=el('button','btn pri','Try again'); b.style.marginTop='14px';
     b.addEventListener('click',()=>route()); c.appendChild(b);
     mount.appendChild(c);
+  }
+
+  function preselect(all,lensId){
+    return lensId==='funding'
+      ? all.filter(m=>m.oiNtl>3e5).sort((a,b)=>Math.abs(b.fundingApr)*Math.log10(1+b.oiNtl)-Math.abs(a.fundingApr)*Math.log10(1+a.oiNtl)).slice(0,DEPTH)
+      : all.filter(m=>m.vol>2e6).sort((a,b)=>Math.abs(b.chg)*Math.log10(1+b.vol)-Math.abs(a.chg)*Math.log10(1+a.vol)).slice(0,DEPTH);
   }
 
   function render(all, shortlist, det){
@@ -1471,92 +1596,181 @@ ROUTES.radar=async function(args){
     const scored=shortlist.map(m=>({m,a:det[m.name],r:det[m.name]?lens.calc(m,det[m.name]):null}))
       .filter(x=>x.r).sort((a,b)=>b.r.score-a.r.score);
 
-    /* ---- venue pulse, computed not decorative ---- */
+    /* ── venue pulse ── */
     const upN=all.filter(m=>m.chg>0).length;
     const widest=all.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
     const churn=all.filter(m=>m.oiNtl>1e6&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
     const totalOi=all.reduce((s,m)=>s+m.oiNtl,0);
     pulse.innerHTML='';
-    const P=(k,v,s,tip,cls)=>{
-      const n=el('div','pl');
+    const P=(k,v,s,tip,cls)=>{ const n=el('div','pl');
       const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
-      const vv=el('div','v'+(cls?' '+cls:''),v);
-      n.append(kk,vv,el('div','s',s)); pulse.appendChild(n); return n;
-    };
-    P('Board direction',Math.round(upN/all.length*100)+'% up',
-      upN+' of '+all.length+' markets above yesterday’s close');
+      n.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); pulse.appendChild(n); };
+    P('Board direction',Math.round(upN/all.length*100)+'% up', upN+' of '+all.length+' above yesterday’s close');
     P('Open interest','$'+fmtC(totalOi),'across every perp market','oi');
-    if(widest) P('Widest funding',pct(widest.fundingApr,0),
-      widest.name+' — '+(widest.fundingApr>0?'longs paying':'shorts paying'),'fundapr',
-      Math.abs(widest.fundingApr)>60?'warn':'');
-    if(churn) P('Most turnover',churn.volOverOi.toFixed(1)+'×',
-      churn.name+' — 24h volume against open interest','vsoi');
+    if(widest) P('Widest funding',pct(widest.fundingApr,0), widest.name+' — '+(widest.fundingApr>0?'longs paying':'shorts paying'),'fundapr',Math.abs(widest.fundingApr)>60?'warn':'');
+    if(churn) P('Most turnover',churn.volOverOi.toFixed(1)+'×', churn.name+' — volume against open interest','vsoi');
     field(pulse);
 
-    /* ---- lens bar ---- */
-    const bar=el('div','rd-lens rv');
-    const left=el('div','rd-lensL');
-    const seg=el('div','seg');
-    const pill=el('div','pill'); seg.appendChild(pill);
+    /* ── NFA ── */
+    const nfa=el('div','nfa rv');
+    nfa.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 8.5v5M12 16.6v.2"/><path d="M10.3 3.9 2.5 17.4A2 2 0 0 0 4.2 20.4h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'+
+      '<p><b>Not financial advice, and not a signal.</b> Everything below is arithmetic on public exchange data with the inputs shown. It describes what the measures currently read — it does not know what price does next, and none of it accounts for your position size, your risk, or the next hour.</p>';
+    nfa.style.marginTop='clamp(20px,2.6vw,32px)';
+    mount.appendChild(nfa);
+
+    /* ── SECTION 1 · the board ── */
+    const s1=el('section','sec rv');
+    const segWrap=el('div','r');
+    const seg=el('div','seg'); const pill=el('div','pill'); seg.appendChild(pill);
     Object.values(LENS).forEach(x=>{
       const b=el('button',null,x.label); b.dataset.lens=x.id;
       if(x.id===LENS_ID) b.className='on';
-      b.addEventListener('click',()=>{
-        if(LENS_ID===x.id) return;
-        LENS_ID=x.id; try{ localStorage.setItem('hf.lens',x.id); }catch(e){}
-        $$('button',seg).forEach(y=>y.classList.toggle('on',y.dataset.lens===x.id));
-        movePill();
-        /* no rescan and no loader — the universe is already in memory, this is
-           a re-sort. Quiet so the section does not flash to invisible and back. */
-        const nl=LENS[LENS_ID];
-        const nextShort = nl.id==='funding'
-          ? RADAR.U.filter(m=>m.oiNtl>3e5).sort((p,q)=>Math.abs(q.fundingApr)*Math.log10(1+q.oiNtl)-Math.abs(p.fundingApr)*Math.log10(1+p.oiNtl)).slice(0,DEPTH)
-          : RADAR.U.filter(m=>m.vol>2e6).sort((p,q)=>Math.abs(q.chg)*Math.log10(1+q.vol)-Math.abs(p.chg)*Math.log10(1+p.vol)).slice(0,DEPTH);
-        const need=nextShort.filter(m=>!RADAR.det[m.name]);
-        if(!need.length){ quietly(()=>render(RADAR.U,nextShort,RADAR.det)); return; }
-        /* only the markets the new lens surfaces that we have not charted yet */
-        const skel=el('div','sk-board');
-        for(let i=0;i<DEPTH;i++){ const r=el('div','sk sk-row'); skel.appendChild(r); }
-        mount.innerHTML=''; mount.appendChild(skel);
-        (async()=>{
-          const now2=Date.now();
-          for(const m of need){
-            try{ const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
-              startTime:now2-230*3600*1000,endTime:now2}},{ttl:60000});
-              if(Array.isArray(bars)&&bars.length>30) RADAR.det[m.name]=analyse(m,bars); }catch(e){}
-          }
-          quietly(()=>render(RADAR.U,nextShort,RADAR.det));
-        })();
-      });
+      b.addEventListener('click',()=>switchLens(x.id,seg,pill));
       seg.appendChild(b);
     });
+    segWrap.appendChild(seg);
+    s1.appendChild(secHead('Top '+scored.length+' right now', lens.blurb, segWrap));
     function movePill(){ const on=$('button.on',seg); if(!on) return;
       pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
-    left.append(seg);
-    bar.append(left,el('div','rd-count','top '+scored.length+' of '+all.length+' · charts only for the shortlist'));
-    wrapInsert(bar);
-    requestAnimationFrame(movePill); setTimeout(movePill,60);
-    const blurb=el('p','rd-count rv'); blurb.style.marginBottom='14px'; blurb.textContent=lens.blurb;
-    wrapInsert(blurb);
-
-    /* ---- NFA ---- */
-    const nfa=el('div','nfa rv');
-    nfa.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 8.5v5M12 16.6v.2"/><path d="M10.3 3.9 2.5 17.4A2 2 0 0 0 4.2 20.4h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'+
-      '<p><b>Not financial advice, and not a signal.</b> Every row below is arithmetic on public exchange data with the inputs shown. It describes what the measures currently read — it does not know what price does next, and none of it accounts for your position size, your risk, or what happens in the next hour.</p>';
-    wrapInsert(nfa);
-
-    /* ---- board ---- */
+    requestAnimationFrame(movePill); setTimeout(movePill,80);
     const board=el('div','rd-board');
     scored.forEach((x,i)=>board.appendChild(row(x,i,lens)));
-    wrapInsert(board);
-    field(board);
+    s1.appendChild(board);
+    mount.appendChild(s1); field(board);
 
-    wrapInsert(refBlock('board'));
+    /* ── SECTION 2 · funding board ── */
+    const s2=el('section','sec rv');
+    s2.appendChild(secHead('Who is paying to hold',
+      'Funding settles every hour across the whole venue. A market pays whichever side is less crowded — this is where that is worth the most right now, weighted against the size standing behind the rate.'));
+    const liq=all.filter(m=>m.oiNtl>1e6);
+    const payShorts=liq.filter(m=>m.fundingApr>0).sort((a,b)=>b.fundingApr-a.fundingApr).slice(0,6);
+    const payLongs =liq.filter(m=>m.fundingApr<0).sort((a,b)=>a.fundingApr-b.fundingApr).slice(0,6);
+    const fb=el('div','fb');
+    [['Shorts collect',payShorts,'up','longs are paying'],
+     ['Longs collect', payLongs,'down','shorts are paying']].forEach(([t,list,cls,why])=>{
+      const col=el('div','fb-col');
+      const hd=el('div','fb-hd'); hd.append(el('span','chip '+cls,t), el('span','micro',why));
+      col.appendChild(hd);
+      const mx=Math.max(...list.map(m=>Math.abs(m.fundingApr)),1);
+      list.forEach(m=>{
+        const r=el('div','fb-r');
+        const mm=el('div','m'); mm.append(el('b',null,m.name), el('s',null,'$'+fmtC(m.oiNtl)+' OI'));
+        const bar=el('div','bar'); const bi=el('i'); bi.style.background='var(--'+cls+')'; bar.appendChild(bi);
+        r.append(mm,bar,el('div','a',pct(m.fundingApr,0)));
+        r.style.cursor='pointer';
+        r.addEventListener('click',()=>{ location.hash='#/radar/'+m.name; });
+        col.appendChild(r);
+        void bi.offsetWidth; bi.style.transform='scaleX('+(Math.abs(m.fundingApr)/mx)+')';
+      });
+      if(!list.length) col.appendChild(el('p','rd-count','No market with meaningful size is paying this side right now.'));
+      fb.appendChild(col);
+    });
+    s2.appendChild(fb);
+    mount.appendChild(s2);
+
+    /* ── SECTION 3 · the whole board ── */
+    const s3=el('section','sec rv');
+    const filt=el('div','r');
+    const search=el('input'); search.type='search'; search.placeholder='Filter markets';
+    search.setAttribute('aria-label','Filter markets');
+    search.style.cssText='height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
+      'color:var(--ink);font-family:\'IBM Plex Mono\',monospace;font-size:13px;padding:0 13px;outline:none;min-width:0;width:min(220px,60vw)';
+    filt.appendChild(search);
+    s3.appendChild(secHead('Every market', 'All '+all.length+' perps from the same single call. Sortable, and the shortlist above is drawn from here. No charts are pulled for this table — that is what keeps it free.', filt));
+    const tw=el('div','tw');
+    const pg=el('div','pgr');
+    let sortKey='vol', sortDir=-1, tPage=0, TPER=15, query='';
+    const COLS=[['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
+                ['oiNtl','Open interest',1],['fundingApr','Funding APR',1],['volOverOi','Vol / OI',1],['spreadPct','Spread',1]];
+    function paintTable(){
+      const rows=all.filter(m=>!query||m.name.toLowerCase().includes(query))
+        .slice().sort((a,b)=>{
+          const x=a[sortKey], y=b[sortKey];
+          if(sortKey==='name') return sortDir*String(x).localeCompare(String(y));
+          return sortDir*((y==null?-Infinity:y)-(x==null?-Infinity:x));
+        });
+      const pages=Math.ceil(rows.length/TPER)||1; tPage=clamp(tPage,0,pages-1);
+      tw.innerHTML='<table><thead><tr>'+COLS.map(c=>
+        '<th class="'+(c[2]?'r':'')+'" data-k="'+c[0]+'"'+(c[0]===sortKey?' data-sort="1"':'')+'>'+c[1]+
+        '<span class="ar">'+(c[0]===sortKey?(sortDir<0?'▼':'▲'):'')+'</span></th>').join('')+
+        '</tr></thead><tbody></tbody></table>';
+      const tb=$('tbody',tw);
+      rows.slice(tPage*TPER,(tPage+1)*TPER).forEach(m=>{
+        const tr=el('tr'); tr.dataset.coin=m.name;
+        tr.innerHTML='<td><b>'+m.name+'</b></td>'+
+          '<td class="n r">'+px(m.mark)+'</td>'+
+          '<td class="n r '+(m.chg>=0?'up':'down')+'">'+pct(m.chg)+'</td>'+
+          '<td class="n r">$'+fmtC(m.vol)+'</td>'+
+          '<td class="n r">$'+fmtC(m.oiNtl)+'</td>'+
+          '<td class="n r '+(m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+pct(m.fundingApr,1)+'</td>'+
+          '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
+          '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
+        tr.addEventListener('click',()=>{ location.hash='#/radar/'+m.name; });
+        tb.appendChild(tr);
+      });
+      flick(tb);
+      $$('thead th',tw).forEach(th=>th.addEventListener('click',()=>{
+        const k=th.dataset.k;
+        if(k===sortKey) sortDir*=-1; else { sortKey=k; sortDir = k==='name'?1:-1; }
+        tPage=0; paintTable();
+      }));
+      pager(pg, rows.length, TPER, tPage, i=>{ tPage=i; paintTable(); });
+    }
+    let sT; search.addEventListener('input',()=>{ clearTimeout(sT);
+      sT=setTimeout(()=>{ query=search.value.trim().toLowerCase(); tPage=0; paintTable(); },130); });
+    s3.append(tw,pg); mount.appendChild(s3); paintTable();
+
+    /* ── SECTION 4 · referral ── */
+    const s4=el('section','sec rv');
+    s4.appendChild(secHead('Reading is free. Trading needs an account.',
+      'HyperFlow only ever reads — it cannot place an order and never will.'));
+    s4.appendChild(refBlock('board'));
+    mount.appendChild(s4);
+
+    /* ── SECTION 5 · how this is built ── */
+    const s5=el('section','sec rv');
+    s5.appendChild(secHead('How this board is built',
+      'Every number here is one API call away from you. Nothing is stored, nothing is precomputed, and nothing passes through a server of ours.'));
+    const mt=el('div','mt');
+    [['One call for the universe','<code>metaAndAssetCtxs</code> returns all '+all.length+' markets with price, 24h change, funding, open interest, volume and the oracle gap. Twenty rate-limit weight, about a second.'],
+     ['Charts only for the shortlist','<code>candleSnapshot</code> at 1h for the top '+DEPTH+' only. Charting all '+all.length+' would cost 5,592 weight — 4.7 minutes of the 1,200-per-minute budget — so it is not attempted.'],
+     ['Measured on completed bars','The hour in progress has only partly happened. Its price is used; its volume is not, because comparing a part-hour against full hours makes every market look unconfirmed.'],
+     ['Nothing is predicted','Scores are a sort order inside the selected lens, not a rating of the market and not a probability. Switch lens and the same market moves.'],
+     ['Your browser, not our server','Requests go from your device straight to the exchange. We never see which market or wallet you looked at, because it never reaches us.'],
+     ['Refreshed on demand','Data is cached for 45 seconds. Reload the page or switch lens to pull it again.']]
+      .forEach(([t,p])=>{ const c=el('div','mt-c'); c.append(el('b',null,t));
+        const pp=el('p'); pp.innerHTML=p; c.appendChild(pp); mt.appendChild(c); });
+    s5.appendChild(mt);
+    mount.appendChild(s5);
+
     reveal(mount);
     if(args&&args[0]){ const t=$$('.mk',board).find(n=>n.dataset.coin===args[0]);
-      if(t){ t.dataset.open='1'; buildBody(t); t.scrollIntoView({block:'center'}); } }
+      if(t){ t.dataset.open='1'; buildBody(t); setTimeout(()=>t.scrollIntoView({block:'center'}),80); } }
   }
-  function wrapInsert(n){ n.classList.add('rv'); mount.appendChild(n); }
+
+  function switchLens(id,seg,pill){
+    if(LENS_ID===id) return;
+    LENS_ID=id; try{ localStorage.setItem('hf.lens',id); }catch(e){}
+    $$('button',seg).forEach(y=>y.classList.toggle('on',y.dataset.lens===id));
+    const on=$('button.on',seg); if(on){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
+    const nextShort=preselect(RADAR.U,id);
+    const need=nextShort.filter(m=>!RADAR.det[m.name]);
+    if(!need.length){ quietly(()=>render(RADAR.U,nextShort,RADAR.det)); return; }
+    /* skeleton in the exact shape of the board, so nothing jumps */
+    const skel=el('div','sk-board');
+    for(let i=0;i<DEPTH;i++) skel.appendChild(el('div','sk sk-row'));
+    mount.innerHTML=''; mount.appendChild(skel);
+    (async()=>{
+      const now2=Date.now();
+      for(const m of need){
+        try{ const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
+          startTime:now2-230*3600*1000,endTime:now2}},{ttl:60000});
+          if(Array.isArray(bars)&&bars.length>30) RADAR.det[m.name]=analyse(m,bars); }catch(e){}
+      }
+      RADAR.short=nextShort;
+      quietly(()=>render(RADAR.U,nextShort,RADAR.det));
+    })();
+  }
 
   function row(x,i,lens){
     const {m,a,r}=x;
@@ -1566,12 +1780,8 @@ ROUTES.radar=async function(args){
     h.appendChild(el('div','mk-rank',String(i+1).padStart(2,'0')));
     const id=el('div','mk-id');
     const nm=el('div','n');
-    nm.append(el('b',null,m.name));
-    const ch=el('span','chip '+(m.chg>=0?'up':'down'), pct(m.chg));
-    nm.appendChild(ch);
-    if(m.maxLev>=20) nm.appendChild(el('span','chip mut',m.maxLev+'×'));
-    (r.flags||[]).forEach(f=>{ const c2=el('span','chip warn',f.t);
-      c2.setAttribute('data-tip',f.w); nm.appendChild(c2); });
+    nm.append(el('b',null,m.name), el('span','chip '+(m.chg>=0?'up':'down'), pct(m.chg)));
+    (r.flags||[]).forEach(f=>{ const c2=el('span','chip warn',f.t); c2.setAttribute('data-tip',f.w); nm.appendChild(c2); });
     id.append(nm, el('div','px', px(m.mark)+'  ·  $'+fmtC(m.vol)+' 24h'));
     h.appendChild(id);
     const sp=el('div','mk-spark');
@@ -1580,21 +1790,17 @@ ROUTES.radar=async function(args){
     const read=el('div','mk-read');
     const lean=el('div','mk-lean');
     lean.innerHTML='<svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+
-      (r.dir==='long'?'<path d="M12 19V5M6 11l6-6 6 6"/>':r.dir==='short'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>'+
-      '<span>'+r.leanText+'</span>';
+      (r.dir==='long'?'<path d="M12 19V5M6 11l6-6 6 6"/>':r.dir==='short'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg><span>'+r.leanText+'</span>';
     const votes=el('div','mk-votes');
     r.votes.forEach(v=>{ const b=el('i'); if(v.vote!=='flat') b.dataset.v=v.vote; votes.appendChild(b); });
-    read.append(lean,votes);
-    h.appendChild(read);
+    read.append(lean,votes); h.appendChild(read);
     const sc=el('div','mk-sc');
-    const b=el('b','',''); countUp(b,r.score,v=>String(Math.round(v)),620);
-    sc.append(b, el('s',null,lens.label));
-    h.appendChild(sc);
+    const b=el('b'); countUp(b,r.score,v=>String(Math.round(v)),620);
+    sc.append(b, el('s',null,lens.label)); h.appendChild(sc);
     const cv=el('span','mk-cv');
     cv.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
     h.appendChild(cv);
-    n.appendChild(h);
-    n.appendChild(el('div','mk-body'));
+    n.append(h, el('div','mk-body'));
     h.addEventListener('click',()=>{
       const open=n.dataset.open==='1';
       $$('.mk[data-open="1"]').forEach(o=>{ if(o!==n) o.dataset.open='0'; });
@@ -1605,99 +1811,56 @@ ROUTES.radar=async function(args){
     return n;
   }
 
+  /* The expanded row is deliberately short. The seven measures are the promise
+     — they stay. Everything that was a calculator has gone: a trader reading a
+     board does not want to type a position size into it. */
   function buildBody(n){
     const body=$('.mk-body',n);
     if(body.dataset.built==='1') return;
     body.dataset.built='1';
     const {m,a,r}=n.__x;
 
-    /* the working */
     const wk=el('div','wk');
     r.votes.forEach(v=>{
       const i=el('div','wk-i'); i.dataset.v=v.vote;
-      i.append(el('div','v', v.vote==='for'?'↑':v.vote==='against'?'↓':'·'));
-      const t=el('div','t'); t.append(el('b',null,v.label), el('s',null,v.why)); i.append(t);
-      i.append(el('div','n',v.val));
+      i.setAttribute('data-tip', v.label+' — '+v.why+'.');
+      i.append(el('div','v', v.vote==='for'?'↑':v.vote==='against'?'↓':'·'),
+               el('b',null,v.label), el('div','n',v.val));
       wk.appendChild(i);
     });
     body.appendChild(wk);
 
-    /* practical: what it costs, what it moves */
-    const szb=el('div','szbox');
-    szb.append(el('label',null,'Position size'));
-    const inp=el('input'); inp.type='text'; inp.value=NOTIONAL.toLocaleString('en-US');
-    inp.setAttribute('aria-label','Notional position size in dollars');
-    szb.appendChild(inp);
-    const pre=el('div','pre');
-    [1000,10000,100000].forEach(v=>{ const b=el('button',null,'$'+fmtC(v));
-      b.addEventListener('click',()=>{ NOTIONAL=v; inp.value=v.toLocaleString('en-US'); paintPractical(); });
-      pre.appendChild(b); });
-    szb.appendChild(pre);
-    szb.appendChild(el('span','s'));
-    body.appendChild(szb);
-    inp.addEventListener('input',()=>{ const v=+inp.value.replace(/[^0-9.]/g,'');
-      if(isFinite(v)&&v>0){ NOTIONAL=v; paintPractical(); } });
+    const grid=el('div','pr-grid');
+    const P=(k,v,s,tip,cls)=>{ const n2=el('div','pr');
+      const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
+      n2.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); grid.appendChild(n2); };
+    const atrPct=a.atr? a.atr/a.last*100 : null;
+    const cost=(TAKER*2*100)+(m.spreadPct||0);
+    P('Expected move', atrPct? atrPct.toFixed(2)+'%':'—', '1×ATR · '+(a.atr?px(a.atr):'—'),'atrmove');
+    P('Volatility', a.atrExp? a.atrExp.toFixed(2)+'×':'—',
+      a.atrExp? (a.atrExp>1.25?'above its own average':a.atrExp<0.8?'unusually quiet':'about normal'):'—','atr',
+      a.atrExp>1.25?'warn':'');
+    P('Funding', pct(m.fundingApr,1), m.fundingApr>0?'longs pay shorts':m.fundingApr<0?'shorts pay longs':'flat','fundapr',
+      m.fundingApr>0?'down':m.fundingApr<0?'up':'');
+    P('Cost to trade', cost.toFixed(3)+'%','taker both ways plus the impact spread','breakeven',cost>0.2?'warn':'');
+    body.appendChild(grid);
 
-    const grid=el('div','pr-grid'); body.appendChild(grid);
-    function paintPractical(){
-      grid.innerHTML='';
-      const P=(k,v,s,tip,cls)=>{
-        const n2=el('div','pr');
-        const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
-        n2.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); grid.appendChild(n2);
-      };
-      const fund8=NOTIONAL*(m.fundingHr/100)*8;
-      const fundD=NOTIONAL*(m.fundingHr/100)*24;
-      const feeRt=NOTIONAL*TAKER*2;
-      const beMove=(feeRt+Math.max(0,fundD))/NOTIONAL*100;
-      const atrPct=a.atr? a.atr/a.last*100 : null;
-      P('Expected move (1×ATR)', a.atr? px(a.atr):'—',
-        atrPct? atrPct.toFixed(2)+'% of price · a stop inside this is inside the noise':'not enough bars','atrmove');
-      P('Volatility now', a.atrExp? a.atrExp.toFixed(2)+'×':'—',
-        a.atrExp? (a.atrExp>1.25?'moving more than its own average':a.atrExp<0.8?'unusually quiet':'about normal'):'—','atr',
-        a.atrExp>1.25?'warn':'');
-      P('Funding on this size', (fund8>=0?'−':'+')+usd(Math.abs(fund8)),
-        'per 8 hours '+(m.fundingApr>0?'if long, received if short':'if short, received if long')+' · '+usd(Math.abs(fundD))+' a day','hold',
-        fund8>0?'down':fund8<0?'up':'');
-      P('Break-even move', beMove.toFixed(3)+'%',
-        'taker in and out ('+usd(feeRt)+') plus a day of funding at the current rate','breakeven');
-      P('Round-trip cost', usd(feeRt),'0.045% taker each way at published rates, before any tier or referral discount');
-      P('Impact spread', m.spreadPct!=null? m.spreadPct.toFixed(3)+'%':'—',
-        m.spreadPct!=null? 'roughly '+usd(NOTIONAL*m.spreadPct/100)+' to cross at this size':'no impact quote','spread',
-        (m.spreadPct||0)>0.08?'warn':'');
-      P('Open interest','$'+fmtC(m.oiNtl), (m.volOverOi!=null? m.volOverOi.toFixed(2)+'× turned over in 24h':'—'),'vsoi');
-      P('Bars used', a.bars+' completed', a.partial? 'the hour in progress is '+a.minsIn.toFixed(0)+' minutes old — its price is used, its volume is not':'no partial bar');
-      P('Mark vs oracle', pct(m.oracleGap,3), m.oracleGap>0?'perp above spot':'perp below spot','basis');
-    }
-    paintPractical();
-
-    /* the rope */
     const ropeWrap=el('div');
-    const lbl=el('div','micro'); lbl.style.marginBottom='7px';
-    lbl.textContent='Positioning tension — grab it';
+    ropeWrap.append(Object.assign(el('div','micro','Positioning tension — drag it'),{style:'margin-bottom:7px'}));
     const rope=el('div','rope');
     rope.innerHTML='<span class="lbl l">longs</span><span class="lbl r">shorts</span>'+
-      '<span class="hint micro">the load sits where funding and basis put it · it settles back</span>';
-    ropeWrap.append(lbl,rope);
+      '<span class="hint micro">the load hangs toward whichever side is paying</span>';
+    ropeWrap.appendChild(rope);
     body.appendChild(ropeWrap);
-    tensionRope(rope,()=>{
-      const f=clamp(m.fundingApr/60,-1,1), b=clamp(m.oracleGap/0.25,-1,1);
-      return clamp(f*0.7+b*0.3,-1,1);
-    });
-    const ropeNote=el('p','rd-count');
-    ropeNote.textContent='The load hangs toward whichever side is paying — funding '+pct(m.fundingApr,1)+
-      ' annualised, mark '+pct(m.oracleGap,3)+' from oracle. It is a picture of those two numbers, not a forecast.';
-    body.appendChild(ropeNote);
+    tensionRope(rope,()=>clamp(clamp(m.fundingApr/60,-1,1)*0.7+clamp(m.oracleGap/0.25,-1,1)*0.3,-1,1));
 
-    const links=el('div'); links.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
-    const a1=el('a','btn ghost','Trade '+m.name+' on Hyperliquid');
+    const a1=el('a','btn ghost');
     a1.href=REF; a1.target='_blank'; a1.rel='noopener';
+    a1.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Trade '+m.name+' on Hyperliquid';
+    a1.style.alignSelf='flex-start';
     a1.addEventListener('click',()=>track('ref:row'));
-    links.appendChild(a1);
-    body.appendChild(links);
-    const disc=el('p','rd-count');
-    disc.textContent='That link is Pranjal’s referral — he earns a share, you get 4% off taker fees. It changes nothing about the numbers above.';
-    body.appendChild(disc);
+    body.appendChild(a1);
+    body.appendChild(Object.assign(el('p','rd-count','Referral link — Pranjal earns a share, you get 4% off taker fees. It changes nothing above.'),{}));
     field(body);
   }
 };
