@@ -1,0 +1,1684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HyperFlow — read any Hyperliquid wallet</title>
+<meta name="description" content="Paste an address, get a read. Live, checkable analytics for Hyperliquid perps, spot, staking, HIP-3 and outcome markets. Read-only — never asks to connect a wallet.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="HyperFlow — read any Hyperliquid wallet">
+<meta property="og:description" content="Paste an address, get a read. Read-only Hyperliquid analytics that shows its working.">
+<meta property="og:image" content="/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HyperFlow — read any Hyperliquid wallet">
+<meta name="twitter:description" content="Paste an address, get a read. Read-only Hyperliquid analytics that shows its working.">
+<meta name="twitter:image" content="/og.png">
+<script>
+/* Vercel Web Analytics. The router keeps wallet addresses in the hash, so the
+   URL is reduced to origin + pathname before anything leaves the browser. */
+window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments); };
+window.va('beforeSend', function(e){
+  try{ var u=new URL(e.url); return Object.assign({}, e, {url: u.origin + u.pathname}); }
+  catch(err){ return e; }
+});
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   TOKENS — palette derived from the Hyperliquid mark:
+   mint #96FCE4, ground #072722, frame #0F3A34
+   Dark is the design's home. Light is designed, not inverted.
+   ============================================================ */
+:root{
+  --bg:#041512; --panel:#072722; --raised:#0B332C; --line:#12403A; --line-2:#1B5449;
+  --ink:#E2F3ED; --ink-2:#9CB9B2; --ink-3:#65847D;
+  --mint:#96FCE4; --mint-2:#5BD9BC; --mint-wash:#0E332C; --on-mint:#04211C;
+  --up:#7BE8B0; --down:#FF8A6E; --flag:#F2C879;
+  --focus:#96FCE4;
+  --r-s:6px; --r-m:12px; --r-l:20px;
+  --shade:0 1px 0 rgba(150,252,228,.04), 0 12px 34px rgba(0,0,0,.45);
+  --step:1.5rem;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#EFF6F3; --panel:#FFFFFF; --raised:#E3EFEA; --line:#C9E0D8; --line-2:#A9CDC1;
+  --ink:#04211C; --ink-2:#3C574F; --ink-3:#6A8880;
+  --mint:#07705A; --mint-2:#0A8E72; --mint-wash:#D5FAEF; --on-mint:#04211C;
+  --up:#0E7A50; --down:#A83A20; --flag:#7A5809;
+  --focus:#07705A;
+  --shade:0 1px 2px rgba(4,33,28,.05), 0 12px 30px rgba(4,33,28,.07);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#EFF6F3; --panel:#FFFFFF; --raised:#E3EFEA; --line:#C9E0D8; --line-2:#A9CDC1;
+    --ink:#04211C; --ink-2:#3C574F; --ink-3:#6A8880;
+    --mint:#07705A; --mint-2:#0A8E72; --mint-wash:#D5FAEF; --on-mint:#04211C;
+    --up:#0E7A50; --down:#A83A20; --flag:#7A5809;
+    --focus:#07705A;
+    --shade:0 1px 2px rgba(4,33,28,.05), 0 12px 30px rgba(4,33,28,.07);
+    color-scheme:light;
+  }
+}
+
+*{box-sizing:border-box}
+html,body{margin:0; padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:Chivo,"Helvetica Neue",Arial,sans-serif; margin:0; letter-spacing:-.03em; text-wrap:balance; font-weight:800}
+p{margin:0}
+a{color:inherit}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+:focus-visible{outline:2px solid var(--focus); outline-offset:3px; border-radius:4px}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.lab{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* scrollbars — styled, not foreign */
+*{scrollbar-width:thin; scrollbar-color:var(--line-2) transparent}
+*::-webkit-scrollbar{width:10px; height:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--line-2); border-radius:99px; border:3px solid var(--bg)}
+*::-webkit-scrollbar-thumb:hover{background:var(--mint-2)}
+
+/* ============================================================
+   SHELL  (sh-)  — search-first. The address field IS the nav.
+   ============================================================ */
+.sh-top{
+  position:sticky; top:0; z-index:60;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(14px) saturate(1.4);
+  border-bottom:1px solid transparent; transition:border-color .2s ease;
+}
+.sh-top[data-stuck="1"]{border-bottom-color:var(--line)}
+.sh-topin{max-width:1180px; margin:0 auto; display:flex; align-items:center; gap:12px}
+.sh-mark{display:flex; align-items:center; gap:9px; flex:0 0 auto; text-decoration:none}
+.sh-mark canvas{display:block; width:28px; height:28px; border-radius:7px}
+.sh-name{font-family:Chivo; font-weight:900; font-size:15px; letter-spacing:-.04em}
+.sh-name em{font-style:normal; color:var(--mint)}
+@media (max-width:600px){ .sh-name{display:none} }
+
+/* the shrunken address field that lives in the header */
+.sh-field{
+  flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px;
+  background:var(--panel); border:1px solid var(--line); border-radius:99px;
+  padding:0 6px 0 14px; height:40px; transition:border-color .2s, box-shadow .2s;
+}
+.sh-field:focus-within{border-color:var(--mint-2); box-shadow:0 0 0 3px var(--mint-wash)}
+.sh-field input{
+  flex:1 1 auto; min-width:0; background:none; border:none; outline:none; color:var(--ink);
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; letter-spacing:-.01em;
+}
+.sh-field input::placeholder{color:var(--ink-3)}
+.sh-go{
+  flex:0 0 auto; height:28px; min-width:28px; padding:0 10px; border-radius:99px;
+  background:var(--mint); color:var(--on-mint); font-weight:600; font-size:12.5px;
+  display:grid; place-items:center; transition:transform .18s ease, filter .18s ease;
+}
+.sh-go:hover{transform:translateY(-1px); filter:brightness(1.06)}
+.sh-go:active{transform:translateY(0)}
+.sh-icons{flex:0 0 auto; display:flex; gap:4px}
+.sh-ico{width:36px; height:36px; border-radius:10px; display:grid; place-items:center; color:var(--ink-2);
+  transition:background .18s, color .18s}
+.sh-ico:hover{background:var(--raised); color:var(--ink)}
+.sh-ico svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round}
+
+/* section chips — horizontal, scrollable, replaces a rail */
+.sh-secs{max-width:1180px; margin:0 auto; padding:0 16px; overflow-x:auto; scrollbar-width:none}
+.sh-secs::-webkit-scrollbar{display:none}
+.sh-secsin{display:flex; gap:6px; padding:8px 0 10px; width:max-content}
+.sh-chip{
+  height:34px; padding:0 14px; border-radius:99px; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink-2); font-size:13px; font-weight:500;
+  display:flex; align-items:center; gap:7px; white-space:nowrap;
+  transition:border-color .2s, color .2s, background .2s, transform .2s;
+}
+.sh-chip:hover{border-color:var(--line-2); color:var(--ink); transform:translateY(-1px)}
+.sh-chip[aria-current="true"]{background:var(--mint-wash); border-color:var(--mint-2); color:var(--mint)}
+.sh-chip .dot{width:5px; height:5px; border-radius:99px; background:currentColor; opacity:.55}
+
+.sh-main{max-width:1180px; margin:0 auto; padding:24px 16px calc(72px + env(safe-area-inset-bottom))}
+
+/* the left-gutter rhythm: a mono marker beside the block, hairline between */
+.blk{display:grid; grid-template-columns:112px 1fr; gap:0 24px; padding:28px 0; border-top:1px solid var(--line)}
+.blk:first-child{border-top:none}
+.blk > .mk{display:flex; flex-direction:column; gap:5px; position:sticky; top:112px; align-self:start}
+.blk > .mk .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--mint); font-weight:600}
+.blk > .bd{min-width:0; display:flex; flex-direction:column; gap:16px}
+@media (max-width:760px){
+  .blk{grid-template-columns:1fr; gap:12px; padding:22px 0}
+  .blk > .mk{position:static; flex-direction:row; align-items:center; gap:8px}
+}
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); box-shadow:var(--shade)}
+.pad{padding:18px 20px}
+@media (max-width:420px){ .pad{padding:15px 15px} }
+
+/* ============================================================
+   HOME  (hm-)
+   ============================================================ */
+.hm-hero{position:relative; padding:clamp(36px,9vw,90px) 0 clamp(28px,6vw,56px); overflow:hidden}
+.hm-canvas{position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0}
+.hm-heroin{position:relative; z-index:1; display:flex; flex-direction:column; gap:22px; max-width:760px}
+.hm-h1{font-size:clamp(34px,7.4vw,64px); line-height:.98; font-weight:900}
+.hm-h1 em{font-style:normal; color:var(--mint)}
+.hm-sub{font-size:clamp(15px,2.2vw,18px); color:var(--ink-2); max-width:52ch}
+.hm-big{
+  display:flex; align-items:center; gap:10px; background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--r-l); padding:8px 8px 8px 20px;
+  transition:border-color .22s, box-shadow .22s;
+}
+.hm-big:focus-within{border-color:var(--mint-2); box-shadow:0 0 0 4px var(--mint-wash)}
+.hm-big input{
+  flex:1 1 auto; min-width:0; background:none; border:none; outline:none; color:var(--ink);
+  font-family:"IBM Plex Mono",monospace; font-size:clamp(13px,2.4vw,16px); padding:12px 0;
+}
+.hm-big input::placeholder{color:var(--ink-3)}
+.hm-read{
+  flex:0 0 auto; height:48px; padding:0 22px; border-radius:99px; background:var(--mint); color:var(--on-mint);
+  font-family:Chivo; font-weight:800; font-size:15px; letter-spacing:-.02em;
+  transition:transform .18s cubic-bezier(.2,.9,.3,1.2), filter .18s;
+}
+.hm-read:hover{transform:translateY(-2px); filter:brightness(1.07)}
+@media (max-width:520px){
+  .hm-big{flex-direction:column; align-items:stretch; padding:14px; gap:10px; border-radius:var(--r-m)}
+  .hm-big input{padding:6px 4px; font-size:14px}
+  .hm-read{width:100%; height:48px}
+}
+.hm-promise{display:flex; flex-wrap:wrap; gap:8px}
+.hm-pill{
+  display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 12px; border-radius:99px;
+  border:1px solid var(--line); background:var(--panel); font-size:12.5px; color:var(--ink-2);
+}
+.hm-pill b{color:var(--mint); font-weight:600}
+
+.hm-trylab{margin-top:4px}
+.hm-tries{display:flex; flex-wrap:wrap; gap:8px}
+.hm-try{
+  display:flex; align-items:center; gap:9px; height:44px; padding:0 14px 0 8px;
+  border-radius:99px; border:1px solid var(--line); background:var(--panel);
+  transition:border-color .2s, transform .2s, background .2s;
+}
+.hm-try:hover{border-color:var(--mint-2); transform:translateY(-2px)}
+.hm-try canvas{width:28px; height:28px; border-radius:8px; display:block}
+.hm-try .t{display:flex; flex-direction:column; align-items:flex-start; line-height:1.15}
+.hm-try .t b{font-size:12.5px; font-weight:600}
+.hm-try .t span{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
+
+/* physics field of live markets */
+.hm-field{position:relative; height:clamp(230px,38vw,330px); border-radius:var(--r-m);
+  border:1px solid var(--line); background:var(--panel); overflow:hidden}
+.hm-field canvas{display:block; width:100%; height:100%}
+.hm-fieldnote{position:absolute; left:14px; bottom:12px; pointer-events:none}
+
+/* ============================================================
+   LOADER  (ld-)  — an order book filling outward from the spread
+   ============================================================ */
+.ld{display:flex; flex-direction:column; align-items:center; gap:14px; padding:44px 16px}
+.ld canvas{display:block; width:min(340px,84vw); height:170px}
+.ld-step{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-2); text-align:center; min-height:18px}
+.ld-bar{width:min(340px,84vw); height:2px; background:var(--line); border-radius:99px; overflow:hidden}
+.ld-bar i{display:block; height:100%; width:0%; background:var(--mint); transition:width .35s ease}
+
+/* skeleton under known structure */
+.sk{background:linear-gradient(90deg,var(--raised),color-mix(in srgb,var(--raised) 60%, var(--line)),var(--raised));
+  background-size:220% 100%; border-radius:var(--r-s); animation:skshift 1.5s linear infinite}
+@keyframes skshift{to{background-position:-220% 0}}
+
+/* ============================================================
+   WALLET  (wl-)
+   ============================================================ */
+.wl-id{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.wl-seal{width:76px; height:76px; border-radius:18px; display:block; flex:0 0 auto; background:var(--raised)}
+.wl-idt{display:flex; flex-direction:column; gap:3px; min-width:0}
+.wl-arch{font-size:clamp(24px,4.4vw,34px); line-height:1.05}
+.wl-tag{color:var(--ink-2); font-size:14px}
+.wl-addr{display:flex; align-items:center; gap:8px; margin-top:4px}
+.wl-addr code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3);
+  background:var(--raised); border-radius:5px; padding:3px 7px; transition:filter .2s}
+.wl-addr code[data-masked="1"]{filter:blur(4px)}
+.wl-mini{min-height:44px; min-width:44px; display:grid; place-items:center; border-radius:9px; color:var(--ink-3)}
+.wl-mini:hover{background:var(--raised); color:var(--ink)}
+.wl-mini svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round}
+
+.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px}
+.wl-tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); padding:14px 16px;
+  display:flex; flex-direction:column; gap:5px; transition:border-color .22s, transform .22s}
+.wl-tile:hover{border-color:var(--line-2); transform:translateY(-2px)}
+.wl-tile .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(19px,3.2vw,24px); font-weight:600;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+.wl-tile .s{font-size:12px; color:var(--ink-3)}
+.wl-tile .v.up{color:var(--up)} .wl-tile .v.down{color:var(--down)} .wl-tile .v.none{color:var(--ink-3); font-size:16px}
+@media (max-width:400px){ .wl-tiles{grid-template-columns:1fr 1fr; gap:8px} .wl-tile{padding:12px 12px} }
+
+/* score breakdown */
+.wl-score{display:flex; flex-direction:column; gap:12px}
+.wl-comp{display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center}
+.wl-comp .cn{font-size:13.5px; display:flex; align-items:center; gap:6px}
+.wl-comp .cv{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.wl-track{grid-column:1/-1; height:8px; border-radius:99px; background:var(--raised); overflow:hidden; position:relative}
+.wl-fill{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--mint-2),var(--mint));
+  transform-origin:left center; transform:scaleX(0); transition:transform .9s cubic-bezier(.2,.8,.25,1)}
+.wl-track[data-missing="1"]{background:repeating-linear-gradient(-45deg,var(--raised) 0 6px,transparent 6px 12px)}
+.wl-miss{font-size:12px; color:var(--ink-3); font-style:italic}
+
+/* positions + fills table */
+.wl-tw{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r-m); background:var(--panel)}
+.wl-tw table{border-collapse:collapse; width:100%; min-width:540px; font-size:13px}
+.wl-tw th,.wl-tw td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap}
+.wl-tw thead th{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; background:var(--raised)}
+.wl-tw tbody tr:last-child td{border-bottom:none}
+.wl-tw tbody tr{transition:background .16s}
+.wl-tw tbody tr:hover{background:var(--raised)}
+.wl-tw td.n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.wl-side{font-family:"IBM Plex Mono",monospace; font-size:10.5px; padding:2px 7px; border-radius:4px; font-weight:600}
+.wl-side.l{background:color-mix(in srgb,var(--up) 18%,transparent); color:var(--up)}
+.wl-side.s{background:color-mix(in srgb,var(--down) 18%,transparent); color:var(--down)}
+
+.wl-pager{display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:10px}
+.wl-pgb{height:36px; min-width:44px; padding:0 12px; border-radius:9px; border:1px solid var(--line);
+  background:var(--panel); font-size:13px; transition:border-color .2s, color .2s}
+.wl-pgb:hover:not(:disabled){border-color:var(--mint-2); color:var(--mint)}
+.wl-pgb:disabled{opacity:.35; cursor:default}
+
+.wl-note{font-size:12.5px; color:var(--ink-3); display:flex; align-items:flex-start; gap:7px}
+.wl-note b{color:var(--ink-2); font-weight:500}
+
+/* empty state */
+.wl-empty{display:flex; flex-direction:column; align-items:center; gap:10px; padding:40px 20px; text-align:center}
+.wl-empty canvas{width:88px; height:88px}
+.wl-empty p{color:var(--ink-2); max-width:38ch; font-size:14px}
+
+/* ============================================================
+   TOOLTIPS (tp-)
+   ============================================================ */
+.tp-q{
+  display:inline-grid; place-items:center; width:15px; height:15px; border-radius:99px;
+  border:1px solid var(--line-2); color:var(--ink-3); font-size:9.5px; font-weight:700;
+  font-family:"IBM Plex Mono",monospace; cursor:help; vertical-align:middle; flex:0 0 auto;
+  transition:color .18s, border-color .18s;
+}
+.tp-q:hover{color:var(--mint); border-color:var(--mint-2)}
+.tp-pop{
+  position:fixed; z-index:200; max-width:min(300px,88vw); padding:11px 13px;
+  background:var(--raised); border:1px solid var(--line-2); border-radius:10px;
+  box-shadow:0 14px 40px rgba(0,0,0,.5); font-size:13px; line-height:1.5; color:var(--ink);
+  opacity:0; transform:translateY(4px); transition:opacity .16s, transform .16s; pointer-events:none;
+}
+.tp-pop[data-on="1"]{opacity:1; transform:translateY(0)}
+
+/* ============================================================
+   SHARE CARD (sc-)
+   ============================================================ */
+.sc-wrap{display:flex; flex-direction:column; gap:14px; align-items:center}
+.sc-stage{perspective:1100px; width:100%; display:grid; place-items:center}
+.sc-tilt{transform-style:preserve-3d; will-change:transform; border-radius:var(--r-m)}
+.sc-card{position:relative; border-radius:var(--r-m); overflow:hidden; box-shadow:0 26px 60px rgba(0,0,0,.5);
+  background:var(--panel); display:block}
+.sc-card canvas{display:block; width:100%; height:auto}
+.sc-sheen{position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .25s;
+  background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%), rgba(150,252,228,.20), transparent 60%)}
+.sc-tilt:hover .sc-sheen{opacity:1}
+.sc-ctrls{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.sc-btn{height:44px; padding:0 16px; border-radius:99px; border:1px solid var(--line); background:var(--panel);
+  font-size:13.5px; font-weight:500; display:inline-flex; align-items:center; gap:8px;
+  transition:border-color .2s, transform .2s, color .2s}
+.sc-btn:hover{border-color:var(--mint-2); color:var(--mint); transform:translateY(-2px)}
+.sc-btn.pri{background:var(--mint); color:var(--on-mint); border-color:transparent; font-weight:600}
+.sc-btn.pri:hover{color:var(--on-mint); filter:brightness(1.07)}
+.sc-btn svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round}
+.sc-toggles{display:flex; flex-wrap:wrap; gap:8px; justify-content:center}
+.sc-tog{height:36px; padding:0 13px; border-radius:99px; border:1px solid var(--line); background:var(--panel);
+  font-size:12.5px; color:var(--ink-2); display:inline-flex; align-items:center; gap:8px; transition:all .2s}
+.sc-tog[aria-pressed="true"]{border-color:var(--mint-2); color:var(--mint); background:var(--mint-wash)}
+.sc-tog .box{width:13px; height:13px; border-radius:4px; border:1.5px solid currentColor; display:grid; place-items:center}
+.sc-tog[aria-pressed="true"] .box{background:currentColor}
+
+/* archetype cast */
+.cast{display:grid; grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:10px}
+.cast-c{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); padding:14px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+  transition:border-color .22s, transform .22s}
+.cast-c:hover{border-color:var(--mint-2); transform:translateY(-3px)}
+.cast-c canvas{width:64px; height:64px; display:block}
+.cast-c b{font-family:Chivo; font-size:13px; font-weight:800; letter-spacing:-.02em}
+.cast-c span{font-size:11.5px; color:var(--ink-3); line-height:1.35}
+.cast-c[data-you="1"]{border-color:var(--mint); box-shadow:0 0 0 3px var(--mint-wash)}
+/* legibility proof strip: same art at row size */
+.cast-mini{display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding-top:4px}
+.cast-mini canvas{width:28px; height:28px; border-radius:8px; display:block}
+
+/* reveal on scroll */
+.rev-hl{opacity:0; transform:translateY(14px)}
+.rev-hl[data-in="1"]{animation:revin .62s cubic-bezier(.2,.8,.25,1) forwards; animation-delay:var(--d,0ms)}
+.rev-hl[data-instant="1"]{animation:none !important; opacity:1; transform:none}
+@keyframes revin{to{opacity:1; transform:none}}
+
+/* referral — disclosed, never disguised (rf-) */
+.rf-box{display:flex; gap:18px; align-items:center; flex-wrap:wrap;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); padding:20px}
+.rf-box canvas{width:60px; height:60px; border-radius:16px; flex:0 0 auto}
+.rf-t{flex:1 1 260px; min-width:0; display:flex; flex-direction:column; gap:5px}
+.rf-t h3{font-size:17px}
+.rf-t p{font-size:13.5px; color:var(--ink-2)}
+.rf-t .disc{font-size:12px; color:var(--ink-3)}
+.rf-cta{flex:0 0 auto; height:46px; padding:0 20px; border-radius:99px; background:var(--mint); color:var(--on-mint);
+  font-family:Chivo; font-weight:800; font-size:14.5px; letter-spacing:-.02em; text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px; transition:transform .18s, filter .18s}
+.rf-cta:hover{transform:translateY(-2px); filter:brightness(1.07)}
+.rf-inline{color:var(--mint); text-decoration:none; border-bottom:1px solid color-mix(in srgb,var(--mint) 40%,transparent)}
+.rf-inline:hover{border-bottom-color:var(--mint)}
+@media (max-width:520px){ .rf-box{padding:16px} .rf-cta{width:100%; justify-content:center} }
+
+.foot{border-top:1px solid var(--line); margin-top:40px; padding:22px 0 8px;
+  display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; justify-content:space-between;
+  font-size:12.5px; color:var(--ink-3)}
+.foot a{color:var(--mint); text-decoration:none}
+.foot a:hover{text-decoration:underline}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+    transition-duration:.001ms !important; scroll-behavior:auto !important}
+  .rev-hl{opacity:1; transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="sh-top" id="shTop">
+  <div class="sh-topin">
+    <a class="sh-mark" href="#/" aria-label="HyperFlow home">
+      <canvas id="markCv" width="56" height="56" aria-hidden="true"></canvas>
+      <span class="sh-name">hyper<em>flow</em></span>
+    </a>
+    <form class="sh-field" id="shForm" role="search">
+      <input id="shInput" type="text" spellcheck="false" autocomplete="off"
+             placeholder="0x… paste any Hyperliquid address" aria-label="Hyperliquid address">
+      <button class="sh-go" type="submit" aria-label="Read this address">Read</button>
+    </form>
+    <div class="sh-icons">
+      <button class="sh-ico" id="themeBtn" aria-label="Switch theme" title="Switch theme">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.4 5.4l1.4 1.4M17.2 17.2l1.4 1.4M18.6 5.4l-1.4 1.4M6.8 17.2l-1.4 1.4"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<nav class="sh-secs" id="shSecs" aria-label="Sections"><div class="sh-secsin" id="shSecsIn"></div></nav>
+
+<main class="sh-main" id="app"></main>
+
+<div class="tp-pop" id="tpPop" role="tooltip"></div>
+
+<footer class="sh-main foot">
+  <span>Read-only. Never asks to connect a wallet, never asks for a signature, never asks for a seed phrase.</span>
+  <span>Built by Pranjal · <a href="https://x.com/Crypto_Pranjal" target="_blank" rel="noopener">@Crypto_Pranjal</a>
+    · <a class="rf-inline" href="https://app.hyperliquid.xyz/join/REWARDS" target="_blank" rel="noopener">Pranjal’s Hyperliquid referral</a></span>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   0. tiny utils
+   ============================================================ */
+const $ = (s,r=document)=>r.querySelector(s);
+const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+const RM = ()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmtUsd=(v,d)=>{const n=+v; if(!isFinite(n))return '—';
+  const a=Math.abs(n); const dd = d!=null?d : a>=1e6?2:a>=1000?0:2;
+  return (n<0?'-$':'$')+a.toLocaleString('en-US',{minimumFractionDigits:dd,maximumFractionDigits:dd});};
+const fmtCompact=v=>{const n=+v; if(!isFinite(n))return '—'; const a=Math.abs(n);
+  if(a>=1e9) return (n/1e9).toFixed(2)+'B'; if(a>=1e6) return (n/1e6).toFixed(2)+'M';
+  if(a>=1e3) return (n/1e3).toFixed(1)+'K'; return n.toFixed(2);};
+const fmtNum=(v,d=4)=>{const n=+v; return isFinite(n)? n.toLocaleString('en-US',{maximumFractionDigits:d}) : '—';};
+const shortAddr=a=>a? a.slice(0,6)+'…'+a.slice(-4) : '';
+const dayStr=t=>new Date(t).toISOString().slice(0,10);
+const daysAgo=t=>Math.floor((Date.now()-t)/86400000);
+
+/* ============================================================
+   1. api() — cache w/ per-call TTL, in-flight dedupe, abort, RATE
+   ============================================================ */
+const API='https://api.hyperliquid.xyz/info';
+const _cache=new Map(), _inflight=new Map();
+function apiKey(body){ return JSON.stringify(body); }
+async function api(body,{ttl=30000, timeout=15000}={}){
+  const k=apiKey(body), now=Date.now();
+  const hit=_cache.get(k);
+  if(hit && now-hit.t < ttl) return hit.v;
+  if(_inflight.has(k)) return _inflight.get(k);
+  const run=(async()=>{
+    const ac=new AbortController();
+    const timer=setTimeout(()=>ac.abort(),timeout);
+    try{
+      const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(body),signal:ac.signal});
+      if(r.status===429){ const e=new Error('rate limited'); e.code='RATE'; throw e; }
+      if(!r.ok){ const e=new Error('http '+r.status); e.code='HTTP'; e.status=r.status; throw e; }
+      const j=await r.json();
+      _cache.set(k,{t:Date.now(),v:j});
+      return j;
+    } finally { clearTimeout(timer); _inflight.delete(k); }
+  })();
+  _inflight.set(k,run);
+  return run;
+}
+const BACKOFF=[1500,3500,7000,12000];
+async function apiRetry(body,opts){
+  let last;
+  for(let i=0;i<=BACKOFF.length;i++){
+    try{ return await api(body,opts); }
+    catch(e){
+      last=e;
+      if(e.code!=='RATE' && e.name!=='AbortError' && e.code!=='HTTP') throw e;
+      if(i===BACKOFF.length) break;
+      await new Promise(r=>setTimeout(r,BACKOFF[i]));
+    }
+  }
+  throw last;
+}
+
+/* ============================================================
+   2. theme
+   ============================================================ */
+(function(){
+  let saved=null; try{ saved=localStorage.getItem('hf-theme'); }catch(e){}
+  if(saved) document.documentElement.setAttribute('data-theme',saved);
+  $('#themeBtn').addEventListener('click',()=>{
+    const cur=document.documentElement.getAttribute('data-theme');
+    const sysDark=!matchMedia('(prefers-color-scheme: light)').matches;
+    const next = cur ? (cur==='dark'?'light':'dark') : (sysDark?'light':'dark');
+    document.documentElement.setAttribute('data-theme',next);
+    try{ localStorage.setItem('hf-theme',next); }catch(e){}
+    document.dispatchEvent(new CustomEvent('hf:theme'));
+  });
+})();
+function tok(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+/* ============================================================
+   3. tooltips — key OR free text, pointer-safe, click-safe
+   ============================================================ */
+const TIPS={
+  oi:'Open interest: the total dollar value of positions this wallet has open right now, long and short added together as absolute size.',
+  lev:'Leverage as the exchange reports it for the position — not a number we infer. Cross means one shared margin pool; isolated means margin ring-fenced to that market.',
+  liq:'The price at which the exchange would close this position. Blank means the exchange reports no liquidation price for it.',
+  vlm:'Lifetime notional traded, from the portfolio endpoint. We cross-check it against the referral endpoint and only show it when both agree.',
+  equity:'Account value as the exchange reports it. It equals cash net of position plus the signed notional of every open position — we recompute it and only print it if our number matches theirs.',
+  staked:'HYPE currently delegated to validators. Held separately from spot balance, so a big staker does not look empty.',
+  since:'The first entry in this wallet’s ledger — its earliest deposit or transfer on Hyperliquid. Survives the fills cap, unlike first-fill date.',
+  fillwin:'The fills endpoint returns 2,000 at a time. This is the window we actually read, not the wallet’s whole history — every number derived from fills covers this window only.',
+  depth:'HyperFlow’s own descriptive measure of how much this wallet has done on Hyperliquid. Not a rank, not a grade, not official, and it says nothing about what happens next.',
+  genesis:'The genesis distribution this wallet received, straight from its ledger — token, amount and date as recorded by the exchange.',
+  subacc:'Subaccounts belonging to this address. Their balances are shown separately and are never folded into the headline numbers.'
+};
+(function(){
+  const pop=$('#tpPop'); let anchor=null, hideT=null;
+  function place(a){
+    const r=a.getBoundingClientRect(); pop.style.visibility='hidden'; pop.dataset.on='1';
+    const pr=pop.getBoundingClientRect();
+    let x=r.left+r.width/2-pr.width/2;
+    x=Math.max(10,Math.min(x,innerWidth-pr.width-10));
+    let y=r.top-pr.height-10;
+    if(y<8) y=r.bottom+10;
+    pop.style.left=x+'px'; pop.style.top=y+'px'; pop.style.visibility='';
+  }
+  function show(a){
+    clearTimeout(hideT);                    // clear BEFORE identity check
+    const raw=a.getAttribute('data-tip')||'';
+    const text = TIPS[raw] || raw;          // key OR free text
+    if(!text) return;                       // never show an empty bubble
+    anchor=a; pop.textContent=text; place(a);
+  }
+  function hide(){ pop.dataset.on='0'; anchor=null; }
+  document.addEventListener('pointerover',e=>{
+    const a=e.target.closest('[data-tip]'); if(!a) return;
+    if(e.pointerType==='touch') return;
+    show(a);
+  });
+  document.addEventListener('pointerout',e=>{
+    const a=e.target.closest('[data-tip]'); if(!a) return;
+    clearTimeout(hideT);                                     // clear first
+    if(e.relatedTarget && a.contains(e.relatedTarget)) return; // still inside anchor
+    hideT=setTimeout(hide,90);
+  });
+  // touch: tap toggles; scrolling repositions rather than dismissing
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('.tp-q'); if(!a){ if(anchor) hide(); return; }
+    e.preventDefault();
+    if(anchor===a) hide(); else show(a);
+  });
+  addEventListener('scroll',()=>{ if(anchor) place(anchor); },{passive:true});
+  addEventListener('resize',()=>{ if(anchor) place(anchor); });
+  // NOTE: no capture-phase handler and no stopPropagation — a tooltip anchor
+  // that is also a link or tile must still navigate.
+})();
+function q(key){ const s=el('span','tp-q','?'); s.setAttribute('data-tip',key);
+  s.setAttribute('tabindex','0'); s.setAttribute('role','button');
+  s.setAttribute('aria-label','What is this?'); return s; }
+
+/* ============================================================
+   4. reveal on scroll — staggered, no replay on user repaint
+   ============================================================ */
+const revObs = new IntersectionObserver((entries)=>{
+  const vis=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);
+  vis.forEach((e,i)=>{
+    e.target.style.setProperty('--d', Math.min(i*55,330)+'ms');
+    e.target.dataset.in='1';
+    revObs.unobserve(e.target);
+  });
+},{rootMargin:'0px 0px -8% 0px', threshold:.05});
+function reveal(root, instant){
+  root.querySelectorAll('.rev-hl:not([data-in])').forEach(n=>{
+    if(instant){ n.dataset.instant='1'; n.dataset.in='1'; }   // explicit no-animation path
+    else revObs.observe(n);
+  });
+}
+// safety net: only force-reveal things ALREADY in the viewport
+setInterval(()=>{
+  document.querySelectorAll('.rev-hl:not([data-in])').forEach(n=>{
+    const r=n.getBoundingClientRect();
+    if(r.top < innerHeight && r.bottom > 0){ n.dataset.in='1'; }
+  });
+},1200);
+
+/* ============================================================
+   5. CANVAS ART SYSTEM — "Seals"
+   A plaque (the mark's own tile), a generative ground, and one
+   bold silhouette. Detail is only drawn above a size threshold,
+   so the same rig reads at 28px and at 300px.
+   ============================================================ */
+function dpr(cap){ return Math.min(devicePixelRatio||1, cap||1.5); }
+function fitCanvas(cv, w, h, cap){
+  const d=dpr(cap); cv.width=Math.round(w*d); cv.height=Math.round(h*d);
+  const c=cv.getContext('2d'); c.setTransform(d,0,0,d,0,0); return c;
+}
+function rng(seed){ let s=seed>>>0||1; return ()=>{ s^=s<<13; s>>>=0; s^=s>>17; s^=s<<5; s>>>=0; return s/4294967296; }; }
+function hashStr(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+/* the mark itself — the two-lobed form, drawn not imported */
+function drawBlob(c,S,color,squash){
+  const k=S/100, sq=squash==null?1:squash;
+  c.fillStyle=color; c.beginPath();
+  c.moveTo(20*k, 50*k);
+  c.bezierCurveTo(20*k,(50-22*sq)*k, 30*k,(50-28*sq)*k, 40*k,(50-12*sq)*k);
+  c.bezierCurveTo(48*k,(50-1*sq)*k, 54*k,(50-30*sq)*k, 66*k,(50-30*sq)*k);
+  c.bezierCurveTo(80*k,(50-30*sq)*k, 86*k,(50-14*sq)*k, 86*k,50*k);
+  c.bezierCurveTo(86*k,(50+14*sq)*k, 80*k,(50+30*sq)*k, 66*k,(50+30*sq)*k);
+  c.bezierCurveTo(54*k,(50+30*sq)*k, 48*k,(50+1*sq)*k, 40*k,(50+12*sq)*k);
+  c.bezierCurveTo(30*k,(50+28*sq)*k, 20*k,(50+22*sq)*k, 20*k,50*k);
+  c.closePath(); c.fill();
+}
+function paintMark(cv,size){
+  const c=fitCanvas(cv,size,size,2);
+  c.fillStyle='#072722'; rr(c,0,0,size,size,size*0.22); c.fill();
+  c.save(); c.translate(size*0.03,0); c.scale(0.94,0.94);
+  drawBlob(c,size,'#96FCE4',1); c.restore();
+}
+
+/* --- the cast ------------------------------------------------ */
+const CAST=[
+ {id:'anchor',      name:'The Anchor',      hue:'#7FE9FF', tag:'Stakes deep, trades rarely.',
+  desc:'Most of what this wallet has on Hyperliquid is delegated, not deployed. Long staking tenure, modest trading footprint.'},
+ {id:'tidewalker',  name:'The Tidewalker',  hue:'#96FCE4', tag:'Holds through the funding clock.',
+  desc:'Positions survive many funding hours. Cumulative funding is a meaningful share of this wallet’s realised outcome.'},
+ {id:'splinter',    name:'The Splinter',    hue:'#D7F58A', tag:'Many small fills, many markets.',
+  desc:'High fill count against low average size, spread across an unusually wide set of markets.'},
+ {id:'deepwater',   name:'The Deepwater',   hue:'#4FD4B4', tag:'One position, enormous.',
+  desc:'Notional concentrated into very few markets. What this wallet has at risk right now is large relative to its equity.'},
+ {id:'cartograph',  name:'The Cartographer',hue:'#C4A8FF', tag:'Trades every venue there is.',
+  desc:'Active across the main perp book, builder-deployed markets, spot and outcome markets. Breadth of venue, not just of ticker.'},
+ {id:'metronome',   name:'The Metronome',   hue:'#9BF6A8', tag:'Posts, waits, repeats.',
+  desc:'Overwhelmingly maker-side with a regular cadence. Earns the spread rather than crossing it.'},
+ {id:'ember',       name:'The Ember',       hue:'#FFA98E', tag:'Bursts, then goes quiet.',
+  desc:'Activity arrives in short concentrated runs separated by long dormant stretches.'},
+ {id:'oracle',      name:'The Oracle',      hue:'#FFCF5C', tag:'Takes sides on outcomes.',
+  desc:'Holds positions in outcome markets alongside — or instead of — directional perp exposure.'},
+ {id:'bricklayer',  name:'The Bricklayer',  hue:'#F2D98A', tag:'Accumulates, course by course.',
+  desc:'Spot-weighted and additive. Balance grows through deposits and buys more than through leverage.'},
+ {id:'fuse',        name:'The Fuse',        hue:'#FF9BC0', tag:'High leverage, short fuse.',
+  desc:'Runs leverage near the top of what the market allows and holds for a short time.'},
+ {id:'homestead',   name:'The Homesteader', hue:'#CFEFFF', tag:'Here since the early ledger.',
+  desc:'One of the older ledgers on the network, and still active. Tenure measured in years, not months.'}
+];
+const CAST_IX=Object.fromEntries(CAST.map((c,i)=>[c.id,i]));
+
+/* silhouettes — one per type, distinct at row size */
+function sil(c,S,id){
+  const k=S/100;
+  const P=(fn)=>{ c.beginPath(); fn(); c.closePath(); c.fill(); };
+  switch(id){
+    case 'anchor': // plumb wedge on a wide base
+      P(()=>{ c.moveTo(50*k,14*k); c.lineTo(66*k,54*k); c.lineTo(34*k,54*k); });
+      rr(c,24*k,60*k,52*k,12*k,6*k); c.fill();
+      break;
+    case 'tidewalker': // the mark's own form, rotated to a swell
+      c.save(); c.translate(50*k,50*k); c.rotate(-0.34); c.translate(-50*k,-50*k);
+      drawBlob(c,S,c.fillStyle,.86); c.restore(); break;
+    case 'splinter': { // fan of shards
+      for(let i=0;i<5;i++){ const a=-1.05+i*0.52;
+        c.save(); c.translate(50*k,72*k); c.rotate(a);
+        P(()=>{ c.moveTo(-3.4*k,0); c.lineTo(3.4*k,0); c.lineTo(1.3*k,-46*k); c.lineTo(-1.3*k,-46*k); });
+        c.restore(); }
+      break; }
+    case 'deepwater': // one huge lobe
+      P(()=>{ c.ellipse(50*k,50*k,33*k,36*k,0,0,7); }); break;
+    case 'cartograph': { // grid of plates + bridging arc
+      for(let r=0;r<3;r++) for(let col=0;col<3;col++){
+        if(r===1&&col===1) continue;
+        rr(c,(20+col*23)*k,(20+r*23)*k,15*k,15*k,4*k); c.fill(); }
+      c.lineWidth=6*k; c.strokeStyle=c.fillStyle; c.lineCap='round';
+      c.beginPath(); c.arc(50*k,50*k,10*k,0.5,4.2); c.stroke(); break; }
+    case 'metronome': // column + pivot + swing
+      P(()=>{ c.moveTo(44*k,18*k); c.lineTo(56*k,18*k); c.lineTo(60*k,70*k); c.lineTo(40*k,70*k); });
+      rr(c,26*k,74*k,48*k,10*k,5*k); c.fill();
+      c.beginPath(); c.arc(50*k,30*k,6.5*k,0,7); c.fill(); break;
+    case 'ember': // teardrop + sparks
+      P(()=>{ c.moveTo(50*k,14*k); c.bezierCurveTo(74*k,40*k,72*k,60*k,50*k,76*k);
+              c.bezierCurveTo(28*k,60*k,26*k,40*k,50*k,14*k); });
+      c.beginPath(); c.arc(30*k,26*k,4.4*k,0,7); c.fill();
+      c.beginPath(); c.arc(72*k,32*k,3.4*k,0,7); c.fill(); break;
+    case 'oracle': // split ring + dot
+      c.lineWidth=11*k; c.strokeStyle=c.fillStyle; c.lineCap='butt';
+      c.beginPath(); c.arc(50*k,50*k,27*k,-1.15,1.15); c.stroke();
+      c.beginPath(); c.arc(50*k,50*k,27*k,2.0,4.28); c.stroke();
+      c.beginPath(); c.arc(50*k,50*k,7*k,0,7); c.fill(); break;
+    case 'bricklayer': // offset courses
+      rr(c,20*k,24*k,52*k,14*k,4*k); c.fill();
+      rr(c,30*k,43*k,52*k,14*k,4*k); c.fill();
+      rr(c,20*k,62*k,52*k,14*k,4*k); c.fill(); break;
+    case 'fuse': // taper bolt
+      P(()=>{ c.moveTo(62*k,12*k); c.lineTo(40*k,48*k); c.lineTo(54*k,48*k);
+              c.lineTo(36*k,88*k); c.lineTo(66*k,44*k); c.lineTo(50*k,44*k); }); break;
+    case 'homestead': // the mark, ringed
+      c.lineWidth=5*k; c.strokeStyle=c.fillStyle;
+      c.beginPath(); c.arc(50*k,50*k,40*k,0,7); c.stroke();
+      c.save(); c.scale(.72,.72); c.translate(19*k,19*k); drawBlob(c,S,c.fillStyle,1); c.restore(); break;
+    default: P(()=>{ c.arc(50*k,50*k,30*k,0,7); });
+  }
+}
+/* full seal: plaque + generative ground + silhouette */
+function drawSeal(cv, size, id, seedStr){
+  const c=fitCanvas(cv,size,size, size>120?2:1.5);
+  const t=CAST[CAST_IX[id]] || CAST[0];
+  const R=rng(hashStr((seedStr||'')+id));
+  const detail = size>=88;
+  c.clearRect(0,0,size,size);
+  // plaque
+  c.fillStyle='#062421'; rr(c,0,0,size,size,size*0.22); c.fill();
+  c.save(); rr(c,0,0,size,size,size*0.22); c.clip();
+  // generative ground: concentric contour bands, seeded
+  c.globalAlpha=detail?0.16:0.11;
+  c.strokeStyle=t.hue; c.lineWidth=Math.max(1,size*0.012);
+  const bands = detail? 9 : 4;
+  for(let i=0;i<bands;i++){
+    const rad=size*(0.16+i*0.075);
+    c.beginPath();
+    const steps=detail?42:16;
+    for(let s=0;s<=steps;s++){
+      const a=s/steps*Math.PI*2;
+      const wob=1+(R()-0.5)*(detail?0.10:0.04);
+      const x=size/2+Math.cos(a)*rad*wob, y=size/2+Math.sin(a)*rad*wob*0.92;
+      s?c.lineTo(x,y):c.moveTo(x,y);
+    }
+    c.closePath(); c.stroke();
+  }
+  c.globalAlpha=1;
+  // tenure ticks around the edge (detail only)
+  if(detail){
+    c.fillStyle=t.hue; c.globalAlpha=.5;
+    const ticks=Math.floor(10+R()*14);
+    for(let i=0;i<ticks;i++){
+      const a=(i/ticks)*Math.PI*2, rad=size*0.435;
+      c.save(); c.translate(size/2+Math.cos(a)*rad, size/2+Math.sin(a)*rad); c.rotate(a);
+      c.fillRect(-size*0.012,-size*0.006,size*0.024,size*0.012); c.restore();
+    }
+    c.globalAlpha=1;
+  }
+  // silhouette
+  c.save(); c.translate(size*0.5,size*0.5); c.scale(0.80,0.80); c.translate(-size*0.5,-size*0.5);
+  c.fillStyle=t.hue;
+  c.shadowColor='rgba(0,0,0,.45)'; c.shadowBlur=detail?size*0.05:0; c.shadowOffsetY=detail?size*0.015:0;
+  sil(c,size,id);
+  c.restore();
+  // inner frame
+  c.shadowBlur=0; c.strokeStyle='rgba(150,252,228,.14)'; c.lineWidth=Math.max(1,size*0.008);
+  rr(c,c.lineWidth/2,c.lineWidth/2,size-c.lineWidth,size-c.lineWidth,size*0.21); c.stroke();
+  c.restore();
+}
+
+/* ============================================================
+   6. SIGNATURE LOADER — a book filling outward from the spread
+   ============================================================ */
+function makeLoader(mount, steps){
+  const wrap=el('div','ld');
+  const cv=el('canvas'); cv.width=680; cv.height=340; cv.setAttribute('aria-hidden','true');
+  const step=el('div','ld-step', steps[0]||'Reading…');
+  const bar=el('div','ld-bar'); const fill=el('i'); bar.appendChild(fill);
+  wrap.append(cv,step,bar); mount.appendChild(wrap);
+  const c=fitCanvas(cv,340,170,1.5);
+  const R=rng(7);
+  const rows=13, depths=[];
+  for(let i=0;i<rows;i++) depths.push(0.22+R()*0.78);
+  let prog=0, target=0, raf=null, alive=true;
+  function frame(){
+    if(!alive) return;
+    prog += (target-prog)*0.09;
+    const W=340,H=170,mid=H/2;
+    c.clearRect(0,0,W,H);
+    const mint=tok('--mint')||'#96FCE4', line=tok('--line')||'#12403A', dim=tok('--ink-3')||'#65847D';
+    // spread line
+    c.strokeStyle=mint; c.globalAlpha=.9; c.lineWidth=1.5;
+    c.beginPath(); c.moveTo(18,mid); c.lineTo(W-18,mid); c.stroke(); c.globalAlpha=1;
+    // rows grow outward from the mid as progress rises
+    for(let i=0;i<rows;i++){
+      const reach = prog*rows - i;
+      if(reach<=0) continue;
+      const a=Math.min(1,reach);
+      const h=7, gap=11;
+      const w=(W-52)*depths[i]*a;
+      // ask above (dimmer), bid below (mint)
+      c.globalAlpha=a*0.85;
+      c.fillStyle=dim;
+      c.fillRect(W/2-2-w/2, mid-gap-(i*gap)-h, w, h-2);
+      c.fillStyle=mint; c.globalAlpha=a*0.9;
+      c.fillRect(W/2-2-w*0.86/2, mid+gap+(i*gap), w*0.86, h-2);
+      c.globalAlpha=1;
+    }
+    // frame
+    c.strokeStyle=line; c.lineWidth=1; c.strokeRect(.5,.5,W-1,H-1);
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  return {
+    set(i,total){ target=Math.min(1,(i+1)/total); fill.style.width=Math.round(target*100)+'%';
+                  if(steps[i]) step.textContent=steps[i]; },
+    done(){ alive=false; cancelAnimationFrame(raf); wrap.remove(); }
+  };
+}
+
+/* ============================================================
+   7. READ A WALLET — every number from a live call
+   ============================================================ */
+const STEPS=[
+ 'Checking what this address is',
+ 'Reading the perp account',
+ 'Reading spot and outcome balances',
+ 'Reading lifetime volume',
+ 'Reading staking and validators',
+ 'Walking the ledger back to the first entry',
+ 'Reading the most recent fills',
+ 'Checking builder-deployed markets',
+ 'Checking subaccounts'
+];
+async function readWallet(addr, onStep){
+  const S=(i)=>onStep&&onStep(i,STEPS.length);
+  S(0); const role   = await apiRetry({type:'userRole',user:addr},{ttl:300000});
+  S(1); const ch     = await apiRetry({type:'clearinghouseState',user:addr},{ttl:15000});
+  S(2); const spot   = await apiRetry({type:'spotClearinghouseState',user:addr},{ttl:15000});
+  S(3); const pf     = await apiRetry({type:'portfolio',user:addr},{ttl:60000});
+  S(4);
+  const [dsum,dels,dhist,drew,vals] = await Promise.all([
+    apiRetry({type:'delegatorSummary',user:addr},{ttl:60000}),
+    apiRetry({type:'delegations',user:addr},{ttl:60000}),
+    apiRetry({type:'delegatorHistory',user:addr},{ttl:300000}),
+    apiRetry({type:'delegatorRewards',user:addr},{ttl:300000}),
+    apiRetry({type:'validatorSummaries'},{ttl:600000})
+  ]);
+  S(5); const ledger = await apiRetry({type:'userNonFundingLedgerUpdates',user:addr,startTime:0},{ttl:600000});
+  S(6); const fills  = await apiRetry({type:'userFills',user:addr},{ttl:20000});
+  S(7);
+  const dexs = await apiRetry({type:'perpDexs'},{ttl:600000});
+  const dexNames = dexs.filter(Boolean).map(d=>d.name);
+  const dexStates = await Promise.all(dexNames.map(n=>
+    api({type:'clearinghouseState',user:addr,dex:n},{ttl:30000}).then(v=>({dex:n,v})).catch(()=>({dex:n,v:null}))
+  ));
+  S(8);
+  let subs=[]; try{ subs = await api({type:'subAccounts',user:addr},{ttl:60000}) || []; }catch(e){ subs=[]; }
+  const mids = await api({type:'allMids'},{ttl:15000}).catch(()=>({}));
+  return {addr, role, ch, spot, pf, dsum, dels, dhist, drew, vals, ledger, fills, dexStates, subs, mids};
+}
+
+/* ---- derive features, showing the working ------------------- */
+function derive(d){
+  const f={};
+  const ms = d.ch?.marginSummary || {};
+  const pos = (d.ch?.assetPositions||[]).map(p=>p.position);
+  f.positions = pos;
+  f.equity = +(ms.accountValue||0);
+  f.rawUsd = +(ms.totalRawUsd||0);
+  f.oi     = +(ms.totalNtlPos||0);
+  f.marginUsed = +(ms.totalMarginUsed||0);
+  // recompute the exchange's own identity and record the residual
+  f.sumAbsNtl = pos.reduce((s,p)=>s+Math.abs(+p.positionValue),0);
+  f.sumSignedNtl = pos.reduce((s,p)=>s+Math.sign(+p.szi)*(+p.positionValue),0);
+  f.oiResidual = f.sumAbsNtl - f.oi;
+  f.equityResidual = (f.rawUsd + f.sumSignedNtl) - f.equity;
+  f.maxLev = pos.reduce((m,p)=>Math.max(m, +(p.leverage?.value||0)),0);
+  f.concentration = f.oi>0 ? Math.max(0,...pos.map(p=>Math.abs(+p.positionValue)))/f.oi : null;
+  f.cumFunding = pos.reduce((s,p)=>s+(+(p.cumFunding?.allTime||0)),0);
+
+  const pmap = Object.fromEntries(d.pf||[]);
+  f.lifetimeVlm = pmap.allTime ? +pmap.allTime.vlm : null;
+  f.equitySeries = pmap.allTime ? pmap.allTime.accountValueHistory : [];
+  f.pnlSeries    = pmap.allTime ? pmap.allTime.pnlHistory : [];
+  f.allTimePnl   = f.pnlSeries?.length ? +f.pnlSeries[f.pnlSeries.length-1][1] : null;
+
+  const bal=d.spot?.balances||[];
+  f.hype = +( (bal.find(b=>b.coin==='HYPE')||{}).total || 0 );
+  f.spotCoins = bal.filter(b=>+b.total>0 && !/^\+/.test(b.coin)).length;
+  f.outcomeCoins = bal.filter(b=>/^\+/.test(b.coin));
+  f.outcomeHeld = f.outcomeCoins.filter(b=>+b.total>0).length;
+  f.hypeMid = +(d.mids?.HYPE||d.mids?.['@107']||0) || null;
+
+  f.staked = +(d.dsum?.delegated||0);
+  f.undelegated = +(d.dsum?.undelegated||0);
+  f.validators = (d.dels||[]).length;
+  f.validatorNames = (d.dels||[]).map(x=>{
+    const v=(d.vals||[]).find(v=>v.validator.toLowerCase()===x.validator.toLowerCase());
+    return v? v.name : shortAddr(x.validator);
+  });
+  f.rewards = (d.drew||[]).reduce((s,x)=>s+(+x.totalAmount||0),0);
+  f.stakingSince = (d.dhist||[]).length ? Math.min(...d.dhist.map(x=>x.time)) : null;
+
+  const led=d.ledger||[];
+  f.firstLedger = led.length ? led[0].time : null;
+  f.genesis = led.filter(x=>x.delta?.type==='spotGenesis')
+                 .map(x=>({token:x.delta.token, amount:+x.delta.amount, time:x.time}));
+  f.tenureDays = f.firstLedger ? daysAgo(f.firstLedger) : null;
+
+  const fl=d.fills||[];
+  f.fillCount = fl.length;
+  f.fillWindow = fl.length ? {from:fl[fl.length-1].time, to:fl[0].time} : null;
+  f.makerShare = fl.length ? fl.filter(x=>x.crossed===false).length/fl.length : null;
+  f.markets = new Set(fl.map(x=>x.coin)).size;
+  f.avgFillNtl = fl.length ? fl.reduce((s,x)=>s+Math.abs((+x.px)*(+x.sz)),0)/fl.length : null;
+  const closed = fl.filter(x=>+x.closedPnl!==0);
+  f.closedCount = closed.length;
+  f.winRate = closed.length ? closed.filter(x=>+x.closedPnl>0).length/closed.length : null;
+
+  f.dexActive = (d.dexStates||[]).filter(x=>x.v && (+(x.v.marginSummary?.accountValue||0)>0 || (x.v.assetPositions||[]).length))
+                                 .map(x=>x.dex);
+  f.subCount = (d.subs||[]).length;
+  f.subEquity = (d.subs||[]).reduce((s,x)=>s+(+(x.clearinghouseState?.marginSummary?.accountValue||0)),0);
+  f.subNtl    = (d.subs||[]).reduce((s,x)=>s+(+(x.clearinghouseState?.marginSummary?.totalNtlPos||0)),0);
+
+  f.venues = 0;
+  if(f.oi>0 || f.equity>0) f.venues++;
+  if(f.spotCoins>0) f.venues++;
+  if(f.outcomeHeld>0) f.venues++;
+  f.venues += f.dexActive.length;
+  return f;
+}
+
+/* ---- archetype, earned from the data ----------------------- */
+function assign(f){
+  const stakedUsd = f.hypeMid ? f.staked*f.hypeMid : null;
+  const stakeWeight = (stakedUsd!=null && (stakedUsd+f.equity)>0) ? stakedUsd/(stakedUsd+f.equity) : 0;
+  const C=[];
+  const push=(id,score,why)=>C.push({id,score,why});
+  push('anchor', stakeWeight*1.6 + (f.stakingSince? Math.min(1,daysAgo(f.stakingSince)/365)*0.5:0) - (f.fillCount>800?0.5:0),
+       `${(stakeWeight*100).toFixed(0)}% of this wallet’s value is delegated rather than deployed`);
+  push('tidewalker', (Math.abs(f.cumFunding) > Math.max(200, f.oi*0.001) ? 0.9 : 0) + (f.oi>0?0.3:0),
+       `${fmtUsd(f.cumFunding)} of cumulative funding accrued on open positions`);
+  push('splinter', (f.markets>=8?0.8:f.markets/10) + (f.fillCount>=1500?0.5:0) + (f.avgFillNtl && f.avgFillNtl<8000?0.4:0),
+       `${f.markets} markets touched across ${f.fillCount} fills read`);
+  push('deepwater', (f.concentration!=null && f.concentration>0.85 ? 0.9:0) + (f.oi>1e6?0.7:f.oi>1e5?0.3:0),
+       `${f.concentration!=null?(f.concentration*100).toFixed(0)+'% of open notional sits in one market':'no open position'}`);
+  push('cartograph', f.venues>=4?1.2:f.venues*0.28, `active across ${f.venues} distinct venues`);
+  push('metronome', (f.makerShare!=null && f.makerShare>0.7 ? 1.1:0) + (f.makerShare||0)*0.4,
+       `${f.makerShare!=null?(f.makerShare*100).toFixed(0)+'% of fills were maker-side':'no fills read'}`);
+  push('ember', (f.fillCount>0 && f.tenureDays>240 && f.fillCount<300 ? 0.9:0),
+       `${f.fillCount} fills against ${f.tenureDays} days on the ledger`);
+  push('oracle', f.outcomeHeld>0 ? 1.3 : (f.outcomeCoins.length? 0.45:0),
+       `${f.outcomeHeld} outcome-market position${f.outcomeHeld===1?'':'s'} held`);
+  push('bricklayer', (f.spotCoins>=4?0.7:f.spotCoins*0.16) + (f.oi===0 && f.equity>0 ?0.6:0),
+       `${f.spotCoins} spot balances held, ${f.oi===0?'no open perp position':'perp position open'}`);
+  push('fuse', (f.maxLev>=15?0.9:f.maxLev/20) + (f.marginUsed && f.equity ? Math.min(0.6,(f.marginUsed/f.equity)) : 0),
+       `${f.maxLev||0}× top leverage in use`);
+  push('homestead', f.tenureDays!=null ? Math.min(1.4, f.tenureDays/540) + (f.genesis.length?0.6:0) : 0,
+       `ledger opens ${f.tenureDays!=null? f.tenureDays+' days ago':'—'}${f.genesis.length?' and includes a genesis distribution':''}`);
+  C.sort((a,b)=>b.score-a.score);
+  const top=C[0];
+  return {...top, weak: top.score<0.45, runners:C.slice(1,4)};
+}
+
+/* ---- depth: descriptive, component-wise, missing ≠ zero ----- */
+function depth(f){
+  const cap=(v,m)=>Math.max(0,Math.min(100, v/m*100));
+  const comps=[
+    {k:'Trading',  v: f.lifetimeVlm!=null? cap(Math.log10(Math.max(1,f.lifetimeVlm)),10):null,
+     detail: f.lifetimeVlm!=null? fmtUsd(f.lifetimeVlm,0)+' lifetime notional':null, miss:'no trading recorded'},
+    {k:'Position', v: f.equity>0? cap(Math.log10(Math.max(1,f.oi)),8):null,
+     detail: f.oi>0? fmtUsd(f.oi,0)+' open right now, '+(f.maxLev||0)+'× top leverage':'nothing open right now',
+     miss:'no perp account'},
+    {k:'Staking',  v: f.staked>0? cap(Math.log10(Math.max(1,f.staked)),6):null,
+     detail: f.staked>0? fmtNum(f.staked,2)+' HYPE with '+f.validators+' validator'+(f.validators===1?'':'s'):null,
+     miss:'hasn’t staked'},
+    {k:'Holdings', v: (f.hype>0||f.spotCoins>0)? cap(Math.log10(Math.max(1,f.hype+1)),5)*0.6+cap(f.spotCoins,12)*0.4:null,
+     detail: (f.hype>0||f.spotCoins>0)? fmtNum(f.hype,2)+' HYPE, '+f.spotCoins+' spot balances':null,
+     miss:'no spot balances'},
+    {k:'Spread',   v: f.venues>0? cap(f.venues,6):null,
+     detail: f.venues>0? f.venues+' venues'+(f.dexActive.length?' incl. '+f.dexActive.join(', '):''):null,
+     miss:'single venue only'},
+    {k:'Tenure',   v: f.tenureDays!=null? cap(f.tenureDays,900):null,
+     detail: f.tenureDays!=null? 'first ledger entry '+dayStr(f.firstLedger):null, miss:'no ledger history'}
+  ];
+  const known=comps.filter(c=>c.v!=null);
+  const total = known.length? Math.round(known.reduce((s,c)=>s+c.v,0)/known.length) : null;
+  return {comps,total,knownCount:known.length};
+}
+
+/* ============================================================
+   8. PHYSICS FIELD — elastic collisions, repulsion gated by
+   cursor SPEED so a resting cursor lets you read a tile.
+   ============================================================ */
+function marketField(host, markets){
+  const cv=el('canvas'); host.appendChild(cv);
+  let W=0,H=0,c=null,raf=null,running=false;
+  const bodies = markets.slice(0,16).map((m,i)=>({
+    n:m.name, v:m.vlm, r:0, x:0, y:0, vx:(Math.random()-.5)*.5, vy:(Math.random()-.5)*.5
+  }));
+  let px=-1e4, py=-1e4, lx=-1e4, ly=-1e4, speed=0;
+  function size(){
+    const r=host.getBoundingClientRect();      // measure the container, never hardcode
+    if(!r.width||!host.isConnected) return false;
+    W=r.width; H=r.height; c=fitCanvas(cv,W,H,1.5);
+    const maxV=Math.max(...bodies.map(b=>b.v||1));
+    bodies.forEach((b,i)=>{
+      b.r=Math.max(15, Math.min(W,H)*0.055 + (b.v/maxV)*Math.min(W,H)*0.075);
+      if(!b.init){ b.x=b.r+Math.random()*(W-2*b.r); b.y=b.r+Math.random()*(H-2*b.r); b.init=1; }
+      b.x=Math.max(b.r,Math.min(W-b.r,b.x)); b.y=Math.max(b.r,Math.min(H-b.r,b.y));
+    });
+    return true;
+  }
+  function step(){
+    if(!running) return;
+    speed*=0.86;
+    const mint=tok('--mint'), line=tok('--line-2'), ink=tok('--ink');
+    c.clearRect(0,0,W,H);
+    for(const b of bodies){
+      if(px>-1e3){
+        const dx=b.x-px, dy=b.y-py, d=Math.hypot(dx,dy)||1;
+        if(d < b.r+90){
+          const push = (speed/60) * (1 - d/(b.r+90)) * 2.6;   // scaled BY cursor speed
+          b.vx += dx/d*push; b.vy += dy/d*push;
+        }
+      }
+      b.x+=b.vx; b.y+=b.vy; b.vx*=0.988; b.vy*=0.988;
+      if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.82} if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)*.82}
+      if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.82} if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)*.82}
+    }
+    for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++){
+      const a=bodies[i], b=bodies[j];
+      const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1, min=a.r+b.r;
+      if(d<min){
+        const nx=dx/d, ny=dy/d, ov=(min-d)/2;
+        a.x-=nx*ov; a.y-=ny*ov; b.x+=nx*ov; b.y+=ny*ov;
+        const p=(a.vx-b.vx)*nx+(a.vy-b.vy)*ny;   // equal-mass elastic exchange
+        a.vx-=p*nx; a.vy-=p*ny; b.vx+=p*nx; b.vy+=p*ny;
+      }
+    }
+    for(const b of bodies){
+      const hov = Math.hypot(b.x-px,b.y-py) < b.r;
+      c.beginPath(); c.arc(b.x,b.y,b.r,0,7);
+      c.fillStyle = hov ? mint : 'rgba(150,252,228,.07)';
+      c.fill();
+      c.lineWidth=1; c.strokeStyle= hov? mint : line; c.stroke();
+      c.fillStyle = hov ? tok('--on-mint') : ink;
+      c.font='600 '+Math.max(9,Math.min(13,b.r*0.36))+'px "IBM Plex Mono", monospace';
+      c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(b.n, b.x, b.y);
+    }
+    raf=requestAnimationFrame(step);
+  }
+  function onMove(e){
+    const r=cv.getBoundingClientRect();
+    const nx=e.clientX-r.left, ny=e.clientY-r.top;
+    if(lx>-1e3) speed = Math.min(60, Math.hypot(nx-lx, ny-ly)*4 + speed*0.5);
+    lx=nx; ly=ny; px=nx; py=ny;
+  }
+  cv.addEventListener('pointermove',onMove);
+  cv.addEventListener('pointerleave',()=>{px=py=-1e4; lx=ly=-1e4; speed=0;});
+  const io=new IntersectionObserver(es=>{
+    const on=es[0].isIntersecting && !RM();
+    if(on && !running){ if(size()){ running=true; raf=requestAnimationFrame(step);} }
+    else if(!on && running){ running=false; cancelAnimationFrame(raf); }
+  },{threshold:.02});
+  io.observe(host);
+  let rt; const onResize=()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(!host.isConnected){ teardown(); return; } size(); },140); };
+  addEventListener('resize',onResize);
+  function teardown(){ running=false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize',onResize); }
+  ACTIVE.push(teardown);
+  if(size() && !RM()){ running=true; raf=requestAnimationFrame(step); } else if(size()){ step.call(null); }
+}
+const ACTIVE=[];
+function killActive(){ while(ACTIVE.length) (ACTIVE.pop())(); }
+
+/* ============================================================
+   9. VIEWS
+   ============================================================ */
+const app=$('#app'), secsIn=$('#shSecsIn');
+function blk(mark, num){
+  const b=el('div','blk rev-hl');
+  const m=el('div','mk'); const n=el('div','n',num); const l=el('div','lab',mark);
+  m.append(n,l); const bd=el('div','bd'); b.append(m,bd); return {node:b, body:bd};
+}
+function setSecs(items, active){
+  secsIn.innerHTML='';
+  items.forEach(it=>{
+    const a=el('button','sh-chip', null);
+    const d=el('span','dot'); a.append(d, document.createTextNode(it.label));
+    a.setAttribute('aria-current', String(it.id===active));
+    a.addEventListener('click',()=> it.href? (location.hash=it.href) : it.go && it.go());
+    secsIn.appendChild(a);
+  });
+}
+/* ---- referral: disclosed in place, never disguised ---------- */
+const REF='https://app.hyperliquid.xyz/join/REWARDS';
+function refBlock(kind){
+  const box=el('div','rf-box');
+  const cv=el('canvas'); box.appendChild(cv);
+  const t=el('div','rf-t');
+  const copy = kind==='nofills'
+    ? {h:'No trading history to read yet',
+       p:'This address has never filled an order on Hyperliquid. If you want one that does, you can open an account on the exchange itself.'}
+    : {h:'Reading is one thing. Trading is another.',
+       p:'HyperFlow never touches your funds and never will — it only reads. The exchange is where the trading happens, and signing up through a referral takes 4% off your taker fees.'};
+  t.append(el('h3',null,copy.h), el('p',null,copy.p));
+  const d=el('p','disc');
+  d.textContent='This is Pranjal’s referral link, and he earns a share if you use it. The 4% is the referralDiscount the exchange publishes in its own fee schedule — you can see it yourself in the userFees response. Nothing on this site changes depending on whether you use the link.';
+  t.appendChild(d);
+  const a=el('a','rf-cta','Open Hyperliquid →');
+  a.href=REF; a.target='_blank'; a.rel='noopener';
+  a.addEventListener('click',()=>track('ref:'+kind));
+  box.append(t,a);
+  requestAnimationFrame(()=>drawSeal(cv,60,'homestead','ref'));
+  return box;
+}
+
+const TRY=[
+  {a:'0x87f9cd15f5050a9283b8896300f7c8cf69ece2cf', l:'A large staker', s:'500k HYPE delegated'},
+  {a:'0x8bf3ac5c417624b3bde7901de3c4ad7659599060', l:'An old ledger',  s:'open since Oct 2023'},
+  {a:'0xc926ddba8b7617dbc65712f20cf8e1b58b8598d3', l:'Outcome trader', s:'holds HIP-4 positions'},
+  {a:'0x85ecf584f25db6f146718b86d493e33c5af72052', l:'50 subaccounts', s:'master looks empty'}
+];
+function viewHome(){
+  killActive(); app.innerHTML='';
+  setSecs([{label:'Read a wallet',id:'home',href:'#/'},{label:'The cast',id:'cast',href:'#/cast'}],'home');
+
+  const hero=el('section','hm-hero');
+  const hcv=el('canvas','hm-canvas'); hcv.setAttribute('aria-hidden','true');
+  const inner=el('div','hm-heroin');
+  const h1=el('h1','hm-h1'); h1.innerHTML='Paste an address.<br>Get a <em>read</em>.';
+  const sub=el('p','hm-sub','Live Hyperliquid analytics that shows its working. Perps, spot, staking, builder-deployed markets and outcome markets — every number pulled in your own browser, from the exchange, in front of you.');
+  const form=el('form','hm-big');
+  const inp=el('input'); inp.type='text'; inp.spellcheck=false; inp.autocomplete='off';
+  inp.placeholder='0x…'; inp.setAttribute('aria-label','Hyperliquid address');
+  const btn=el('button','hm-read','Read it'); btn.type='submit';
+  form.append(inp,btn);
+  form.addEventListener('submit',e=>{ e.preventDefault(); go(inp.value.trim()); });
+  const prom=el('div','hm-promise');
+  [['Read-only','forever'],['No wallet','connect'],['No signature','ever'],['Nothing','stored']].forEach(([b,t])=>{
+    const p=el('span','hm-pill'); p.append(el('b',null,b), document.createTextNode(' '+t)); prom.appendChild(p);
+  });
+  inner.append(h1,sub,form,prom);
+  hero.append(hcv,inner); app.appendChild(hero);
+
+  // hero ground: the mark's form, drifting, very low contrast
+  (function(){
+    const host=hero; let raf,t=0,running=true;
+    function size(){ const r=host.getBoundingClientRect(); if(!r.width) return null;
+      return {c:fitCanvas(hcv,r.width,r.height,1.5), W:r.width, H:r.height}; }
+    let s=size();
+    function loop(){ if(!running||!s) return; t+=RM()?0:0.004;
+      s.c.clearRect(0,0,s.W,s.H);
+      s.c.globalAlpha=0.055;
+      for(let i=0;i<3;i++){
+        const sc=s.H*(0.9+i*0.34), x=s.W*(0.62+Math.sin(t+i)*0.05)-sc/2, y=s.H*(0.5+Math.cos(t*0.8+i)*0.06)-sc/2;
+        s.c.save(); s.c.translate(x,y); drawBlob(s.c,sc,tok('--mint'),1-0.16*i); s.c.restore();
+      }
+      s.c.globalAlpha=1;
+      raf=requestAnimationFrame(loop);
+    }
+    raf=requestAnimationFrame(loop);
+    let rt; const onR=()=>{clearTimeout(rt); rt=setTimeout(()=>{ if(!host.isConnected) return; s=size(); },140);};
+    addEventListener('resize',onR);
+    ACTIVE.push(()=>{running=false; cancelAnimationFrame(raf); removeEventListener('resize',onR);});
+  })();
+
+  const b1=blk('Start here','01');
+  const lab=el('div','lab hm-trylab','Or read one of these — real wallets, verified today');
+  const tries=el('div','hm-tries');
+  TRY.forEach(t=>{
+    const b=el('button','hm-try');
+    const cv=el('canvas'); const seal=CAST[hashStr(t.a)%CAST.length].id;
+    const tx=el('div','t'); tx.append(el('b',null,t.l), el('span',null,shortAddr(t.a)+' · '+t.s));
+    b.append(cv,tx);
+    b.addEventListener('click',()=>go(t.a));
+    tries.appendChild(b);
+    requestAnimationFrame(()=>drawSeal(cv,28,seal,t.a));
+  });
+  b1.body.append(lab,tries);
+  app.appendChild(b1.node);
+
+  const b2=blk('Live markets','02');
+  const note=el('p',null,'Every perp on the main book, sized by 24-hour volume. Sweep the cursor to shove them; rest it to read one.');
+  note.style.color='var(--ink-2)'; note.style.fontSize='14px';
+  const field=el('div','hm-field');
+  const fl=el('div','hm-fieldnote lab','sized by 24h notional volume · live');
+  field.appendChild(fl);
+  b2.body.append(note,field);
+  app.appendChild(b2.node);
+
+  const b3=blk('The exchange','03');
+  b3.body.appendChild(refBlock('home'));
+  app.appendChild(b3.node);
+  reveal(app);
+
+  api({type:'metaAndAssetCtxs'},{ttl:30000}).then(([meta,ctxs])=>{
+    const ms=meta.universe.map((u,i)=>({name:u.name, vlm:+(ctxs[i]?.dayNtlVlm||0)}))
+      .sort((a,b)=>b.vlm-a.vlm);
+    marketField(field, ms);
+  }).catch(()=>{ fl.textContent='markets unavailable right now'; });
+}
+
+function viewCast(you){
+  killActive(); app.innerHTML='';
+  setSecs([{label:'Read a wallet',id:'home',href:'#/'},{label:'The cast',id:'cast',href:'#/cast'}],'cast');
+  const b=blk('The cast','01');
+  const h=el('h2',null,'Eleven ways to be deep in Hyperliquid');
+  const p=el('p',null,'Every wallet is assigned one of these from its own behaviour — never from a hash of the address. HyperFlow’s own classification; nothing official, nothing predictive.');
+  p.style.color='var(--ink-2)';
+  const grid=el('div','cast');
+  CAST.forEach(t=>{
+    const c=el('div','cast-c'); if(you===t.id) c.dataset.you='1';
+    const cv=el('canvas'); c.append(cv, el('b',null,t.name), el('span',null,t.tag));
+    grid.appendChild(c);
+    requestAnimationFrame(()=>drawSeal(cv,64,t.id,'cast'));
+  });
+  const proof=el('div');
+  proof.append(el('div','lab','the same art at leaderboard-row size — legibility checked at the small end first'));
+  const mini=el('div','cast-mini');
+  CAST.forEach(t=>{ const cv=el('canvas'); mini.appendChild(cv); requestAnimationFrame(()=>drawSeal(cv,28,t.id,'cast')); });
+  proof.appendChild(mini);
+  b.body.append(h,p,grid,proof);
+  app.appendChild(b.node); reveal(app);
+}
+
+/* ---- wallet ------------------------------------------------ */
+const MASK={addr:false, amounts:false};
+function maskNum(s){ return MASK.amounts ? '•'.repeat(Math.min(9,String(s).length)) : s; }
+
+function tile(label, value, sub, cls, tip){
+  const t=el('div','wl-tile');
+  const l=el('div','lab'); l.style.display='flex'; l.style.alignItems='center'; l.style.gap='6px';
+  l.append(document.createTextNode(label)); if(tip) l.appendChild(q(tip));
+  const v=el('div','v'+(cls?' '+cls:''), value);
+  t.append(l,v); if(sub) t.append(el('div','s',sub));
+  return t;
+}
+async function viewWallet(addr){
+  killActive(); app.innerHTML='';
+  setSecs([{label:'Read a wallet',id:'home',href:'#/'},{label:'The cast',id:'cast',href:'#/cast'}],'wallet');
+  const host=el('div'); app.appendChild(host);
+  const ld=makeLoader(host, STEPS);
+  let d;
+  try{ d = await readWallet(addr,(i,n)=>ld.set(i,n)); }
+  catch(e){
+    ld.done();
+    const b=blk('Could not read','01');
+    b.body.append(el('h2',null, e.code==='RATE' ? 'The exchange rate-limited this browser' : 'That read did not complete'));
+    const p=el('p',null, e.code==='RATE'
+      ? 'Rate limits are per IP, so this is about this browser only — not the site. Give it about a minute and try again.'
+      : 'The address may not exist on Hyperliquid, or the request timed out. Check the address and try again.');
+    p.style.color='var(--ink-2)'; b.body.append(p);
+    app.innerHTML=''; app.appendChild(b.node); reveal(app,true); return;
+  }
+  ld.done();
+  const f=derive(d), a=assign(f), sc=depth(f);
+
+  /* ---- identity ---- */
+  const b0=blk('Who this is','01');
+  const id=el('div','wl-id');
+  const seal=el('canvas','wl-seal'); id.appendChild(seal);
+  const idt=el('div','wl-idt');
+  idt.append(el('h2','wl-arch', a.weak? 'Not enough to type yet' : CAST[CAST_IX[a.id]].name));
+  idt.append(el('p','wl-tag', a.weak? 'This wallet has too little recorded activity for any archetype to be earned.' : CAST[CAST_IX[a.id]].desc));
+  const why=el('p','wl-tag'); why.style.color='var(--ink-3)'; why.style.fontSize='12.5px';
+  why.textContent='Assigned because: '+a.why+'.';
+  idt.appendChild(why);
+  const ad=el('div','wl-addr');
+  const code=el('code',null,addr); if(MASK.addr) code.dataset.masked='1';
+  const cp=el('button','wl-mini'); cp.setAttribute('aria-label','Copy address');
+  cp.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+  cp.addEventListener('click',()=>{navigator.clipboard?.writeText(addr); cp.setAttribute('data-tip','Copied'); });
+  const bl=el('button','wl-mini'); bl.setAttribute('aria-label','Blur address');
+  bl.innerHTML='<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  bl.addEventListener('click',()=>{ MASK.addr=!MASK.addr; code.dataset.masked=MASK.addr?'1':'0'; });
+  ad.append(code,cp,bl); idt.appendChild(ad);
+  const roleTag=el('span','lab'); roleTag.textContent='exchange reports this address as: '+(d.role?.role||'unknown');
+  idt.appendChild(roleTag);
+  id.appendChild(idt);
+  b0.body.appendChild(id);
+  app.appendChild(b0.node);
+  requestAnimationFrame(()=>drawSeal(seal,76,a.weak?'homestead':a.id,addr));
+
+  /* ---- headline tiles ---- */
+  const b1=blk('Right now','02');
+  const tiles=el('div','wl-tiles');
+  tiles.append(
+    tile('Account value', fmtUsd(f.equity), 'as the exchange reports it', '', 'equity'),
+    tile('Open interest', f.oi>0? fmtUsd(f.oi):'nothing open', f.oi>0? f.positions.length+' market'+(f.positions.length===1?'':'s'):'no perp position', f.oi>0?'':'none', 'oi'),
+    tile('Lifetime volume', f.lifetimeVlm!=null? '$'+fmtCompact(f.lifetimeVlm):'—', 'portfolio · allTime', '', 'vlm'),
+    tile('HYPE staked', f.staked>0? fmtNum(f.staked,2): 'hasn’t staked', f.staked>0? f.validators+' validator'+(f.validators===1?'':'s'):'no delegation history', f.staked>0?'':'none', 'staked'),
+    tile('On Hyperliquid since', f.firstLedger? dayStr(f.firstLedger):'—', f.tenureDays!=null? f.tenureDays+' days':'', '', 'since'),
+    tile('All-time PnL', f.allTimePnl!=null? fmtUsd(f.allTimePnl):'—', 'portfolio · pnlHistory', f.allTimePnl>0?'up':f.allTimePnl<0?'down':'')
+  );
+  b1.body.appendChild(tiles);
+  const chk=el('div','wl-note');
+  chk.innerHTML='<b>Checked:</b> we recomputed the exchange’s own identity from the raw positions — '+
+    'Σ|notional| vs totalNtlPos differs by <span class="num">'+f.oiResidual.toExponential(2)+'</span>, '+
+    'and cash + Σ signed notional vs accountValue by <span class="num">'+f.equityResidual.toExponential(2)+'</span>. '+
+    'These figures are printed because those residuals are zero.';
+  b1.body.appendChild(chk);
+  app.appendChild(b1.node);
+
+  /* ---- depth breakdown ---- */
+  const b2=blk('How deep','03');
+  const head=el('div'); head.style.display='flex'; head.style.alignItems='baseline'; head.style.gap='10px'; head.style.flexWrap='wrap';
+  const hv=el('h2',null, sc.total!=null? String(sc.total):'—'); hv.style.fontSize='38px';
+  const hl=el('span',null,'HyperFlow depth'); hl.style.color='var(--ink-2)';
+  head.append(hv,hl,q('depth'));
+  const hsub=el('p',null,'Descriptive only. It is the mean of the '+sc.knownCount+' components below that this wallet has data for — components with no data are shown as missing, not as zero. It is not a rank, not a grade, and it says nothing about what happens next.');
+  hsub.style.color='var(--ink-3)'; hsub.style.fontSize='13px';
+  const sbox=el('div','card pad wl-score');
+  sc.comps.forEach(cmp=>{
+    const row=el('div','wl-comp');
+    const cn=el('div','cn'); cn.append(document.createTextNode(cmp.k));
+    const cv=el('div','cv', cmp.v!=null? Math.round(cmp.v)+' / 100' : 'no data');
+    const tr=el('div','wl-track'); const fi=el('i','wl-fill');
+    if(cmp.v==null) tr.dataset.missing='1'; tr.appendChild(fi);
+    row.append(cn,cv,tr);
+    const det=el('div','wl-miss', cmp.v!=null? cmp.detail : cmp.miss);
+    det.style.gridColumn='1/-1';
+    row.appendChild(det);
+    sbox.appendChild(row);
+    if(cmp.v!=null) requestAnimationFrame(()=>{ fi.style.transform='scaleX('+(cmp.v/100)+')'; });
+  });
+  b2.body.append(head,hsub,sbox);
+  app.appendChild(b2.node);
+
+  /* ---- positions ---- */
+  const b3=blk('Open positions','04');
+  if(f.positions.length){
+    const tw=el('div','wl-tw');
+    tw.innerHTML='<table><thead><tr><th>Market</th><th>Side</th><th>Size</th><th>Entry</th><th>Notional</th><th>Lev</th><th>Liq</th><th>uPnL</th></tr></thead><tbody></tbody></table>';
+    const tb=tw.querySelector('tbody');
+    f.positions.forEach(p=>{
+      const long=+p.szi>0;
+      const tr=el('tr');
+      tr.innerHTML='<td><b>'+p.coin+'</b></td>'+
+        '<td><span class="wl-side '+(long?'l':'s')+'">'+(long?'LONG':'SHORT')+'</span></td>'+
+        '<td class="n">'+fmtNum(Math.abs(+p.szi),6)+'</td>'+
+        '<td class="n">'+fmtUsd(p.entryPx)+'</td>'+
+        '<td class="n">'+fmtUsd(p.positionValue,0)+'</td>'+
+        '<td class="n">'+(p.leverage?.value||'—')+'× '+(p.leverage?.type||'')+'</td>'+
+        '<td class="n">'+(p.liquidationPx? fmtUsd(p.liquidationPx):'none reported')+'</td>'+
+        '<td class="n" style="color:'+(+p.unrealizedPnl>=0?'var(--up)':'var(--down)')+'">'+fmtUsd(p.unrealizedPnl)+'</td>';
+      tb.appendChild(tr);
+    });
+    b3.body.appendChild(tw);
+    const n=el('div','wl-note'); n.innerHTML='<b>Leverage and liquidation price are the exchange’s own figures</b>, not inferred. '+q('liq').outerHTML;
+    b3.body.appendChild(n);
+  } else {
+    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+    e.append(el('h3',null,'Nothing open'), el('p',null,'This wallet has no perp position on the main book right now. That is a fact about this moment, not a judgement — it may still be staking, holding spot, or trading elsewhere.'));
+    b3.body.appendChild(e);
+    requestAnimationFrame(()=>drawSeal(cv,88,'anchor',addr));
+  }
+  app.appendChild(b3.node);
+
+  /* ---- fills, paginated 10 ---- */
+  const b4=blk('Recent fills','05');
+  if(f.fillCount){
+    const win=el('div','wl-note');
+    win.innerHTML='<b>Read window:</b> the '+f.fillCount.toLocaleString()+' most recent fills, '+
+      dayStr(f.fillWindow.from)+' → '+dayStr(f.fillWindow.to)+'. '+
+      'Everything derived from fills below covers this window only. '+q('fillwin').outerHTML;
+    const tw=el('div','wl-tw');
+    tw.innerHTML='<table><thead><tr><th>Time</th><th>Market</th><th>Direction</th><th>Size</th><th>Price</th><th>Closed PnL</th><th>Role</th></tr></thead><tbody></tbody></table>';
+    const tb=tw.querySelector('tbody');
+    const per=10; let page=0; const pages=Math.ceil(d.fills.length/per);
+    function paint(){
+      tb.innerHTML='';
+      d.fills.slice(page*per,(page+1)*per).forEach(x=>{
+        const tr=el('tr');
+        tr.innerHTML='<td class="n">'+new Date(x.time).toISOString().slice(0,16).replace('T',' ')+'</td>'+
+          '<td><b>'+x.coin+'</b></td><td>'+x.dir+'</td>'+
+          '<td class="n">'+fmtNum(+x.sz,6)+'</td><td class="n">'+fmtUsd(x.px)+'</td>'+
+          '<td class="n" style="color:'+(+x.closedPnl>0?'var(--up)':+x.closedPnl<0?'var(--down)':'var(--ink-3)')+'">'+
+            (+x.closedPnl? fmtUsd(x.closedPnl):'—')+'</td>'+
+          '<td>'+(x.crossed===false?'maker':'taker')+'</td>';
+        tb.appendChild(tr);
+      });
+      lbl.textContent='Page '+(page+1)+' of '+pages;
+      prev.disabled=page===0; next.disabled=page>=pages-1;
+    }
+    const pg=el('div','wl-pager');
+    const prev=el('button','wl-pgb','← Newer'), next=el('button','wl-pgb','Older →'), lbl=el('span','lab');
+    prev.addEventListener('click',()=>{ if(page>0){page--; paint();} });
+    next.addEventListener('click',()=>{ if(page<pages-1){page++; paint();} });
+    pg.append(prev,lbl,next);
+    b4.body.append(win,tw,pg); paint();
+  } else {
+    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+    e.append(el('h3',null,'No fills in reach'), el('p',null,'The exchange returned no fills for this address. Either it has never traded, or its trading sits in subaccounts — check the block below.'));
+    b4.body.append(e, refBlock('nofills')); requestAnimationFrame(()=>drawSeal(cv,88,'ember',addr));
+  }
+  app.appendChild(b4.node);
+
+  /* ---- staking ---- */
+  const b5=blk('Staking','06');
+  if(f.staked>0 || f.stakingSince){
+    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='12px';
+    const t=el('div','wl-tiles');
+    t.append(
+      tile('Delegated', fmtNum(f.staked,2)+' HYPE', f.hypeMid? '≈ '+fmtUsd(f.staked*f.hypeMid,0):''),
+      tile('Rewards accrued', fmtNum(f.rewards,2)+' HYPE', (d.drew||[]).length+' daily records'),
+      tile('Staking since', f.stakingSince? dayStr(f.stakingSince):'—', f.stakingSince? daysAgo(f.stakingSince)+' days':''),
+      tile('Validators', String(f.validators), f.validatorNames.join(', ')||'—')
+    );
+    c.appendChild(t);
+    b5.body.appendChild(c);
+  } else {
+    const e=el('div','card wl-empty'); const cv=el('canvas'); e.appendChild(cv);
+    e.append(el('h3',null,'Hasn’t staked'), el('p',null,'No delegation history for this address. That is missing data, not a zero — the staking component of the depth score is shown as missing above.'));
+    b5.body.appendChild(e); requestAnimationFrame(()=>drawSeal(cv,88,'anchor',addr));
+  }
+  app.appendChild(b5.node);
+
+  /* ---- genesis ---- */
+  if(f.genesis.length){
+    const b6=blk('Genesis','07');
+    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='10px';
+    const h=el('div'); h.style.display='flex'; h.style.alignItems='center'; h.style.gap='8px'; h.style.flexWrap='wrap';
+    h.append(el('h3',null,'Received at genesis'), q('genesis'));
+    const tg=el('button','sc-tog'); tg.setAttribute('aria-pressed', String(MASK.amounts));
+    const bx=el('span','box'); tg.append(bx, document.createTextNode('Hide amounts'));
+    h.appendChild(tg);
+    c.appendChild(h);
+    const rows=el('div'); rows.style.display='flex'; rows.style.flexDirection='column'; rows.style.gap='6px';
+    function paintG(){
+      rows.innerHTML='';
+      f.genesis.forEach(g=>{
+        const r=el('div'); r.style.display='flex'; r.style.gap='12px'; r.style.alignItems='baseline'; r.style.flexWrap='wrap';
+        const amt=el('span','num'); amt.style.fontSize='19px'; amt.style.fontWeight='600';
+        amt.textContent=maskNum(fmtNum(g.amount,2))+' '+g.token;
+        const dt=el('span','lab'); dt.textContent=dayStr(g.time);
+        r.append(amt,dt); rows.appendChild(r);
+      });
+    }
+    tg.addEventListener('click',()=>{ MASK.amounts=!MASK.amounts; tg.setAttribute('aria-pressed',String(MASK.amounts)); paintG(); });
+    paintG();
+    c.appendChild(rows);
+    c.appendChild(el('p','wl-miss','Recorded on this wallet’s own ledger as a spotGenesis entry. Historical fact, past tense — it describes what happened, nothing more.'));
+    b6.body.appendChild(c); app.appendChild(b6.node);
+  }
+
+  /* ---- subaccounts, never merged ---- */
+  if(f.subCount){
+    const b7=blk('Subaccounts','08');
+    const c=el('div','card pad'); c.style.display='flex'; c.style.flexDirection='column'; c.style.gap='12px';
+    const h=el('div'); h.style.display='flex'; h.style.alignItems='center'; h.style.gap='8px';
+    h.append(el('h3',null,f.subCount+' subaccount'+(f.subCount===1?'':'s')), q('subacc'));
+    c.appendChild(h);
+    const t=el('div','wl-tiles');
+    t.append(
+      tile('Children account value', fmtUsd(f.subEquity,0), 'summed across '+f.subCount+' subaccounts'),
+      tile('Children open interest', fmtUsd(f.subNtl,0), 'not included in the headline above')
+    );
+    c.append(t, el('p','wl-miss','Kept separate on purpose. The headline numbers at the top are the pasted address only, exactly as the exchange reports it for that address.'));
+    b7.body.appendChild(c); app.appendChild(b7.node);
+  }
+
+  /* ---- share ---- */
+  const b8=blk('Share it','09');
+  b8.body.appendChild(shareCard(addr,f,a,sc));
+  app.appendChild(b8.node);
+  reveal(app);
+}
+
+/* ============================================================
+   10. SHARE CARD
+   Composed from a declared block: every gap is named up front and
+   the whole stack is positioned as one unit, so nothing drifts or
+   collides when a number gets longer or the type gets bigger.
+   The footer band is reserved BEFORE anything else is laid out.
+   ============================================================ */
+function paintShare(cv, ratio, addr, f, a, sc){
+  const wide = ratio==='16:9';
+  const W = wide?1200:1080, H = wide?630:1920;
+  const c = fitCanvas(cv, W, H, 1);            // DPR capped at 1 for export — phones die otherwise
+  const t = CAST[CAST_IX[a.id]] || CAST[0];
+
+  const SP = {                                  // declared spacing — no hand-tuned offsets
+    pad:      wide?56:72,
+    footBand: wide?84:120,
+    sealSize: wide?230:420,
+    gapSeal:  wide?44:52,
+    gapName:  14,
+    gapTag:   wide?26:34,
+    gapScore: wide?30:40,
+    tileH:    wide?92:132,
+    tileGap:  12
+  };
+  c.fillStyle='#041512'; c.fillRect(0,0,W,H);
+  // ground: the mark's form, low contrast, clipped to the card
+  c.save(); c.beginPath(); c.rect(0,0,W,H); c.clip();
+  c.globalAlpha=0.06;
+  const bs=H*1.25; c.save(); c.translate(W-bs*0.42, H*0.5-bs*0.5); drawBlob(c,bs,t.hue,1); c.restore();
+  c.globalAlpha=1; c.restore();
+
+  const contentTop = SP.pad;
+  const contentBottom = H - SP.footBand - SP.pad;   // reserve the footer band first
+  const innerW = W - SP.pad*2;
+
+  // --- footer band ---
+  c.fillStyle='rgba(150,252,228,.05)'; c.fillRect(0,H-SP.footBand,W,SP.footBand);
+  c.fillStyle='#12403A'; c.fillRect(0,H-SP.footBand,W,1);
+  c.font='600 '+(wide?19:26)+'px Chivo, sans-serif'; c.fillStyle='#96FCE4'; c.textAlign='left'; c.textBaseline='middle';
+  c.fillText('hyperflow', SP.pad, H-SP.footBand/2);
+  c.font='400 '+(wide?15:21)+'px "IBM Plex Mono", monospace'; c.fillStyle='#65847D'; c.textAlign='right';
+  c.fillText('a reading, not a rank · read-only', W-SP.pad, H-SP.footBand/2);
+
+  // --- the stack, measured then placed as one unit ---
+  const sealX = wide? SP.pad : (W-SP.sealSize)/2;
+  const textX = wide? SP.pad+SP.sealSize+SP.gapSeal : SP.pad;
+  const textW = wide? innerW-SP.sealSize-SP.gapSeal : innerW;
+  const alignC = !wide;
+
+  const nameSize  = wide?58:84;
+  const tagSize   = wide?21:30;
+  const scoreSize = wide?96:150;
+  const stackH = nameSize*1.0 + SP.gapName + tagSize*1.3 + SP.gapTag + scoreSize*0.86 + SP.gapScore + SP.tileH;
+  const availH = contentBottom - contentTop;
+  let y = contentTop + Math.max(0,(availH - (wide? stackH : stackH+SP.sealSize+SP.gapSeal))/2);
+
+  if(!wide){
+    drawSeal(_sealBuf(SP.sealSize, a.id, addr), SP.sealSize, a.id, addr);
+    c.drawImage(_SEALCV, sealX, y, SP.sealSize, SP.sealSize);
+    y += SP.sealSize + SP.gapSeal;
+  } else {
+    drawSeal(_sealBuf(SP.sealSize, a.id, addr), SP.sealSize, a.id, addr);
+    c.drawImage(_SEALCV, sealX, contentTop + (availH-SP.sealSize)/2, SP.sealSize, SP.sealSize);
+  }
+
+  c.textAlign = alignC?'center':'left'; c.textBaseline='top';
+  const tx = alignC? W/2 : textX;
+  c.font='800 '+nameSize+'px Chivo, sans-serif'; c.fillStyle='#E2F3ED';
+  c.fillText(t.name, tx, y); y += nameSize + SP.gapName;
+  c.font='400 '+tagSize+'px "Public Sans", sans-serif'; c.fillStyle='#9CB9B2';
+  c.fillText(t.tag, tx, y); y += tagSize*1.3 + SP.gapTag;
+
+  c.font='900 '+scoreSize+'px Chivo, sans-serif'; c.fillStyle=t.hue;
+  const scTxt = sc.total!=null? String(sc.total) : '—';
+  c.fillText(scTxt, tx, y);
+  const scW = c.measureText(scTxt).width;
+  c.font='500 '+(wide?18:26)+'px "IBM Plex Mono", monospace'; c.fillStyle='#65847D';
+  c.textAlign='left';
+  c.fillText('depth', (alignC? W/2 - scW/2 : tx) + scW + 14, y + scoreSize*0.5);
+  y += scoreSize*0.86 + SP.gapScore;
+
+  // --- stat tiles, laid into what is left, never touching the band ---
+  const stats=[
+    ['Open now', f.oi>0? '$'+fmtCompact(f.oi):'—'],
+    ['Lifetime vlm', f.lifetimeVlm!=null? '$'+fmtCompact(f.lifetimeVlm):'—'],
+    ['HYPE staked', f.staked>0? fmtCompact(f.staked):'none'],
+    ['Since', f.firstLedger? dayStr(f.firstLedger).slice(0,7):'—']
+  ].map(([k,v])=>[k, MASK.amounts? '•••••' : v]);
+  const tileW=(textW-SP.tileGap*3)/4;
+  const tileY=Math.min(y, contentBottom-SP.tileH);
+  stats.forEach((s,i)=>{
+    const x=textX + i*(tileW+SP.tileGap);
+    c.fillStyle='rgba(150,252,228,.06)'; rr(c,x,tileY,tileW,SP.tileH,12); c.fill();
+    c.strokeStyle='#12403A'; c.lineWidth=1; rr(c,x+.5,tileY+.5,tileW-1,SP.tileH-1,12); c.stroke();
+    c.textAlign='left'; c.textBaseline='top';
+    c.font='500 '+(wide?12:17)+'px "IBM Plex Mono", monospace'; c.fillStyle='#65847D';
+    c.fillText(s[0].toUpperCase(), x+14, tileY+ (wide?16:22));
+    c.font='600 '+(wide?26:38)+'px "IBM Plex Mono", monospace'; c.fillStyle='#E2F3ED';
+    c.fillText(s[1], x+14, tileY+ (wide?44:64));
+  });
+
+  // --- address line, inside the band's gutter ---
+  c.font='400 '+(wide?15:21)+'px "IBM Plex Mono", monospace';
+  c.fillStyle='#65847D'; c.textAlign= alignC?'center':'left'; c.textBaseline='bottom';
+  const addrTxt = MASK.addr ? addr.slice(0,4)+'…'+'•'.repeat(8) : addr;
+  c.fillText(addrTxt, alignC? W/2 : textX, H - SP.footBand - 18);
+  return cv;
+}
+let _SEALCV=null;
+function _sealBuf(size){ if(!_SEALCV) _SEALCV=document.createElement('canvas'); return _SEALCV; }
+
+function shareCard(addr,f,a,sc){
+  const wrap=el('div','sc-wrap');
+  const stage=el('div','sc-stage');
+  const tilt=el('div','sc-tilt');
+  const card=el('div','sc-card'); card.style.maxWidth='620px'; card.style.width='100%';
+  const cv=el('canvas'); const sheen=el('div','sc-sheen');
+  card.append(cv,sheen); tilt.appendChild(card); stage.appendChild(tilt);
+
+  let ratio='16:9';
+  const repaint=()=>{ document.fonts.ready.then(()=>paintShare(cv,ratio,addr,f,a,sc)); };
+  repaint();
+
+  // toggles
+  const togs=el('div','sc-toggles');
+  function mkTog(label,get,set){
+    const t=el('button','sc-tog'); t.setAttribute('aria-pressed',String(get()));
+    t.append(el('span','box'), document.createTextNode(label));
+    t.addEventListener('click',()=>{ set(!get()); t.setAttribute('aria-pressed',String(get())); repaint(); });
+    return t;
+  }
+  const rt=el('button','sc-tog'); rt.setAttribute('aria-pressed','false');
+  rt.append(el('span','box'), document.createTextNode('9:16 for stories'));
+  rt.addEventListener('click',()=>{ ratio = ratio==='16:9'?'9:16':'16:9';
+    rt.setAttribute('aria-pressed', String(ratio==='9:16'));
+    card.style.maxWidth = ratio==='16:9'?'620px':'340px'; repaint(); });
+  togs.append(
+    mkTog('Blur the address', ()=>MASK.addr, v=>MASK.addr=v),
+    mkTog('Hide the numbers', ()=>MASK.amounts, v=>MASK.amounts=v),
+    rt
+  );
+
+  // controls
+  const ctrls=el('div','sc-ctrls');
+  const dl=el('button','sc-btn pri');
+  dl.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>Download';
+  dl.addEventListener('click',()=>{ const a2=document.createElement('a');
+    a2.download='hyperflow-'+addr.slice(0,8)+'-'+ratio.replace(':','x')+'.png';
+    a2.href=cv.toDataURL('image/png'); a2.click(); });
+  const cpb=el('button','sc-btn');
+  cpb.innerHTML='<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>Copy image';
+  cpb.addEventListener('click',async()=>{
+    try{ const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      cpb.lastChild.textContent='Copied'; setTimeout(()=>cpb.lastChild.textContent='Copy image',1600);
+    }catch(e){ cpb.lastChild.textContent='Copy unsupported here'; }
+  });
+  const xb=el('button','sc-btn');
+  xb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg>Share on X';
+  xb.addEventListener('click',()=>{
+    const t=CAST[CAST_IX[a.id]];
+    const txt=`This wallet reads as ${t.name} on Hyperliquid — ${t.tag.toLowerCase().replace(/\.$/,'')}. Depth ${sc.total ?? '—'}, and the whole breakdown is shown.`;
+    open('https://twitter.com/intent/tweet?text='+encodeURIComponent(txt)+'&url='+encodeURIComponent(location.href),'_blank','noopener');
+  });
+  ctrls.append(dl,cpb,xb);
+
+  const note=el('p','wl-miss','The image is drawn in your browser. Nothing is uploaded, and the toggles above change the exported file, not just the preview.');
+
+  wrap.append(stage,togs,ctrls,note);
+
+  // 3D tilt — listener on the CARD, transform on the TILT wrapper only,
+  // so the controls underneath never inherit it.
+  if(!RM()){
+    let raf=null, tx=0, ty=0, cx=0, cy=0;
+    const apply=()=>{ cx+=(tx-cx)*.14; cy+=(ty-cy)*.14;
+      tilt.style.transform=`rotateY(${cx}deg) rotateX(${cy}deg)`;
+      raf = (Math.abs(tx-cx)>.05||Math.abs(ty-cy)>.05) ? requestAnimationFrame(apply) : null; };
+    const kick=()=>{ if(!raf) raf=requestAnimationFrame(apply); };
+    card.addEventListener('pointermove',e=>{
+      const r=card.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+      tx=(px-.5)*13; ty=-(py-.5)*11;
+      sheen.style.setProperty('--mx',(px*100)+'%'); sheen.style.setProperty('--my',(py*100)+'%');
+      kick();
+    });
+    card.addEventListener('pointerleave',()=>{ tx=0; ty=0; kick(); });
+    ACTIVE.push(()=>{ if(raf) cancelAnimationFrame(raf); });
+  }
+  return wrap;
+}
+
+/* ============================================================
+   11. ROUTER
+   ============================================================ */
+function isAddr(s){ return /^0x[0-9a-fA-F]{40}$/.test(s.trim()); }
+function go(v){
+  const s=(v||'').trim();
+  if(!isAddr(s)){ $('#shInput').setAttribute('data-tip','That is not a 40-character Hyperliquid address.'); return; }
+  location.hash='#/wallet/'+s.toLowerCase();
+}
+$('#shForm').addEventListener('submit',e=>{ e.preventDefault(); go($('#shInput').value); });
+addEventListener('scroll',()=>{ $('#shTop').dataset.stuck = scrollY>4?'1':'0'; },{passive:true});
+
+function route(){
+  const h=location.hash.replace(/^#/,'')||'/';
+  const m=h.match(/^\/wallet\/(0x[0-9a-fA-F]{40})/);
+  scrollTo(0,0);
+  if(m){ $('#shInput').value=m[1]; track('wallet'); viewWallet(m[1].toLowerCase()); }
+  else if(h.startsWith('/cast')){ track('cast'); viewCast(); }
+  else { $('#shInput').value=''; track('home'); viewHome(); }
+}
+/* analytics: hash routing means one page forever, so send a named
+   event per route — page name only, never the URL. */
+function track(name){ try{ window.va && window.va('event',{name:'route:'+name}); }catch(e){} }
+addEventListener('hashchange',route);
+paintMark($('#markCv'),28);
+document.addEventListener('hf:theme',()=>{ paintMark($('#markCv'),28); });
+document.fonts.ready.then(route);
+</script>
+</body>
+</html>
