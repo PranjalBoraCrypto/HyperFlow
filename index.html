@@ -1366,6 +1366,9 @@ function tensionRope(host, biasFn){
     raf=requestAnimationFrame(frame);
     if(!cv.isConnected){ run=false; cancelAnimationFrame(raf); return; }
     if(!W&&!size()) return;
+    try{ step(); }catch(err){ host.dataset.rope='error: '+(err&&err.message); run=false; cancelAnimationFrame(raf); }
+  }
+  function step(){
     const bias=clamp(biasFn(),-1,1);
     const loadI=Math.round((N-1)*(0.5+bias*0.34));
     const G=0.12;                                   /* gentle — the rope is taut, not a swing */
@@ -1415,16 +1418,23 @@ function tensionRope(host, biasFn){
     c.fillStyle=col; c.beginPath(); c.arc(L.x,L.y,7,0,7); c.fill();
     c.fillStyle=tok('--g2'); c.beginPath(); c.arc(L.x,L.y,2.8,0,7); c.fill();
   }
-  const io=new IntersectionObserver(es=>{
-    const on=es[0].isIntersecting&&!RM();
-    if(on&&!run){ if(size()){ run=true; raf=requestAnimationFrame(frame); } }
-    else if(!on&&run){ run=false; cancelAnimationFrame(raf); }
-  },{threshold:.05});
+  /* Start immediately and let the observer PAUSE it, rather than making the
+     observer the only thing that can ever start it. A loop that only begins on
+     an intersection callback never begins at all when the element is already
+     on screen and the callback's first delivery is missed — which is exactly
+     how this rendered a blank canvas. host.dataset.rope reports the state so
+     it can be inspected from outside instead of guessed at. */
+  function start(){ if(run) return; if(!size()) return; run=true; host.dataset.rope='running';
+    raf=requestAnimationFrame(frame); }
+  function stop(){ if(!run) return; run=false; host.dataset.rope='paused'; cancelAnimationFrame(raf); }
+  host.dataset.rope='init';
+  if(RM()){ if(size()){ run=true; frame(); run=false; host.dataset.rope='static'; } }
+  else start();
+  const io=new IntersectionObserver(es=>{ es[0].isIntersecting? start() : stop(); },{threshold:0});
   io.observe(host);
   let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cv.isConnected){pts.length=0;size();}},150);};
   addEventListener('resize',onR);
-  ACTIVE.push(()=>{ run=false; cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize',onR); });
-  if(RM()&&size()){ run=true; frame(); run=false; }
+  ACTIVE.push(()=>{ stop(); io.disconnect(); removeEventListener('resize',onR); });
 }
 
 /* sparkline */
