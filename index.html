@@ -823,7 +823,7 @@ const TIPS={
   rsi:['RSI (14)','Relative Strength Index over 14 bars. Above 70 is conventionally called overbought, below 30 oversold. On its own it is a poor timing tool, which is why it is one vote of several here.'],
   matrend:['Moving average stack','Price against the 20, 50 and 100-bar simple moving averages. Above all three is a clean uptrend; below all three a clean downtrend; mixed means no trend, which is information too.'],
   atr:['ATR expansion','Average True Range over 14 bars, compared with its own 50-bar average. Above 1 means the market is moving more than it usually does — bigger stops, smaller size for the same risk.'],
-  rvol:['Relative volume','The last bar\'s volume against the 20-bar average. Above 1.5 means the move is being paid for, rather than drifting on nothing.'],
+  rvol:['Relative volume','The last COMPLETED hour\'s volume against the 20 hours before it. The hour in progress is excluded because only part of it has happened — including it makes every market look unconfirmed for most of every hour. Above 1.25 means the move is being paid for; below 0.6 it is drifting on almost nothing, and that counts against the read.'],
   fundapr:['Funding APR','The hourly funding rate annualised, for scale. Positive means longs pay shorts. It is not a yield you can collect risk-free — you carry the position\'s price risk to earn it.'],
   basis:['Mark vs oracle','How far the perp mark has run from the oracle (spot) price. A wide positive gap means perp buyers are paying up; funding usually pulls it back.'],
   oi:['Open interest','Dollar value of positions currently open. Unlike volume it does not reset daily — it is what is still at risk.'],
@@ -1020,17 +1020,30 @@ function ATR(bars,n=14){
 const TAKER=0.00045;   /* published cross fee, before any tier or referral discount */
 
 function analyse(m, bars){
-  const c=bars.map(b=>+b.c), v=bars.map(b=>+b.v);
+  /* The final candle is the hour currently in progress. Its price is the newest
+     information and should be used — but its VOLUME is only however many minutes
+     of the hour have elapsed, so comparing it against completed bars understates
+     participation by the fraction of the hour still to come. Measured on BTC 4.4
+     minutes past the hour: 0.27x against the incomplete bar, 1.02x against the
+     last completed one. Every market was being read as unconfirmed for most of
+     every hour. Price comes off the live bar; volume comes off completed bars. */
+  const now=Date.now();
+  const partial = bars.length && +bars[bars.length-1].T > now;
+  const done = partial ? bars.slice(0,-1) : bars;
+  const c=bars.map(b=>+b.c);
+  const vd=done.map(b=>+b.v);
   const last=c[c.length-1];
   const s20=SMA(c,20), s50=SMA(c,50), s100=SMA(c,100);
   const rsi=RSI(c,14);
-  const atrS=ATR(bars,14);
-  const atr=atrS?atrS[atrS.length-1]:null;
+  const atrS=ATR(done,14);
+  const atr=atrS&&atrS.length?atrS[atrS.length-1]:null;
   const atrAvg=atrS&&atrS.length>=50? atrS.slice(-50).reduce((a,b)=>a+b,0)/50 : null;
   const atrExp=(atr&&atrAvg)? atr/atrAvg : null;
-  const vAvg=SMA(v,20), rvol=(vAvg&&vAvg>0)? v[v.length-1]/vAvg : null;
-  return {last,s20,s50,s100,rsi,atr,atrExp,rvol,
-          closes:c.slice(-72), spark:c.slice(-72)};
+  const vAvg=vd.length>21? SMA(vd.slice(0,-1),20) : null;
+  const rvol=(vAvg&&vAvg>0&&vd.length)? vd[vd.length-1]/vAvg : null;
+  const minsIn = partial ? (now-+bars[bars.length-1].t)/60000 : 60;
+  return {last,s20,s50,s100,rsi,atr,atrExp,rvol,partial,minsIn,
+          bars:done.length, spark:c.slice(-72)};
 }
 
 /* momentum: seven independent measures, each one a single vote */
@@ -1051,18 +1064,36 @@ function momentum(m,a){
       a.rsi==null?'not enough bars': a.rsi>70?'above 70 — conventionally overbought': a.rsi<30?'below 30 — conventionally oversold':'between 30 and 70');
   add('rvol','24-hour change', pct(m.chg),
       m.chg>0.4?'for': m.chg<-0.4?'against':'flat','against the previous day close');
-  add('rvol','Volume vs 20-bar average', a.rvol!=null? a.rvol.toFixed(2)+'×':'—',
-      a.rvol==null?'flat': (a.rvol>1.25 ? (m.chg>=0?'for':'against') : 'flat'),
-      a.rvol==null?'not enough bars': a.rvol>1.25?'the move is being paid for':'ordinary participation — the move is drifting');
+  /* an unconfirmed move counts AGAINST the read rather than sitting neutral —
+     a 10% move on 2% of normal volume is not the same event as a 10% move on
+     double it, and ranking them alike is how a stale market tops the board */
+  add('rvol','Volume, last completed hour',
+      a.rvol!=null? a.rvol.toFixed(2)+'× average':'—',
+      a.rvol==null?'flat'
+        : a.rvol>1.25 ? (m.chg>=0?'for':'against')
+        : a.rvol<0.6  ? (m.chg>=0?'against':'for')
+        : 'flat',
+      a.rvol==null?'not enough completed bars'
+        : a.rvol>1.25?'the move is being paid for'
+        : a.rvol<0.6 ?'barely any participation — this move is not being paid for'
+        :'ordinary participation');
   const f=V.filter(x=>x.vote==='for').length, ag=V.filter(x=>x.vote==='against').length;
   const dir = f>ag+1?'long' : ag>f+1?'short' : 'none';
   /* strength: agreement, then confirmed by how far it has actually travelled */
   const agree=Math.abs(f-ag)/V.length;
   const travel=Math.min(1,Math.abs(m.chg)/6);
-  const conf=Math.min(1,(a.rvol||1)/2);
+  const conf=Math.min(1,(a.rvol||0)/1.6);
   const exp=Math.min(1,(a.atrExp||1)/1.8);
-  const score=Math.round(clamp(agree*52+travel*22+conf*14+exp*12,0,100));
-  return {votes:V,dir,score,for:f,against:ag,
+  let score=agree*46+travel*20+conf*22+exp*12;
+  /* an unconfirmed move is demoted outright, not merely un-rewarded */
+  const unconfirmed = a.rvol!=null && a.rvol<0.6;
+  if(unconfirmed) score*=0.62;
+  const thin = m.vol<5e6 || (m.spreadPct||0)>0.12;
+  if(thin) score*=0.88;
+  const flags=[];
+  if(unconfirmed) flags.push({t:'unconfirmed',w:'the move is happening on '+(a.rvol*100).toFixed(0)+'% of normal hourly volume'});
+  if(thin) flags.push({t:'thin',w:'$'+fmtC(m.vol)+' traded in 24h'+((m.spreadPct||0)>0.12?' and a '+m.spreadPct.toFixed(2)+'% impact spread':'')+' — harder to get in and out at size'});
+  return {votes:V,dir,score:Math.round(clamp(score,0,100)),for:f,against:ag,flags,
           leanText: dir==='long'?'Trend measures read up':dir==='short'?'Trend measures read down':'Measures disagree — no trend'};
 }
 
@@ -1086,7 +1117,10 @@ function fundingStress(m,a){
   const mag=Math.min(1,Math.log10(1+Math.abs(apr))/2.4);
   const size=Math.min(1,Math.log10(1+m.oiNtl/1e5)/3.2);
   const score=Math.round(clamp(mag*62+size*38,0,100));
-  return {votes:V,dir: paidSide==='short'?'short':paidSide==='long'?'long':'none',score,
+  const flags=[];
+  if(m.oiNtl<2e6) flags.push({t:'thin',w:'only $'+fmtC(m.oiNtl)+' of open interest behind this rate'});
+  if(Math.abs(apr)>200) flags.push({t:'extreme',w:'a rate this far out usually means a dislocation rather than an opportunity'});
+  return {votes:V,dir: paidSide==='short'?'short':paidSide==='long'?'long':'none',score,flags,
     for:V.filter(x=>x.vote==='for').length, against:0,
     leanText: apr>0?'Shorts are being paid to hold':apr<0?'Longs are being paid to hold':'Funding is flat'};
 }
@@ -1519,6 +1553,8 @@ ROUTES.radar=async function(args){
     const ch=el('span','chip '+(m.chg>=0?'up':'down'), pct(m.chg));
     nm.appendChild(ch);
     if(m.maxLev>=20) nm.appendChild(el('span','chip mut',m.maxLev+'×'));
+    (r.flags||[]).forEach(f=>{ const c2=el('span','chip warn',f.t);
+      c2.setAttribute('data-tip',f.w); nm.appendChild(c2); });
     id.append(nm, el('div','px', px(m.mark)+'  ·  $'+fmtC(m.vol)+' 24h'));
     h.appendChild(id);
     const sp=el('div','mk-spark');
@@ -1613,6 +1649,7 @@ ROUTES.radar=async function(args){
         m.spreadPct!=null? 'roughly '+usd(NOTIONAL*m.spreadPct/100)+' to cross at this size':'no impact quote','spread',
         (m.spreadPct||0)>0.08?'warn':'');
       P('Open interest','$'+fmtC(m.oiNtl), (m.volOverOi!=null? m.volOverOi.toFixed(2)+'× turned over in 24h':'—'),'vsoi');
+      P('Bars used', a.bars+' completed', a.partial? 'the hour in progress is '+a.minsIn.toFixed(0)+' minutes old — its price is used, its volume is not':'no partial bar');
       P('Mark vs oracle', pct(m.oracleGap,3), m.oracleGap>0?'perp above spot':'perp below spot','basis');
     }
     paintPractical();
