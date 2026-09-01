@@ -242,26 +242,29 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    ============================================================ */
 .wl-id{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
 .wl-seal{width:76px; height:76px; border-radius:18px; display:block; flex:0 0 auto; background:var(--raised)}
-.wl-idt{display:flex; flex-direction:column; gap:3px; min-width:0}
+.wl-idt{display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 260px}
 .wl-arch{font-size:clamp(24px,4.4vw,34px); line-height:1.05}
 .wl-tag{color:var(--ink-2); font-size:14px}
-.wl-addr{display:flex; align-items:center; gap:8px; margin-top:4px}
+.wl-addr{display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap; min-width:0; max-width:100%}
 .wl-addr code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3);
-  background:var(--raised); border-radius:5px; padding:3px 7px; transition:filter .2s}
+  background:var(--raised); border-radius:5px; padding:3px 7px; transition:filter .2s;
+  overflow-wrap:anywhere; min-width:0; max-width:100%}
 .wl-addr code[data-masked="1"]{filter:blur(4px)}
 .wl-mini{min-height:44px; min-width:44px; display:grid; place-items:center; border-radius:9px; color:var(--ink-3)}
 .wl-mini:hover{background:var(--raised); color:var(--ink)}
 .wl-mini svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round}
 
-.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px}
+.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); gap:10px}
 .wl-tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m); padding:14px 16px;
-  display:flex; flex-direction:column; gap:5px; transition:border-color .22s, transform .22s}
+  display:flex; flex-direction:column; gap:5px; min-width:0; overflow-wrap:anywhere;
+  transition:border-color .22s, transform .22s}
 .wl-tile:hover{border-color:var(--line-2); transform:translateY(-2px)}
 .wl-tile .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(19px,3.2vw,24px); font-weight:600;
   font-variant-numeric:tabular-nums; letter-spacing:-.02em}
 .wl-tile .s{font-size:12px; color:var(--ink-3)}
 .wl-tile .v.up{color:var(--up)} .wl-tile .v.down{color:var(--down)} .wl-tile .v.none{color:var(--ink-3); font-size:16px}
-@media (max-width:400px){ .wl-tiles{grid-template-columns:1fr 1fr; gap:8px} .wl-tile{padding:12px 12px} }
+@media (max-width:400px){ .wl-tiles{grid-template-columns:1fr; gap:8px} .wl-tile{padding:12px 12px} }
+@media (min-width:401px) and (max-width:520px){ .wl-tiles{grid-template-columns:1fr 1fr; gap:8px} }
 
 /* score breakdown */
 .wl-score{display:flex; flex-direction:column; gap:12px}
@@ -294,8 +297,11 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .wl-pgb:hover:not(:disabled){border-color:var(--mint-2); color:var(--mint)}
 .wl-pgb:disabled{opacity:.35; cursor:default}
 
-.wl-note{font-size:12.5px; color:var(--ink-3); display:flex; align-items:flex-start; gap:7px}
+/* was display:flex — flex children do not wrap, so the long "Checked:" line
+   ran 250px past a 320px viewport and gave the whole page a horizontal scroll */
+.wl-note{font-size:12.5px; color:var(--ink-3); display:block; overflow-wrap:anywhere; min-width:0}
 .wl-note b{color:var(--ink-2); font-weight:500}
+.wl-note .num{overflow-wrap:anywhere}
 
 /* empty state */
 .wl-empty{display:flex; flex-direction:column; align-items:center; gap:10px; padding:40px 20px; text-align:center}
