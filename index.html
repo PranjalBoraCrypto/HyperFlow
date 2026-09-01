@@ -617,8 +617,9 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-mn{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;
   font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:560px){
-  .cn-m{padding:13px 14px;gap:11px;grid-template-columns:24px minmax(0,1fr) auto}
+  .cn-mh{padding:13px 14px;gap:10px;grid-template-columns:24px minmax(0,1fr) auto 16px}
   .cn-mn{font-size:13px}
+  .cn-mx{padding:0 14px 15px 14px}
 }
 
 /* depth */
@@ -785,13 +786,39 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .hm-how{min-height:120px}
 .hm-hw{padding:0;overflow:hidden}
 .hm-hw .hm-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:16px 20px;border-bottom:1px solid var(--line);background:var(--g2)}
-.hm-hw .hm-hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;font-weight:700;letter-spacing:-.03em}
+  padding:16px 20px;border-bottom:1px solid var(--line);background:var(--g2);
+  color:inherit;text-decoration:none;min-height:44px;
+  transition:background var(--sp),color var(--sp)}
+.hm-hw .hm-hd:hover{background:var(--g3)}
+.hm-hw .hm-hd:hover b{color:var(--mint)}
+.hm-hw .hm-hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;font-weight:700;
+  letter-spacing:-.03em;transition:color var(--sp)}
+.hm-hw .hm-hd .go{width:15px;height:15px;opacity:0;transform:translateX(-3px);color:var(--mint);
+  transition:opacity var(--sp),transform var(--sp) var(--ease)}
+.hm-hw .hm-hd:hover .go{opacity:1;transform:none}
 .hm-hw .hm-hd s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);margin-left:auto}
+@media (hover:none){ .hm-hw .hm-hd .go{opacity:.85;transform:none} }
 .hm-hw .hm-ms{display:flex;flex-direction:column}
-.hm-msr{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:center;
-  padding:12px 20px;border-bottom:1px solid var(--line)}
+.hm-msr{border-bottom:1px solid var(--line);transition:background var(--sp)}
 .hm-msr:last-child{border-bottom:none}
+.hm-msr[data-open="1"]{background:var(--g2)}
+.hm-msh{display:grid;grid-template-columns:26px minmax(0,1fr) auto 18px;gap:12px;align-items:center;
+  width:100%;padding:12px 20px;min-height:52px;text-align:left;cursor:pointer;
+  transition:background var(--sp)}
+.hm-msh:hover:not(:disabled){background:var(--g2)}
+.hm-msh:disabled{cursor:default}
+.hm-cvt{display:grid;place-items:center;color:var(--ink-4);transition:transform var(--sp) var(--ease),color var(--sp)}
+.hm-cvt svg{width:15px;height:15px}
+.hm-msr[data-open="1"] .hm-cvt{transform:rotate(180deg);color:var(--mint)}
+/* the explanation: what it is, then what it currently reads */
+.hm-msb{display:none;padding:0 20px 16px 58px}
+.hm-msr[data-open="1"] .hm-msb{display:block;animation:pgIn .3s var(--ease-out)}
+.hm-what{font-size:13px;color:var(--ink-2);line-height:1.62;max-width:74ch}
+.hm-now{margin-top:9px;font-size:13px;line-height:1.62;max-width:74ch;
+  padding:10px 13px;border-radius:10px;background:var(--g0);border:1px solid var(--line)}
+.hm-msr[data-v="for"] .hm-now{border-left:3px solid var(--up)}
+.hm-msr[data-v="against"] .hm-now{border-left:3px solid var(--down)}
+.hm-msr[data-v="flat"] .hm-now{border-left:3px solid var(--line-3)}
 .hm-msr .hm-v{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;
   background:var(--g2);color:var(--ink-4)}
 .hm-msr .hm-v svg{width:13px;height:13px}
@@ -800,19 +827,34 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .hm-msr .hm-l{font-size:13.5px;color:var(--ink-2);min-width:0}
 .hm-msr .hm-n{font-family:"IBM Plex Mono",monospace;font-size:13px;font-variant-numeric:tabular-nums;
   white-space:nowrap}
-.hm-hw .hm-ft{display:flex;align-items:center;gap:14px;padding:15px 20px;background:var(--g2);
+.hm-hw .hm-ft{display:flex;align-items:center;gap:18px;padding:15px 20px;background:var(--g2);
   border-top:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2)}
 .hm-hw .hm-ft b{color:var(--ink)}
-.hm-hw .hm-ft .hm-tot{margin-left:auto;text-align:right;line-height:1}
+.hm-fl{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px}
+/* the tally as a proportion, which is what it is */
+.hm-vbar{display:flex;gap:3px;height:8px}
+.hm-vbar i{flex:1;border-radius:99px;background:var(--line-3)}
+.hm-vbar i[data-v="for"]{background:var(--up)}
+.hm-vbar i[data-v="against"]{background:var(--down)}
+.hm-vkey{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px}
+.hm-vkey span{display:inline-flex;align-items:center;gap:5px}
+.hm-vkey span::before{content:"";width:8px;height:8px;border-radius:99px;background:var(--line-3)}
+.hm-vkey .up{color:var(--up)} .hm-vkey .up::before{background:var(--up)}
+.hm-vkey .down{color:var(--down)} .hm-vkey .down::before{background:var(--down)}
+.hm-vkey .dim{color:var(--ink-4)}
+.hm-hw .hm-ft .hm-tot{text-align:right;line-height:1;flex:none}
 .hm-hw .hm-ft .hm-tot b{font-family:"Bricolage Grotesque",sans-serif;font-size:24px;letter-spacing:-.04em}
 .hm-hw .hm-ft .hm-tot s{display:block;text-decoration:none;font-size:8.5px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--ink-4);margin-top:3px}
 .hm-hw .hm-fp{padding:14px 20px 18px;font-size:12.5px;color:var(--ink-3);line-height:1.6;border-top:1px solid var(--line)}
 @media (max-width:560px){
   .hm-hw .hm-hd s{margin-left:0;width:100%}
-  .hm-msr{padding:12px 14px;gap:10px}
+  .hm-msh{padding:12px 14px;gap:10px;grid-template-columns:24px minmax(0,1fr) auto 16px}
   .hm-msr .hm-l{font-size:12.5px}
+  .hm-msb{padding:0 14px 15px 14px}
   .hm-hw .hm-ft,.hm-hw .hm-fp{padding-left:14px;padding-right:14px}
+  .hm-hw .hm-ft{flex-wrap:wrap;gap:13px}
+  .hm-hw .hm-ft .hm-tot{text-align:left}
 }
 /* ── read a wallet ── */
 .hm-wal{max-width:720px}
@@ -1889,27 +1931,98 @@ function analyse(m, bars){
 }
 
 /* momentum: seven independent measures, each one a single vote */
+/* ═══════════════════════════════════════════════════════════════
+   What each measure actually means, in the words someone would use
+   out loud. Two parts on purpose: WHAT it is, which never changes,
+   and WHAT IT SAYS RIGHT NOW, which is generated from this market's
+   own numbers. The second part names a direction because that is
+   the honest reading of the number — it never names an action.
+   ═══════════════════════════════════════════════════════════════ */
+const MEANING={
+  ma20:(v,m,a)=>({
+    what:'The 20-bar average is roughly the last day of hourly trading, smoothed. Price above it means buyers have been paying up recently; below it means sellers have been hitting bids. It is the quickest of the three averages, so it turns first — and it gives the most false turns.',
+    now: a.s20==null ? 'There are not enough bars yet to have a 20-bar average.'
+      : (v.vote==='for'
+        ? 'Price is '+v.val+' above it, so the last day of trading reads up.'
+        : 'Price is '+v.val.replace('−','')+' below it, so the last day of trading reads down.')
+  }),
+  ma50:(v,m,a)=>({
+    what:'About two days of hourly bars. Slower than the 20, so one loud hour barely moves it — this is closer to the direction of the week than the direction of the morning.',
+    now: a.s50==null ? 'Not enough history yet for a 50-bar average.'
+      : (v.vote==='for'
+        ? 'Price sits '+v.val+' above it, which is the shape of a move that has lasted more than a session.'
+        : 'Price sits '+v.val.replace('−','')+' below it, which is the shape of a decline that has lasted more than a session.')
+  }),
+  ma100:(v,m,a)=>({
+    what:'About four days. This is the slow one, and it only changes its mind when a move has really persisted. When price and the 100 disagree with the faster averages, the disagreement itself is the information.',
+    now: a.s100==null ? 'Not enough history yet for a 100-bar average.'
+      : (v.vote==='for'
+        ? 'Price is '+v.val+' above it — the longer backdrop reads up too.'
+        : 'Price is '+v.val.replace('−','')+' below it — the longer backdrop reads down.')
+  }),
+  stack:(v,m,a)=>({
+    what:'Whether the fast average sits above the slow one. Short above long means recent prices are higher than older prices, which is as close to a definition of an uptrend as this gets. Stacked the other way is a downtrend. It is the single most-used trend test there is, which also means everyone else can see it.',
+    now: (a.s20==null||a.s50==null) ? 'Not enough bars to compare the two averages.'
+      : (v.vote==='for'
+        ? 'The 20 is above the 50, so the stack reads up.'
+        : 'The 50 is above the 20, so the stack reads down.')
+  }),
+  rsi:(v,m,a)=>({
+    what:'How one-sided the last 14 bars have been, on a 0 to 100 scale. Above 70 gets called overbought and below 30 oversold, but a strong trend can sit pinned at either end for days — so it describes pressure, not a turning point.',
+    now: a.rsi==null ? 'Not enough bars to compute it.'
+      : a.rsi>70 ? 'At '+a.rsi.toFixed(1)+' it is in the range usually called overbought: buying has been persistent, which reads up while it lasts and unwinds quickly when it stops.'
+      : a.rsi<30 ? 'At '+a.rsi.toFixed(1)+' it is in the range usually called oversold: selling has been persistent, which reads down while it lasts.'
+      : a.rsi>55 ? 'At '+a.rsi.toFixed(1)+' the last 14 bars lean to buyers without being stretched — it reads up, mildly.'
+      : a.rsi<45 ? 'At '+a.rsi.toFixed(1)+' the last 14 bars lean to sellers without being stretched — it reads down, mildly.'
+      : 'At '+a.rsi.toFixed(1)+' it is squarely in the middle. Neither side has had the upper hand, so this one casts no vote.'
+  }),
+  chg24:(v,m,a)=>({
+    what:'Where price is against this time yesterday. It is the number every other site leads with, and on its own it says nothing about whether the move is still going — a market can be up 8% and have spent the last six hours giving it back.',
+    now: v.vote==='flat'
+      ? 'At '+v.val+' it has barely moved in a day, so it casts no vote here.'
+      : (v.vote==='for'
+        ? 'Up '+v.val.replace('+','')+' on the day, which reads up — but check it against the hourly averages above before treating it as a trend.'
+        : 'Down '+v.val.replace('−','')+' on the day, which reads down — the averages above say whether that is still in progress.')
+  }),
+  rvol:(v,m,a)=>({
+    what:'How much traded in the last finished hour, against the twenty hours before it. This is the confirmation measure: a move on heavy volume is people acting, and a move on almost none is a price drifting because nobody is on the other side. The hour in progress is excluded, because only part of it has happened.',
+    now: a.rvol==null ? 'Not enough completed hours to compare against.'
+      : a.rvol>1.25 ? 'At '+a.rvol.toFixed(2)+'× normal, real size is behind this move — it confirms whichever way price went.'
+      /* the arrow on this row and the words have to agree: on a falling price,
+         "the move is not being paid for" LEANS UP, and saying only that it
+         counts against would read as a contradiction of its own arrow */
+      : a.rvol<0.6 ? 'At '+a.rvol.toFixed(2)+'× normal, almost nobody is trading it. A move nobody paid for is the kind that gets given back, so this counts against the move rather than sitting neutral — with price '+
+          (m.chg>=0?'up, that leans down.':'down, that leans up.')
+      : 'At '+a.rvol.toFixed(2)+'× normal this is ordinary participation — neither confirmation nor a warning, so it casts no vote.'
+  })
+};
+function meaningFor(v,m,a){
+  const f=MEANING[v.id];
+  if(!f) return null;
+  try{ return f(v,m,a); }catch(e){ return null; }
+}
+
 function momentum(m,a){
   const V=[];
-  const add=(k,label,val,vote,why)=>V.push({k,label,val,vote,why});
+  const add=(id,k,label,val,vote,why)=>V.push({id,k,label,val,vote,why});
   const p=a.last;
-  add('matrend','Price vs 20-bar average', a.s20? pct((p/a.s20-1)*100):'—',
+  add('ma20','matrend','Price vs 20-bar average', a.s20? pct((p/a.s20-1)*100):'—',
       a.s20? (p>a.s20?'for':'against'):'flat', a.s20?('20-bar SMA '+px(a.s20)):'not enough bars');
-  add('matrend','Price vs 50-bar average', a.s50? pct((p/a.s50-1)*100):'—',
+  add('ma50','matrend','Price vs 50-bar average', a.s50? pct((p/a.s50-1)*100):'—',
       a.s50? (p>a.s50?'for':'against'):'flat', a.s50?('50-bar SMA '+px(a.s50)):'not enough bars');
-  add('matrend','Price vs 100-bar average', a.s100? pct((p/a.s100-1)*100):'—',
+  add('ma100','matrend','Price vs 100-bar average', a.s100? pct((p/a.s100-1)*100):'—',
       a.s100? (p>a.s100?'for':'against'):'flat', a.s100?('100-bar SMA '+px(a.s100)):'not enough bars');
-  add('matrend','Average stack aligned', (a.s20&&a.s50)? (a.s20>a.s50?'20 over 50':'50 over 20'):'—',
+  add('stack','matrend','Average stack aligned', (a.s20&&a.s50)? (a.s20>a.s50?'20 over 50':'50 over 20'):'—',
       (a.s20&&a.s50)? (a.s20>a.s50?'for':'against'):'flat','the short average above the long one is the classic trend test');
-  add('rsi','RSI (14)', a.rsi!=null? a.rsi.toFixed(1):'—',
+  add('rsi','rsi','RSI (14)', a.rsi!=null? a.rsi.toFixed(1):'—',
       a.rsi==null?'flat': a.rsi>55?'for': a.rsi<45?'against':'flat',
       a.rsi==null?'not enough bars': a.rsi>70?'above 70 — conventionally overbought': a.rsi<30?'below 30 — conventionally oversold':'between 30 and 70');
-  add('rvol','24-hour change', pct(m.chg),
+  add('chg24','rvol','24-hour change', pct(m.chg),
       m.chg>0.4?'for': m.chg<-0.4?'against':'flat','against the previous day close');
   /* an unconfirmed move counts AGAINST the read rather than sitting neutral —
      a 10% move on 2% of normal volume is not the same event as a 10% move on
      double it, and ranking them alike is how a stale market tops the board */
-  add('rvol','Volume, last completed hour',
+  add('rvol','rvol','Volume, last completed hour',
       a.rvol!=null? a.rvol.toFixed(2)+'× average':'—',
       a.rvol==null?'flat'
         : a.rvol>1.25 ? (m.chg>=0?'for':'against')
@@ -3284,31 +3397,81 @@ ROUTES.home=async function(){
 
   /* Seven rows, one per measure, each with its number and the vote it casts.
      This is the same votes array the radar renders — not a mock-up of it. */
+  /* The market shown here is whichever market currently tops the board, so it
+     changes as the board does — it is read from the same live ranking, never
+     pinned to a name. Its header links through to its own page. */
   function measureTable(x){
-    const {m,r}=x;
+    const {m,a,r}=x;
     const wrap=el('div','hm-hw card');
-    const hd=el('div','hm-hd');
+    const hd=el('a','hm-hd'); hd.href='#/coin/'+encodeURIComponent(m.name);
     hd.innerHTML='<b>'+m.name+'</b><span class="chip '+(m.chg>=0?'up':'down')+'">'+pct(m.chg)+'</span>'+
-      '<s>the market at the top of the board</s>';
+      '<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '+
+      'stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h12M12 6l6 6-6 6"/></svg>'+
+      '<s>currently top of the board — open its page</s>';
     wrap.appendChild(hd);
+    wrap.appendChild(measureList(m,a,r));
+    wrap.appendChild(voteFoot(r));
+    wrap.appendChild(el('p','hm-fp','A direction needs a two-measure majority before it counts at all. '+
+      'The score sorts inside that — it is a sort order, not a probability, and it does not know what price does next.'));
+    return wrap;
+  }
+
+  /* Seven rows that open. Closed, it is the number; open, it is what the
+     number is and what it currently reads. */
+  function measureList(m,a,r){
     const list=el('div','hm-ms');
     r.votes.forEach(v=>{
       const row=el('div','hm-msr'); row.dataset.v=v.vote;
+      const hd=el('button','hm-msh'); hd.type='button';
       const ic=el('span','hm-v');
       ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+
         (v.vote==='for'?'<path d="M12 19V5M6 11l6-6 6 6"/>':
          v.vote==='against'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>';
-      row.append(ic, el('span','hm-l',v.label), el('span','hm-n',v.val));
+      hd.append(ic, el('span','hm-l',v.label), el('span','hm-n',v.val));
+      const cv=el('span','hm-cvt');
+      cv.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
+      hd.appendChild(cv);
+      row.appendChild(hd);
+      const mn=meaningFor(v,m,a);
+      if(mn){
+        const body=el('div','hm-msb');
+        body.append(el('p','hm-what',mn.what), el('p','hm-now',mn.now));
+        row.appendChild(body);
+        hd.addEventListener('click',()=>{
+          const open=row.dataset.open==='1';
+          $$('.hm-msr[data-open="1"]',list).forEach(o=>{ if(o!==row) o.dataset.open='0'; });
+          row.dataset.open=open?'0':'1';
+        });
+      } else { hd.disabled=true; cv.hidden=true; }
       list.appendChild(row);
     });
-    wrap.appendChild(list);
+    return list;
+  }
+
+  /* "6 for · 0 against" as a sentence was the least legible thing on the page.
+     It is a proportion, so it is drawn as one: a single bar split into the
+     seven votes, coloured by which way each one points. */
+  function voteFoot(r){
     const foot=el('div','hm-ft');
-    foot.innerHTML='<span><b>'+r.for+'</b> for · <b>'+r.against+'</b> against</span>'+
-      '<span class="hm-tot"><b>'+r.score+'</b><s>momentum</s></span>';
-    wrap.appendChild(foot);
-    wrap.appendChild(el('p','hm-fp','A vote needs a two-measure majority before it counts as a direction at all. '+
-      'The score below sorts inside that — it is a sort order, not a probability, and it does not know what price does next.'));
-    return wrap;
+    const l=el('div','hm-fl');
+    const bar=el('div','hm-vbar');
+    r.votes.forEach(v=>{ const i=el('i'); if(v.vote!=='flat') i.dataset.v=v.vote; bar.appendChild(i); });
+    l.appendChild(bar);
+    const key=el('div','hm-vkey');
+    const part=(n,cls,label)=>{ if(!n) return;
+      const sp=el('span',cls); sp.append(el('b',null,String(n)),
+        document.createTextNode(' '+label)); key.appendChild(sp); };
+    const flat=r.votes.length-r.for-r.against;
+    part(r.for,'up','read up');
+    part(r.against,'down','read down');
+    part(flat,'dim','neutral');
+    l.appendChild(key);
+    foot.appendChild(l);
+    const tot=el('div','hm-tot');
+    const b=el('b'); countUp(b,r.score,v=>String(Math.round(v)),700);
+    tot.append(b, el('s',null,'agreement'));
+    foot.appendChild(tot);
+    return foot;
   }
 };
 
