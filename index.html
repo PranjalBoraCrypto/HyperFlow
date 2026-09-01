@@ -160,11 +160,12 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
 .rl-b[aria-current="page"]::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);
   width:3px;height:22px;border-radius:0 3px 3px 0;background:var(--mint);box-shadow:0 0 12px var(--mint)}
 .rl-sp{flex:1}
-.rl-tip{position:fixed;z-index:120;pointer-events:none;background:var(--g3);color:var(--ink);
+.rl-tip{position:fixed;left:-9999px;top:0;z-index:120;pointer-events:none;background:var(--g3);color:var(--ink);
   border:1px solid var(--line-3);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:500;
   white-space:nowrap;box-shadow:var(--e3);opacity:0;transform:translateX(-6px);
   transition:opacity var(--sp-fast),transform var(--sp-fast) var(--ease-out)}
 .rl-tip[data-on="1"]{opacity:1;transform:none}
+.rl-tip:not([data-on="1"]){visibility:hidden}
 .rl-tip s{text-decoration:none;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:10.5px;margin-left:8px}
 
 /* --- top bar --- */
@@ -544,6 +545,17 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;pad
 .pal .row s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
 .pal .empty{padding:26px;text-align:center;color:var(--ink-3);font-size:13.5px}
 
+/* every tappable control clears 44px on touch. Measured, not guessed —
+   .cmd and .iconb were 36px and .btn 42px before this block existed. */
+@media (max-width:860px){
+  .cmd,.iconb{height:44px;min-width:44px}
+  .btn{height:46px}
+  .seg button{min-height:44px}
+  .szbox input{height:44px}
+  .szbox .pre button{height:40px;min-width:44px}
+  .qm{width:22px;height:22px;font-size:11px}
+  .top{height:auto;min-height:var(--top);padding-top:6px;padding-bottom:6px}
+}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
     transition-duration:.001ms!important;scroll-behavior:auto!important}
