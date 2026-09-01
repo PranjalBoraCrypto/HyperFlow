@@ -105,12 +105,18 @@ window.va('beforeSend',function(e){try{var u=new URL(e.url);return Object.assign
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* overflow-x:hidden on BODY made body a scroll container of its own: the
+   document then scrolled only 139px of a 5,395px page while the real scrolling
+   happened inside body. That broke the router's scroll reset, the sticky
+   header's scrollY test, tooltip repositioning, and every IntersectionObserver
+   that keys off the viewport — the tension rope simply never started because it
+   never intersected. overflow-x:clip clips without establishing a scroll box. */
+html{scroll-behavior:smooth; overflow-x:clip}
 body{
   background:var(--g0); color:var(--ink); font-size:15px; line-height:1.6;
   font-family:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-  overflow-x:hidden; min-height:100vh;
+  overflow-x:clip; min-height:100vh;
 }
 /* engraved terminal grid, masked so it never fights the content */
 body::before{
