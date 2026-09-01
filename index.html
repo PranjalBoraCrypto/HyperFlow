@@ -653,6 +653,12 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   .szbox .pre button{height:40px;min-width:44px}
   .qm{width:22px;height:22px;font-size:11px}
   .top{height:auto;min-height:var(--top);padding-top:6px;padding-bottom:6px}
+  /* the measure labels ellipsed away on a phone — "Price vs 100-bar averag…"
+     tells a trader nothing. They wrap to two lines instead. */
+  .wk-i{align-items:flex-start}
+  .wk-i b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
+  .wk-i .v,.wk-i .n{margin-top:1px}
+  .sec-h input[type="search"]{height:44px!important}
 }
 /* at 320 the top bar had crumb + LIVE + search + clock + theme fighting over
    300px and the page title was ellipsing to nothing. The dock already says
