@@ -439,7 +439,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 }
 
 /* ---- tiles ---- */
-.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:10px}
+.wl-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(212px,100%),1fr)); gap:10px}
 .wl-tile{position:relative; background:var(--panel); border:1px solid var(--line); border-radius:var(--r-m);
   padding:14px 16px 13px; display:flex; flex-direction:column; gap:4px; min-width:0; overflow:hidden;
   overflow-wrap:anywhere; transition:border-color .24s, transform .24s, box-shadow .24s}
@@ -448,8 +448,13 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .wl-tile:hover{border-color:var(--line-2); transform:translateY(-2px); box-shadow:var(--shade)}
 .wl-tile:hover::before{opacity:1}
 .wl-tile .k{display:flex; align-items:center; gap:6px}
-.wl-tile .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(19px,3.2vw,25px); font-weight:600;
-  font-variant-numeric:tabular-nums; letter-spacing:-.025em; line-height:1.15}
+/* overflow-wrap:anywhere on the tile is right for labels and wrong for money:
+   it split $6,157,676.82 across two lines. The value opts out of it. */
+.wl-tile .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(17px,2.5vw,22px); font-weight:600;
+  font-variant-numeric:tabular-nums; letter-spacing:-.03em; line-height:1.2;
+  overflow-wrap:normal; word-break:keep-all; white-space:nowrap;
+  overflow-x:auto; scrollbar-width:none}
+.wl-tile .v::-webkit-scrollbar{display:none}
 .wl-tile .s{font-size:12px; color:var(--ink-3); line-height:1.35}
 .wl-tile .v.up{color:var(--up)} .wl-tile .v.down{color:var(--down)}
 .wl-tile .v.none{color:var(--ink-3); font-size:16px; font-weight:500}
@@ -648,7 +653,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .sh-chip{height:44px; padding:0 16px}
   .hm-big input{min-height:44px}
   .wl-pgb{height:44px}
-  .sc-tog{height:44px}
+  .sc-tog{height:46px}
   .wl-mini{min-height:44px; min-width:44px}
   .foot a{display:inline-block; padding:12px 0}
   .tp-q{width:22px; height:22px; font-size:11px}
@@ -945,8 +950,15 @@ function sil(c,S,id){
         P(()=>{ c.moveTo(-3.4*k,0); c.lineTo(3.4*k,0); c.lineTo(1.3*k,-46*k); c.lineTo(-1.3*k,-46*k); });
         c.restore(); }
       break; }
-    case 'deepwater': // one huge lobe
-      P(()=>{ c.ellipse(50*k,50*k,33*k,36*k,0,0,7); }); break;
+    case 'deepwater': { // one huge mass with a void at its centre and a waterline
+      P(()=>{ c.ellipse(50*k,50*k,33*k,36*k,0,0,7); });
+      c.save(); c.globalCompositeOperation='destination-out';
+      c.beginPath(); c.ellipse(50*k,44*k,12*k,13*k,0,0,7); c.fill();
+      c.lineWidth=4.5*k; c.strokeStyle='#000';
+      c.beginPath(); c.moveTo(22*k,64*k); c.lineTo(78*k,64*k); c.stroke();
+      c.restore();
+      c.beginPath(); c.arc(50*k,44*k,5*k,0,7); c.fill();
+      break; }
     case 'cartograph': { // grid of plates + bridging arc
       for(let r=0;r<3;r++) for(let col=0;col<3;col++){
         if(r===1&&col===1) continue;
