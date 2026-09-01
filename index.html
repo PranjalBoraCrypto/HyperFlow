@@ -1319,6 +1319,11 @@ function ATR(bars,n=14){
   return out;
 }
 const TAKER=0.00045;   /* published cross fee, before any tier or referral discount */
+/* Funding is annualised from ONE hourly print, so on a thin book it produces
+   numbers like −1211%/yr on $1.0M of open interest — arithmetically true and
+   completely untradeable. Any headline that names "the widest funding" reads
+   from markets above this floor; measured live, 46 of 233 markets clear it. */
+const FUND_FLOOR=1e7;
 
 function analyse(m, bars){
   /* The final candle is the hour currently in progress. Its price is the newest
@@ -1771,8 +1776,8 @@ ROUTES.radar=async function(args){
     const lens=LENS[LENS_ID]||LENS.momentum;
 
     const upN=all.filter(m=>m.chg>0).length;
-    const widest=all.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
-    const churn=all.filter(m=>m.oiNtl>1e6&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
+    const widest=all.filter(m=>m.oiNtl>FUND_FLOOR).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
+    const churn=all.filter(m=>m.oiNtl>FUND_FLOOR&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
     const totalOi=all.reduce((s,m)=>s+m.oiNtl,0);
     pulse.innerHTML=''; pulse.classList.add('lead');
     const P=(k,v,s,tip,cls)=>{ const n=el('div','pl tilt edge');
@@ -1780,7 +1785,7 @@ ROUTES.radar=async function(args){
       n.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); pulse.appendChild(n); };
     P('Board direction',Math.round(upN/all.length*100)+'% up', upN+' of '+all.length+' above yesterday’s close');
     P('Open interest','$'+fmtC(totalOi),'across every perp market','oi');
-    if(widest) P('Widest funding',pct(widest.fundingApr,0), widest.name+' — '+(widest.fundingApr>0?'longs paying':'shorts paying'),'fundapr',Math.abs(widest.fundingApr)>60?'warn':'');
+    if(widest) P('Widest funding',pct(widest.fundingApr,0), widest.name+' — '+(widest.fundingApr>0?'longs paying':'shorts paying')+' · $'+fmtC(FUND_FLOOR)+'+ open interest','fundapr',Math.abs(widest.fundingApr)>60?'warn':'');
     if(churn) P('Most turnover',churn.volOverOi.toFixed(1)+'×', churn.name+' — volume against open interest','vsoi');
     field(pulse);
 
@@ -1819,8 +1824,10 @@ ROUTES.radar=async function(args){
 
     /* ── who is paying ── */
     const s2=el('section','sec rv');
-    s2.appendChild(secHead('Who is paying to hold','Funding settles hourly. Markets with real size behind the rate, both directions.'));
-    const liq=all.filter(m=>m.oiNtl>1e6);
+    s2.appendChild(secHead('Who is paying to hold',
+      'Funding settles hourly; the rate here is that hour annualised. Only markets above $'
+      +fmtC(FUND_FLOOR)+' open interest — below that, one print annualises to a number nobody can trade.'));
+    const liq=all.filter(m=>m.oiNtl>FUND_FLOOR);
     const payShorts=liq.filter(m=>m.fundingApr>0).sort((a,b)=>b.fundingApr-a.fundingApr).slice(0,6);
     const payLongs =liq.filter(m=>m.fundingApr<0).sort((a,b)=>a.fundingApr-b.fundingApr).slice(0,6);
     const fb=el('div','fb');
@@ -2308,13 +2315,16 @@ ROUTES.home=async function(){
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
     const oi=U.reduce((s,m)=>s+m.oiNtl,0);
     const up=U.filter(m=>m.chg>0).length;
-    const wf=U.filter(m=>m.oiNtl>1e6).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
+    const wf=U.filter(m=>m.oiNtl>FUND_FLOOR).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
     live.innerHTML='';
     const U2=(html)=>{ const n=el('span','u'); n.innerHTML=html; live.appendChild(n); };
     U2('<i></i><b>'+U.length+'</b> markets live');
     U2('<b>$'+fmtC(oi)+'</b> open interest');
     U2('<b>'+Math.round(up/U.length*100)+'%</b> above yesterday');
-    if(wf) U2('widest funding <b>'+pct(wf.fundingApr,0)+'</b> on '+wf.name);
+    if(wf){ U2('widest funding <b>'+pct(wf.fundingApr,0)+'</b> on '+wf.name);
+      live.lastChild.title='Annualised from the current hourly rate. Markets under $'
+        +fmtC(FUND_FLOOR)+' open interest are excluded — one hourly print on a thin book '
+        +'annualises to a number nobody can trade.'; }
     mesh.setMarkets(U.slice().sort((a,b)=>b.vol-a.vol));
   }catch(e){
     live.innerHTML='';
