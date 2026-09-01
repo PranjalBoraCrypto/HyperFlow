@@ -77,6 +77,24 @@ if (hits.length) {
   console.log('✓ no class collisions');
 }
 
+/* ── 3b. pseudo-element owners ───────────────────────────────────── */
+/* A second silent collision: two classes on one element that both style
+   ::before. The stripe on .rd-hr vanished because .edge owns ::before and
+   keeps it transparent until hover. CSS alone cannot say which classes end up
+   together, so this lists the owners — check it before adding a pseudo. */
+const pseudo = { before: new Set(), after: new Set() };
+for (const m of body.matchAll(/(^|[},])\s*([^{}@]+?)\s*\{/g)) {
+  for (const raw of m[2].split(',')) {
+    const sel = raw.trim();
+    const p = /::?(before|after)\b/.exec(sel);
+    if (!p) continue;
+    const last = sel.split(/\s+|>/).filter(Boolean).pop() || '';
+    for (const c of last.matchAll(/\.([A-Za-z][-\w]*)/g)) pseudo[p[1]].add(c[1]);
+  }
+}
+console.log('  ::before is styled by:', [...pseudo.before].sort().join(' ') || '(none)');
+console.log('  ::after  is styled by:', [...pseudo.after].sort().join(' ') || '(none)');
+
 /* ── 4. the list to check new inner names against ────────────────── */
 const globals = [...bareRule].filter(c => !c.includes('-')).sort();
 console.log('  short global class names — never reuse one as an inner element:');

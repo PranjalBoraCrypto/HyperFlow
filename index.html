@@ -15,10 +15,15 @@
 <meta name="twitter:title" content="HyperFlow — what's worth trading on Hyperliquid right now">
 <meta name="twitter:description" content="Every Hyperliquid market ranked live, with the working shown. The board reads only.">
 <meta name="twitter:image" content="/og.png">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
+<!-- ?v= is not decoration. A browser caches a favicon against its URL and
+     keeps showing the old one long after the file changes — the server was
+     already sending the new icon (etags matched the new files) while every
+     tab still displayed the previous mark. Changing the URL is the only
+     reliable way to make it refetch. Bump v when the icon changes. -->
+<link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png?v=3" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3">
+<link rel="manifest" href="/site.webmanifest?v=3">
 <meta name="theme-color" content="#030C0A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -366,7 +371,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   .mk:active{border-color:var(--line-3);background:var(--g2)}
   .mk[data-open="1"]:active{transform:none}
   .btn:active{--sq:.96}
-  .cmd:active,.iconb:active,.pl:active,.hm-c:active,.mt-c:active,.fb-r:active,.hm-live .u:active{
+  .cmd:active,.iconb:active,.rd-hr:active,.hm-c:active,.mt-c:active,.fb-r:active,.hm-live .u:active{
     transform:scale(.97);border-color:var(--line-3)}
   .tw tbody tr:active{background:var(--g2)}
   .edge:active::before{opacity:.6}
@@ -855,17 +860,59 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .rd-h1 em{font-style:normal;color:var(--mint)}
 .rd-sub{color:var(--ink-2);font-size:clamp(14px,1.6vw,16px);max-width:58ch;margin-top:9px}
 
-/* venue pulse strip */
-.rd-pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(178px,100%),1fr));gap:9px;margin-bottom:18px}
-.pl{position:relative;padding:14px 16px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
-  display:flex;flex-direction:column;gap:3px;
-  transition:border-color var(--sp),transform var(--sp) var(--ease),opacity var(--sp-slow),filter var(--sp-slow)}
-.pl:hover{border-color:var(--line-2)}
-.pl .k{display:flex;align-items:center;gap:6px}
-.pl .v{font-family:"IBM Plex Mono",monospace;font-size:clamp(18px,2.3vw,23px);font-weight:600;
-  letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pl .s{font-size:11.5px;color:var(--ink-3)}
-.pl .spark{position:absolute;right:0;bottom:0;left:0;height:26px;opacity:.4;pointer-events:none}
+/* what changed in the last hour — the first thing on the page */
+.rd-hour{margin-bottom:20px}
+.rd-hourhd{display:flex;align-items:center;gap:9px;margin-bottom:10px;color:var(--ink-3)}
+.rd-hourhd::after{content:"";flex:1;height:1px;background:var(--line)}
+.rd-hourl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}
+.rd-hr{position:relative;display:flex;flex-direction:column;gap:5px;padding:13px 15px;
+  border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+  color:inherit;text-decoration:none;min-height:44px;
+  transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+/* ::after, not ::before — .edge already owns ::before on this element and
+   holds it at opacity 0 until hover, so a stripe drawn there is invisible
+   exactly when it is needed. */
+.rd-hr::after{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;
+  border-radius:0 3px 3px 0;pointer-events:none}
+.rd-hr[data-dir="up"]::after{background:var(--up)}
+.rd-hr[data-dir="down"]::after{background:var(--down)}
+.rd-hr:hover{border-color:var(--line-2);box-shadow:var(--e2)}
+.rd-hr .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rd-hr .n b{font-family:"Bricolage Grotesque",sans-serif;font-size:15.5px;font-weight:700;letter-spacing:-.03em}
+.rd-hr .w{font-size:12px;color:var(--ink-2);line-height:1.45}
+.rd-hr .v{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-4)}
+.rd-hmore{grid-column:1/-1;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-4);
+  padding-top:2px}
+.rd-quiet{grid-column:1/-1;display:flex;flex-direction:column;gap:5px;padding:15px 16px;
+  border-radius:var(--r2);background:var(--g1);border:1px dashed var(--line-2)}
+.rd-quiet b{font-family:"Bricolage Grotesque",sans-serif;font-size:15px;font-weight:700;letter-spacing:-.03em}
+.rd-quiet span{font-size:12.5px;color:var(--ink-3);line-height:1.55}
+@media (max-width:560px){ .rd-hourl{grid-template-columns:1fr} }
+
+/* [hidden] is display:none in the UA sheet, so any author rule that sets
+   display — .chip is inline-flex — silently overrides it and the element stays
+   on screen. This is the one place a !important earns its keep. */
+[hidden]{display:none!important}
+
+/* the perps/spot switch — the one control that changes what the site is about */
+.mseg{position:relative;display:flex;align-items:center;gap:2px;padding:3px;border-radius:11px;
+  background:var(--g2);border:1px solid var(--line-2);flex:none}
+.mseg button{position:relative;z-index:1;height:30px;padding:0 13px;border-radius:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.04em;
+  color:var(--ink-3);white-space:nowrap;transition:color var(--sp)}
+.mseg button.on{color:var(--on-mint)}
+.mseg button:hover:not(.on){color:var(--ink)}
+.mseg .pill{position:absolute;top:3px;bottom:3px;left:3px;width:0;border-radius:8px;
+  background:var(--mint);transition:left var(--sp) var(--spring),width var(--sp) var(--spring)}
+@media (max-width:860px){
+  /* the venue switch is a control, so it gets a control's tap target */
+  .mseg button{height:44px;padding:0 12px;font-size:11px}
+  .mseg .pill{top:3px;bottom:3px}
+}
+@media (max-width:400px){ .mseg button{padding:0 9px;letter-spacing:0} }
+/* a single-choice lens bar is a label, not a control */
+.seg[data-single] button{cursor:default}
+.seg[data-single] .pill{opacity:.55}
 
 /* lens bar */
 .rd-lens{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
@@ -1193,12 +1240,19 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
         <span class="t" id="crumbT">Radar</span>
         <span class="live"><i></i>Live</span>
       </div>
+      <!-- One control for the whole site. Perps first because that is what
+           almost everyone is here for; the choice is remembered. -->
+      <div class="mseg" id="mseg" role="group" aria-label="Market type">
+        <div class="pill" id="modePill"></div>
+        <button type="button" data-mode="perp" class="on">Perps</button>
+        <button type="button" data-mode="spot">Spot</button>
+      </div>
       <div class="sp"></div>
       <button class="cmd" id="cmdBtn" aria-label="Search markets and wallets">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
         <span class="lbl">Search</span><kbd>⌘K</kbd>
       </button>
-      <div class="fclock" id="fclock" data-tip="funding">
+      <div class="fclock" id="fclock" data-tip="funding" data-perponly="1">
         <svg viewBox="0 0 24 24"><circle class="trk" cx="12" cy="12" r="9"/>
           <circle class="val" id="fcArc" cx="12" cy="12" r="9"/></svg>
         <span class="t"><b id="fcT">--:--</b><s>funding</s></span>
@@ -1278,7 +1332,7 @@ const px=(v)=>{const n=+v; if(!isFinite(n))return '—';
   }
   window.__field=(n)=>{ live.add(n); };
 })();
-function field(scope){ if(window.__field) $$('.glow,.mk,.pl,.edge,.tilt',scope||document).forEach(window.__field); }
+function field(scope){ if(window.__field) $$('.glow,.mk,.rd-hr,.edge,.tilt',scope||document).forEach(window.__field); }
 /* primary actions pull very slightly toward the cursor and spring back.
    One listener per button, transform only — never layout. */
 /* .mag is only ever on buttons, and a button the reader is aiming at must not
@@ -1647,17 +1701,56 @@ function setNav(id){
   const n=NAV.find(x=>x.id===id); $('#crumbT').textContent=n?n.label:'HyperFlow';
 }
 function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page:String(name)}}); }catch(e){} }
+/* ── mode ──────────────────────────────────────────────────────────
+   Perps are what almost everyone came for, so they are the default and the
+   choice is remembered. Spot is a real venue here but a small one: 309 USDC
+   pairs of which nine trade more than $1M a day. */
+let MODE='perp';
+try{ if(localStorage.getItem('hf.mode')==='spot') MODE='spot'; }catch(e){}
+const isSpot=()=>MODE==='spot';
+
 const ROUTES={};
-async function route(){
+/* soft:true is the venue switch — same page, different market type. It keeps
+   the scroll position and skips the enter animation, so the sections rebuild
+   under their own skeletons instead of the whole page fading out and back. */
+async function route(opts){
+  const soft=!!(opts&&opts.soft);
   const h=(location.hash||'#/home').replace(/^#\/?/,'');
   const parts=h.split('/').filter(Boolean);
   const id=parts[0]||'home';
   killActive(); setNav(id); track(id); progress(.2);
-  PAGE.innerHTML=''; PAGE.dataset.enter='1';
-  scrollTo({top:0,behavior:RM()?'auto':'instant'});
+  const keepY=soft?scrollY:0;
+  PAGE.innerHTML='';
+  if(soft) delete PAGE.dataset.enter; else PAGE.dataset.enter='1';
+  if(!soft) scrollTo({top:0,behavior:RM()?'auto':'instant'});
   const fn=ROUTES[id]||ROUTES.home;
-  try{ await fn(parts.slice(1)); } finally { progress(1); }
+  /* the skeletons are already on screen by the first await, so restoring the
+     scroll here lands the reader where they were looking */
+  if(soft) requestAnimationFrame(()=>scrollTo({top:keepY,behavior:'instant'}));
+  try{ await fn(parts.slice(1)); }
+  catch(e){ console.error(e); }
+  finally { progress(1); if(soft) scrollTo({top:keepY,behavior:'instant'}); }
 }
+/* The toggle re-runs the current route rather than reloading: the shell, the
+   rail and the header stay put, the page rebuilds behind its own skeletons.
+   Reloading would flash the whole site white on every switch. */
+/* the funding countdown means nothing on spot */
+function syncModeChrome(){
+  $$('[data-perponly]').forEach(n=>{ n.hidden=isSpot(); });
+}
+addEventListener('hf:mode',syncModeChrome);
+(function modeToggle(){
+  const seg=$('#mseg'); if(!seg) return;
+  document.documentElement.dataset.mode=MODE;
+  $$('[data-mode]',seg).forEach(b=>{
+    b.classList.toggle('on', b.dataset.mode===MODE);
+    b.addEventListener('click',()=>{ setMode(b.dataset.mode); route({soft:true}); });
+  });
+  const move=()=>{ const on=$('[data-mode].on',seg), pill=$('#modePill');
+    if(on&&pill){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; } };
+  requestAnimationFrame(move); setTimeout(move,90); addEventListener('resize',move);
+  syncModeChrome();
+})();
 addEventListener('hashchange',route);
 addEventListener('scroll',()=>{ $('#top').dataset.stuck=scrollY>4?'1':'0'; },{passive:true});
 
@@ -1746,11 +1839,17 @@ const FUND_FLOOR=1e7;
    if a quiet day leaves fewer than this many liquid markets, the board falls
    back to the most-traded BOARD_MIN rather than showing a short list. */
 const VOL_FLOOR=1e7, BOARD_MIN=18;
+/* Spot on this venue is a tenth the size: 309 USDC pairs, nine of which trade
+   more than $1M a day. A $10M floor would leave four. */
+const SPOT_FLOOR=2.5e5, SPOT_MIN=8;
 /* Every coin on the site points at its own market on the exchange. Spot names
    arrive as @N or +N and have no perp page, so those fall back to the app. */
 const TRADE_URL=name=>/^[@+]/.test(name||'')
   ? 'https://app.hyperliquid.xyz/trade'
   : 'https://app.hyperliquid.xyz/trade/'+encodeURIComponent(name);
+/* Spot markets live at TOKEN/USDC — verified by loading them, not assumed. */
+const SPOT_URL=base=>'https://app.hyperliquid.xyz/trade/'+encodeURIComponent(base)+'/USDC';
+const marketUrl=m=>m&&m.kind==='spot'? SPOT_URL(m.name) : TRADE_URL(m&&m.name);
 
 function analyse(m, bars){
   /* The final candle is the hour currently in progress. Its price is the newest
@@ -1775,7 +1874,17 @@ function analyse(m, bars){
   const vAvg=vd.length>21? SMA(vd.slice(0,-1),20) : null;
   const rvol=(vAvg&&vAvg>0&&vd.length)? vd[vd.length-1]/vAvg : null;
   const minsIn = partial ? (now-+bars[bars.length-1].t)/60000 : 60;
-  return {last,s20,s50,s100,rsi,atr,atrExp,rvol,partial,minsIn,
+  /* The last COMPLETED hour, as an event: what it did, and whether it crossed
+     the 20-bar average on the way. Both come out of bars already in hand, so
+     the "what just changed" section costs no extra call. */
+  const dc=done.map(b=>+b.c);
+  const hourChg = dc.length>1 ? (dc[dc.length-1]/dc[dc.length-2]-1)*100 : null;
+  const prev20 = dc.length>20 ? SMA(dc.slice(0,-1),20) : null;
+  const cross = (prev20!=null && s20!=null && dc.length>1)
+    ? (dc[dc.length-2]<prev20 && dc[dc.length-1]>SMA(dc,20) ? 'up'
+      : dc[dc.length-2]>prev20 && dc[dc.length-1]<SMA(dc,20) ? 'down' : null)
+    : null;
+  return {last,s20,s50,s100,rsi,atr,atrExp,rvol,partial,minsIn,hourChg,cross,
           bars:done.length, spark:c.slice(-72)};
 }
 
@@ -2047,7 +2156,12 @@ function universe(meta,ctxs){
        everything else, which is not missing data, it is a market that no
        longer trades. Carrying the flag lets the table say so instead of
        showing a wall of $0.00. */
-    return {name:u.name, maxLev:u.maxLeverage, delisted:!!u.isDelisted,
+    /* name is what a reader sees; key is what the API is asked for. They are
+       the same for perps and different for spot, where the display name is the
+       token (HYPE) and the market is a pair index (@107). Every call downstream
+       uses key so nothing has to know which mode it is in. */
+    return {name:u.name, key:u.name, kind:'perp',
+      maxLev:u.maxLeverage, delisted:!!u.isDelisted,
       mark, oracle:+c.oraclePx,
       chg: prev? (mark-prev)/prev*100 : 0,
       fundingHr:+c.funding*100, fundingApr:+c.funding*24*365*100,
@@ -2110,11 +2224,21 @@ ROUTES.radar=async function(args){
   const head=el('div','rd-head');
   const L=el('div');
   const h1=el('h1','rd-h1'); h1.innerHTML='What is worth <em>watching</em> right now.';
-  L.append(h1, el('p','rd-sub','Every Hyperliquid perp, ranked live in your browser. Open any row to see the measures behind it.'));
+  L.append(h1, el('p','rd-sub', isSpot()
+    ? 'Every Hyperliquid spot pair, ranked live in your browser. Open any row to see the measures behind it.'
+    : 'Every Hyperliquid perp, ranked live in your browser. Open any row to see the measures behind it.'));
   head.appendChild(L); wrap.appendChild(head);
 
-  const pulse=el('div','rd-pulse');
-  for(let i=0;i<4;i++){ const s=el('div','pl'); const k=el('div','sk'); k.style.height='52px'; s.appendChild(k); pulse.appendChild(s); }
+  /* The first thing on the page used to be four venue statistics — board
+     direction, total open interest, widest funding, most turnover. All true,
+     none of them a reason to do anything. Somebody opening this page is about
+     to trade; what they want in the first screen is what has just moved. */
+  const pulse=el('div','rd-hour');
+  const pulseHd=el('div','rd-hourhd');
+  pulseHd.innerHTML='<span class="micro">What changed in the last hour</span>';
+  const pulseList=el('div','rd-hourl lead');
+  for(let i=0;i<3;i++){ const k=el('div','sk sk-row'); k.style.height='54px'; pulseList.appendChild(k); }
+  pulse.append(pulseHd,pulseList);
   wrap.appendChild(pulse);
 
   const mount=el('div'); wrap.appendChild(mount);
@@ -2125,23 +2249,43 @@ ROUTES.radar=async function(args){
      for every market — enough to paint the pulse, the funding board and the
      whole 233-row table immediately. Only the ten ranked rows need charts, and
      they fill in underneath a skeleton of their own shape. */
+  /* The cache holds a universe and, SOMETIMES, a built board. The home page
+     and the coin page both warm RADAR with `short: RADAR.short`, which is null
+     on a fresh session — so arriving at the radar from either of them within
+     the cache window used to call paintBoard(null). That threw inside
+     quietly(), which rethrows, the rejection went nowhere, and the skeleton
+     drawn by render() stayed on screen forever. Switching lens fixed it
+     because switchLens builds the board itself.
+     So: paint instantly from cache when there IS a board, and otherwise take
+     the cached universe (which is the slow part) and go build one. */
   if(RADAR.U && Date.now()-RADAR.t < 45000){
-    U=RADAR.U; detail=RADAR.det;
-    quietly(()=>{ render(U,RADAR.det); paintBoard(RADAR.short,RADAR.det); });
+    U=RADAR.U; detail=RADAR.det||{};
+    const cached=Array.isArray(RADAR.short)&&RADAR.short.length;
+    quietly(()=>{ render(U,detail); if(cached) paintBoard(RADAR.short,detail); });
+    if(cached) return;
+    try{
+      const built=await fillBoard(U,LENS_ID,detail,()=>{});
+      PASSED=built.passed; READN=built.read;
+      RADAR={t:Date.now(),U,short:built.chosen,det:detail};
+      paintBoard(built.chosen,detail);
+      paintHour(U,detail);
+    }catch(e){ boardFailed(e); }
     return;
   }
   try{
     const t0=performance.now();
     mount.appendChild(pageSkeleton());
-    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
-    U=universe(meta,ctxs);
+    U=await loadUniverse();
     render(U,detail);                                   /* everything except the ranked rows */
-    const built=await fillBoard(U,LENS_ID,detail,(done,total)=>{
-      if(progHost) progHost.textContent='reading charts · '+done+' of '+total;
-    });
-    PASSED=built.passed; READN=built.read;
-    RADAR={t:Date.now(),U,short:built.chosen,det:detail};
-    paintBoard(built.chosen,detail);
+    try{
+      const built=await fillBoard(U,LENS_ID,detail,(done,total)=>{
+        if(progHost) progHost.textContent='reading charts · '+done+' of '+total;
+      });
+      PASSED=built.passed; READN=built.read;
+      RADAR={t:Date.now(),U,short:built.chosen,det:detail};
+      paintBoard(built.chosen,detail);
+      paintHour(U,detail);            /* now that the candles are in hand */
+    }catch(e){ boardFailed(e); }
   }catch(e){
     mount.innerHTML='';
     const c=el('div','card pad');
@@ -2179,14 +2323,19 @@ ROUTES.radar=async function(args){
      back to the most-traded MIN of them so the page is never empty. */
   function preselect(all,lensId,n){
     const cap=n||DEPTH;
-    const key = lensId==='funding' ? (m=>m.oiNtl) : (m=>m.vol);
-    const floor= lensId==='funding' ? FUND_FLOOR : VOL_FLOOR;
+    /* Spot has no open interest and no funding, so it is always ranked and
+       floored on traded volume — and on a venue where nine markets clear $1M a
+       day, the floor drops to match or the board would be empty. */
+    const useFunding = lensId==='funding' && !isSpot();
+    const key = useFunding ? (m=>m.oiNtl) : (m=>m.vol);
+    const floor= useFunding ? FUND_FLOOR : (isSpot()? SPOT_FLOOR : VOL_FLOOR);
     /* a delisted market cannot be traded, so it can never be an answer to
        "what is worth trading now" — even on a day quiet enough to hit the
        BOARD_MIN fallback below */
     const byLiq=all.filter(m=>!m.delisted).sort((a,b)=>key(b)-key(a));
     const liquid=byLiq.filter(m=>key(m)>floor);
-    return (liquid.length>=BOARD_MIN ? liquid : byLiq.slice(0,BOARD_MIN)).slice(0,cap);
+    const min=isSpot()?SPOT_MIN:BOARD_MIN;
+    return (liquid.length>=min ? liquid : byLiq.slice(0,min)).slice(0,cap);
   }
 
   /* Every market in the pool is charted before any of them is ranked. The old
@@ -2206,7 +2355,7 @@ ROUTES.radar=async function(args){
     await inParallel(missing, CONC, async m=>{
       try{
         const now=Date.now();
-        const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
+        const bars=await apiR({type:'candleSnapshot',req:{coin:m.key||m.name,interval:'1h',
           startTime:now-230*3600*1000,endTime:now}},{ttl:60000});
         if(Array.isArray(bars)&&bars.length>30) det[m.name]=analyse(m,bars);
       }catch(e){}
@@ -2233,19 +2382,7 @@ ROUTES.radar=async function(args){
     mount.innerHTML='';
     const lens=LENS[LENS_ID]||LENS.momentum;
 
-    const upN=all.filter(m=>m.chg>0).length;
-    const widest=all.filter(m=>m.oiNtl>FUND_FLOOR).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
-    const churn=all.filter(m=>m.oiNtl>FUND_FLOOR&&m.volOverOi!=null).sort((a,b)=>b.volOverOi-a.volOverOi)[0];
-    const totalOi=all.reduce((s,m)=>s+m.oiNtl,0);
-    pulse.innerHTML=''; pulse.classList.add('lead');
-    const P=(k,v,s,tip,cls)=>{ const n=el('div','pl tilt edge');
-      const kk=el('div','k'); kk.append(el('span','micro',k)); if(tip) kk.appendChild(qm(tip));
-      n.append(kk, el('div','v'+(cls?' '+cls:''),v), el('div','s',s)); pulse.appendChild(n); };
-    P('Board direction',Math.round(upN/all.length*100)+'% up', upN+' of '+all.length+' above yesterday’s close');
-    P('Open interest','$'+fmtC(totalOi),'across every perp market','oi');
-    if(widest) P('Widest funding',pct(widest.fundingApr,0), widest.name+' — '+(widest.fundingApr>0?'longs paying':'shorts paying')+' · $'+fmtC(FUND_FLOOR)+'+ open interest','fundapr',Math.abs(widest.fundingApr)>60?'warn':'');
-    if(churn) P('Most turnover',churn.volOverOi.toFixed(1)+'×', churn.name+' — volume against open interest','vsoi');
-    field(pulse);
+    paintHour(all,det);
 
     const nfa=el('details','nfa rv');
     const sum=el('summary');
@@ -2262,12 +2399,17 @@ ROUTES.radar=async function(args){
     const s1=el('section','sec rv');
     const segWrap=el('div','r');
     const seg=el('div','seg'); const pill=el('div','pill'); seg.appendChild(pill);
-    Object.values(LENS).forEach(x=>{
+    /* Spot has no funding, so the funding lens is not offered rather than
+       offered and empty. If it was the remembered choice, fall back. */
+    const lenses=Object.values(LENS).filter(x=>!(isSpot()&&x.id==='funding'));
+    if(isSpot()&&LENS_ID==='funding') LENS_ID='momentum';
+    lenses.forEach(x=>{
       const b=el('button',null,x.label); b.dataset.lens=x.id;
       if(x.id===LENS_ID) b.className='on';
       b.addEventListener('click',()=>switchLens(x.id,seg,pill));
       seg.appendChild(b);
     });
+    if(lenses.length<2) seg.dataset.single='1';
     segWrap.appendChild(seg);
     /* The head carries the lens blurb and nothing else. The passed-over list
        used to be stitched onto the end of it, so switching lens changed the
@@ -2283,8 +2425,9 @@ ROUTES.radar=async function(args){
     mount.appendChild(s1);
     boardSkeleton();
 
-    /* ── who is paying ── */
+    /* ── who is paying ── (funding is a perp mechanism; spot has none) */
     const s2=el('section','sec rv');
+    if(!isSpot()){
     s2.appendChild(secHead('Who is paying to hold',
       'Funding settles hourly; the rate here is that hour annualised. Only markets above $'
       +fmtC(FUND_FLOOR)+' open interest — below that, one print annualises to a number nobody can trade.'));
@@ -2318,13 +2461,14 @@ ROUTES.radar=async function(args){
       fb.appendChild(col);
     });
     s2.appendChild(fb); mount.appendChild(s2);
+    }
 
     /* ── every market ── */
     const s3=el('section','sec rv');
     const filt=el('div','r');
     const search=el('input'); search.type='search'; search.placeholder='Filter markets';
     search.setAttribute('aria-label','Filter markets');
-    search.style.cssText='height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
+    search.style.cssText='height:44px;border-radius:11px;border:1px solid var(--line-2);background:var(--g1);'+
       'color:var(--ink);font-family:\'IBM Plex Mono\',monospace;font-size:13px;padding:0 13px;outline:none;min-width:0;width:min(220px,60vw)';
     /* 56 of the 233 are delisted: a last price and zeroes for everything else.
        They are still the exchange's own answer, so they stay reachable behind
@@ -2332,14 +2476,24 @@ ROUTES.radar=async function(args){
        "every market" means to anyone reading it. */
     const nDead=all.filter(m=>m.delisted).length;
     const deadBtn=el('button','chip','Show '+nDead+' delisted'); deadBtn.type='button';
-    deadBtn.style.cssText='cursor:pointer;height:38px;padding:0 13px';
+    deadBtn.style.cssText='cursor:pointer;height:44px;padding:0 13px;flex:none';
     if(nDead) filt.appendChild(deadBtn);
+    /* Markets that exist on the OTHER side. Kept out of the ranking — they are
+       not tradeable here — but reachable, because "where else does this trade"
+       is a fair question. Hidden by default: in spot mode there are 200-odd of
+       them and a wall of unavailable rows is not a market list. */
+    const otherBtn=el('button','chip'); otherBtn.type='button';
+    otherBtn.style.cssText='cursor:pointer;height:44px;padding:0 13px;flex:none';
+    otherBtn.hidden=true;
+    filt.appendChild(otherBtn);
     filt.appendChild(search);
+    /* the row wraps rather than crushing its own buttons to 35px at 320 */
+    filt.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center';
     const live=all.length-nDead;
     /* state first: the subtitle is built from it, so it cannot be declared
        after the header that reads it */
     let sortKey='vol', sortDir=-1, tPage=0, query='', showDead=false;
-    const tableSub=()=>'All '+live+' perps trading right now, from the same single call. Sortable.'+
+    const tableSub=()=>'All '+live+' '+(isSpot()?'spot pairs':'perps')+' trading right now, from the same single call. Sortable.'+
       (!nDead? '' : showDead
         ? '  ·  showing the '+nDead+' delisted markets too — the exchange still lists them, but nothing trades on them.'
         : '  ·  '+nDead+' delisted markets are hidden — the exchange still lists them, but they have no volume and no open interest.');
@@ -2348,6 +2502,26 @@ ROUTES.radar=async function(args){
     const tableSubEl=$('.sec-h p',s3);
     const setSub=()=>{ if(tableSubEl) tableSubEl.textContent=tableSub(); };
     setSub();
+    /* The other venue's names, marked absent, appended after everything that
+       actually trades here. Loaded on demand — nobody should pay a call for a
+       list they have not asked for. */
+    let absentRows=null, showAbsent=false;
+    const here=new Set(all.map(m=>m.name));
+    otherSide().then(list=>{
+      absentRows=(list||[]).filter(m=>!here.has(m.name))
+        .sort((a,b)=>b.vol-a.vol)
+        .map(m=>({...m, absent:true, vol:0, mark:m.mark}));
+      if(!absentRows.length) return;
+      otherBtn.hidden=false;
+      otherBtn.textContent='Show '+absentRows.length+' '+(isSpot()?'perps-only':'spot-only')+' markets';
+      otherBtn.addEventListener('click',()=>{
+        showAbsent=!showAbsent; tPage=0;
+        otherBtn.textContent=(showAbsent?'Hide ':'Show ')+absentRows.length+' '+
+          (isSpot()?'perps-only':'spot-only')+' markets';
+        otherBtn.classList.toggle('warn',showAbsent);
+        paintTable();
+      });
+    }).catch(()=>{});
     deadBtn.addEventListener('click',()=>{
       showDead=!showDead; tPage=0;
       deadBtn.textContent=showDead? 'Hide '+nDead+' delisted' : 'Show '+nDead+' delisted';
@@ -2355,10 +2529,17 @@ ROUTES.radar=async function(args){
       setSub(); paintTable();
     });
     const TPER=15;
-    const COLS=[['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
-                ['oiNtl','Open interest',1],['fundingApr','Funding APR',1],['volOverOi','Vol / OI',1],['spreadPct','Spread',1]];
+    /* Spot has no open interest, funding, turnover ratio or impact spread. It
+       has supply, so it has a market cap — which perps do not. Showing four
+       empty columns would be worse than showing the ones that exist. */
+    const COLS = isSpot()
+      ? [['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
+         ['mcap','Market cap',1]]
+      : [['name','Market',0],['mark','Price',1],['chg','24h',1],['vol','24h volume',1],
+         ['oiNtl','Open interest',1],['fundingApr','Funding APR',1],['volOverOi','Vol / OI',1],['spreadPct','Spread',1]];
     function paintTable(){
-      const rows=all.filter(m=>(showDead||!m.delisted)&&(!query||m.name.toLowerCase().includes(query)))
+      const base=all.concat(showAbsent&&absentRows?absentRows:[]);
+      const rows=base.filter(m=>(showDead||!m.delisted)&&(!query||m.name.toLowerCase().includes(query)))
         /* The sign was backwards. sortDir=-1 is meant to be descending, and the
            header arrow renders ▼ for it, but the comparator was sortDir*(y-x),
            which makes -1 ASCENDING — so the default view of the table was the
@@ -2366,7 +2547,9 @@ ROUTES.radar=async function(args){
            that claimed the opposite. It is sortDir*(x-y) now.
            Nulls sink to the bottom in both directions rather than flipping to
            the top when the arrow turns. */
-        .slice().sort((a,b)=>{ const x=a[sortKey],y=b[sortKey];
+        .slice().sort((a,b)=>{
+          if(!!a.absent!==!!b.absent) return a.absent?1:-1;   /* never tradeable here: last */
+          const x=a[sortKey],y=b[sortKey];
           if(sortKey==='name') return sortDir*String(x).localeCompare(String(y));
           if(x==null&&y==null) return 0;
           if(x==null) return 1;
@@ -2379,19 +2562,27 @@ ROUTES.radar=async function(args){
       const tb=$('tbody',tw); tb.classList.add('lead');
       rows.slice(tPage*TPER,(tPage+1)*TPER).forEach(m=>{
         const tr=el('tr'); tr.dataset.coin=m.name; if(m.delisted) tr.dataset.dead='1';
-        /* a delisted row shows an em dash, not $0.00 — nothing traded, rather
-           than a real measurement that happens to be zero */
+        if(m.absent) tr.dataset.dead='1';
         const z=v=>m.delisted?'—':v;
-        tr.innerHTML='<td><a class="tw-name" href="'+TRADE_URL(m.name)+'" target="_blank" rel="noopener">'+
+        const nameCell='<td><a class="tw-name" href="'+marketUrl(m)+'" target="_blank" rel="noopener">'+
             '<b>'+m.name+'</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" '+
             'stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5l7-7M9.5 8.5H16v6.5"/></svg></a>'+
-            (m.delisted?'<span class="chip dead">delisted</span>':'')+'</td>'+
-          '<td class="n r">'+px(m.mark)+'</td>'+
-          '<td class="n r '+(m.delisted?'dim':m.chg>=0?'up':'down')+'">'+z(pct(m.chg))+'</td>'+
-          '<td class="n r">'+z('$'+fmtC(m.vol))+'</td><td class="n r">'+z('$'+fmtC(m.oiNtl))+'</td>'+
-          '<td class="n r '+(m.delisted?'dim':m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+z(pct(m.fundingApr,1))+'</td>'+
-          '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
-          '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
+            (m.delisted?'<span class="chip dead">delisted</span>':'')+
+            (m.bridged?'<span class="chip dead">bridged</span>':'')+
+            (m.absent?'<span class="chip dead">'+(isSpot()?'perps only':'spot only')+'</span>':'')+'</td>';
+        tr.innerHTML = isSpot()
+          ? nameCell+
+            '<td class="n r">'+px(m.mark)+'</td>'+
+            '<td class="n r '+(m.absent?'dim':m.chg>=0?'up':'down')+'">'+(m.absent?'—':pct(m.chg))+'</td>'+
+            '<td class="n r">'+(m.absent?'—':'$'+fmtC(m.vol))+'</td>'+
+            '<td class="n r dim">'+(m.mcap?'$'+fmtC(m.mcap):'—')+'</td>'
+          : nameCell+
+            '<td class="n r">'+px(m.mark)+'</td>'+
+            '<td class="n r '+(m.delisted||m.absent?'dim':m.chg>=0?'up':'down')+'">'+(m.absent?'—':z(pct(m.chg)))+'</td>'+
+            '<td class="n r">'+(m.absent?'—':z('$'+fmtC(m.vol)))+'</td><td class="n r">'+(m.absent?'—':z('$'+fmtC(m.oiNtl)))+'</td>'+
+            '<td class="n r '+(m.delisted||m.absent?'dim':m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+(m.absent?'—':z(pct(m.fundingApr,1)))+'</td>'+
+            '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
+            '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
         $('.tw-name',tr).addEventListener('click',e=>e.stopPropagation());
         tr.addEventListener('click',()=>{ location.hash='#/coin/'+encodeURIComponent(m.name); });
         tb.appendChild(tr);
@@ -2428,6 +2619,78 @@ ROUTES.radar=async function(args){
     field(mount); magnetise(mount); reveal(mount);
   }
 
+  /* Everything here comes out of the hourly candles the board already pulled,
+     so this section costs no extra call. Three kinds of event, and a market
+     only appears if something actually happened to it:
+       moved     — the last COMPLETED hour's move, ranked by size
+       paid for  — that hour traded well above its own 20-hour average
+       crossed   — price crossed its 20-bar average during that hour
+     If nothing happened it says so, rather than padding the list with the
+     calmest markets on the board and calling them news. */
+  function paintHour(all, det){
+    pulse.classList.add('lead');
+    const liq=all.filter(m=>!m.delisted && m.vol>(isSpot()?SPOT_FLOOR:VOL_FLOOR));
+    const rows=[];
+    for(const m of liq){
+      const a=det&&det[m.name]; if(!a||a.hourChg==null) continue;
+      const moved=Math.abs(a.hourChg)>=0.4;
+      const paid=a.rvol!=null&&a.rvol>=1.8;
+      const crossed=!!a.cross;
+      if(!moved&&!paid&&!crossed) continue;
+      rows.push({m,a,paid,crossed,
+        rank:Math.abs(a.hourChg)*(paid?1.6:1)+(crossed?1.2:0)});
+    }
+    rows.sort((x,y)=>y.rank-x.rank);
+    pulseList.innerHTML='';
+    if(!rows.length){
+      const q=el('div','rd-quiet');
+      q.innerHTML='<b>Nothing moved much.</b><span>No liquid market travelled more than 0.4% or traded '+
+        'unusually in the last completed hour. That is a reading, not a missing one.</span>';
+      pulseList.appendChild(q);
+      return;
+    }
+    rows.slice(0,4).forEach(r=>{
+      const {m,a}=r;
+      const n=el('a','rd-hr tilt edge'); n.href='#/coin/'+encodeURIComponent(m.name);
+      n.dataset.dir=a.hourChg>=0?'up':'down';
+      const nm=el('div','n'); nm.append(el('b',null,m.name),
+        Object.assign(el('span','chip '+(a.hourChg>=0?'up':'down')),{textContent:pct(a.hourChg)}));
+      n.appendChild(nm);
+      const bits=['this hour'];
+      if(r.paid) bits.push(a.rvol.toFixed(1)+'× its usual volume');
+      if(a.cross==='up') bits.push('crossed above its 20-bar average');
+      if(a.cross==='down') bits.push('crossed below its 20-bar average');
+      n.appendChild(Object.assign(el('div','w'),{textContent:bits.join(' · ')}));
+      n.appendChild(Object.assign(el('div','v'),{textContent:'$'+fmtC(m.vol)+' 24h'}));
+      pulseList.appendChild(n);
+    });
+    if(rows.length>4) pulseList.appendChild(Object.assign(el('p','rd-hmore'),
+      {textContent:(rows.length-4)+' more moved — the full ranking is below.'}));
+    field(pulseList); flick(pulseList);
+  }
+
+  /* A failure has to replace the skeleton. An unresolved skeleton is the worst
+     of both worlds: it looks like work in progress forever. */
+  function boardFailed(e){
+    if(!boardHost) return;
+    boardHost.innerHTML='';
+    const c=el('div','card pad');
+    c.append(el('p',null, e&&e.code==='RATE'
+      ? 'The exchange rate-limited this browser while reading the charts. The rest of the page is live; give it a minute.'
+      : 'The charts behind the ranking did not load. The rest of the page is live.'));
+    const b=el('button','btn ghost mag','Try again'); b.type='button'; b.style.marginTop='12px';
+    b.addEventListener('click',()=>{
+      boardSkeleton();
+      fillBoard(RADAR.U||U, LENS_ID, RADAR.det||detail, ()=>{})
+        .then(built=>{ PASSED=built.passed; READN=built.read;
+          RADAR={t:Date.now(),U:RADAR.U||U,short:built.chosen,det:RADAR.det||detail};
+          paintBoard(built.chosen,RADAR.det||detail); })
+        .catch(boardFailed);
+    });
+    c.appendChild(b);
+    boardHost.appendChild(c); magnetise(c);
+  }
+
   function boardSkeleton(){
     if(!boardHost) return;
     boardHost.innerHTML='';
@@ -2437,6 +2700,7 @@ ROUTES.radar=async function(args){
 
   function paintBoard(list, det){
     if(!boardHost) return;
+    if(!Array.isArray(list)||!list.length){ boardSkeleton(); return; }
     const lens=LENS[LENS_ID]||LENS.momentum;
     /* dir is recomputed here against live prices over cached candles, so a row
        chosen a minute ago can have lost its direction since. Drop it rather
@@ -2474,7 +2738,7 @@ ROUTES.radar=async function(args){
         RADAR.short=built.chosen; PASSED=built.passed; READN=built.read;
         delete boardHost.dataset.busy;
         paintBoard(built.chosen,RADAR.det);
-      } finally { delete boardHost.dataset.busy; }
+      }catch(e){ boardFailed(e); } finally { delete boardHost.dataset.busy; }
     })();
   }
 
@@ -2929,18 +3193,19 @@ ROUTES.home=async function(){
   /* one call. It fills the live strip, feeds the hero, and warms the cache the
      radar reads from — so clicking through costs nothing. */
   try{
-    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
-    const U=universe(meta,ctxs);
+    const U=await loadUniverse();
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
-    const oi=U.reduce((s,m)=>s+m.oiNtl,0);
+    const oi=U.reduce((s,m)=>s+(m.oiNtl||0),0);
     const up=U.filter(m=>m.chg>0).length;
-    const wf=U.filter(m=>m.oiNtl>FUND_FLOOR).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
+    const wf=isSpot()? null
+      : U.filter(m=>m.oiNtl>FUND_FLOOR).sort((a,b)=>Math.abs(b.fundingApr)-Math.abs(a.fundingApr))[0];
     live.innerHTML='';
     const U2=(html)=>{ const n=el('span','u'); n.innerHTML=html; live.appendChild(n); };
-    U2('<i></i><b>'+U.length+'</b> markets live');
-    U2('<b>$'+fmtC(oi)+'</b> open interest');
+    U2('<i></i><b>'+U.length+'</b> '+(isSpot()?'spot pairs':'markets')+' live');
+    if(!isSpot()) U2('<b>$'+fmtC(oi)+'</b> open interest');
+    else U2('<b>$'+fmtC(U.reduce((s,m)=>s+(m.vol||0),0))+'</b> traded today');
     U2('<b>'+Math.round(up/U.length*100)+'%</b> above yesterday');
-    if(wf){ U2('widest funding <b>'+pct(wf.fundingApr,0)+'</b> on '+wf.name);
+    if(wf&&!isSpot()){ U2('widest funding <b>'+pct(wf.fundingApr,0)+'</b> on '+wf.name);
       live.lastChild.title='Annualised from the current hourly rate. Markets under $'
         +fmtC(FUND_FLOOR)+' open interest are excluded — one hourly print on a thin book '
         +'annualises to a number nobody can trade.'; }
@@ -2966,12 +3231,12 @@ ROUTES.home=async function(){
 
   async function fillHome(U){
     const det=RADAR.det||(RADAR.det={});
-    const byVol=U.slice().filter(m=>m.vol>VOL_FLOOR).sort((a,b)=>b.vol-a.vol);
+    const byVol=U.slice().filter(m=>m.vol>(isSpot()?SPOT_FLOOR:VOL_FLOOR)).sort((a,b)=>b.vol-a.vol);
     const pool=(byVol.length>=6?byVol:U.slice().sort((a,b)=>b.vol-a.vol)).slice(0,14);
     await inParallel(pool.filter(m=>!det[m.name]), 6, async m=>{
       try{
         const now=Date.now();
-        const bars=await apiR({type:'candleSnapshot',req:{coin:m.name,interval:'1h',
+        const bars=await apiR({type:'candleSnapshot',req:{coin:m.key||m.name,interval:'1h',
           startTime:now-230*3600*1000,endTime:now}},{ttl:60000});
         if(Array.isArray(bars)&&bars.length>30) det[m.name]=analyse(m,bars);
       }catch(e){}
@@ -3248,6 +3513,79 @@ function depthLadder(book, steps){
   };
 }
 
+/* The spot universe, in exactly the shape the perp one has, so the radar, the
+   board, the table and the coin page do not need to know which they are
+   holding. Spot has no funding, no open interest, no oracle and no impact
+   spread — those come back null rather than zero, because zero is a
+   measurement and null is an absence, and the UI hides what is absent.
+   In exchange it has supply, so market cap is real here and nowhere else. */
+function spotUniverse(meta,ctxs){
+  const tokens={}; (meta.tokens||[]).forEach(t=>tokens[t.index]=t);
+  const byCoin={}; (ctxs||[]).forEach(c=>{ if(c&&c.coin) byCoin[c.coin]=c; });
+  const out=[];
+  (meta.universe||[]).forEach(u=>{
+    const bt=tokens[u.tokens[0]], qt=tokens[u.tokens[1]];
+    if(!bt||!qt||qt.name!=='USDC') return;
+    const c=byCoin[u.name]; if(!c) return;
+    const mark=+(c.midPx||c.markPx||0); if(!(mark>0)) return;
+    const prev=+c.prevDayPx;
+    const supply=+c.circulatingSupply;
+    out.push({name:bt.name, key:u.name, kind:'spot', pair:bt.name+'/USDC',
+      canonical:!!bt.isCanonical, delisted:false,
+      mark, oracle:null,
+      chg: prev? (mark-prev)/prev*100 : 0,
+      fundingHr:null, fundingApr:null,
+      oiNtl:null, vol:+c.dayNtlVlm||0, volOverOi:null,
+      oracleGap:null, spreadPct:null,
+      mcap: isFinite(supply)&&supply>0? supply*mark : null,
+      /* U-prefixed tickers are bridged wrappers, not the native asset. Saying
+         so is the difference between a listing and a trap. */
+      bridged: /^U[A-Z0-9]{2,}$/.test(bt.name) && bt.name!=='USDC'
+    });
+  });
+  /* one row per token: prefer the canonical pair, then the busiest */
+  const best={};
+  for(const m of out){ const p=best[m.name];
+    if(!p || (m.canonical&&!p.canonical) || (m.canonical===p.canonical && m.vol>p.vol)) best[m.name]=m; }
+  return Object.values(best);
+}
+
+/* The names that exist on the other side, so the table can say where a market
+   a reader is looking for actually trades. One extra call, cached five
+   minutes, and only made when they ask to see the list. */
+let OTHER={perp:null,spot:null};
+async function otherSide(){
+  const want=isSpot()?'perp':'spot';
+  if(OTHER[want]) return OTHER[want];
+  if(want==='perp'){
+    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:300000});
+    OTHER.perp=universe(meta,ctxs).filter(m=>!m.delisted);
+  }else{
+    const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000});
+    OTHER.spot=spotUniverse(meta,ctxs);
+  }
+  return OTHER[want];
+}
+
+async function loadUniverse(){
+  if(isSpot()){
+    const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:20000});
+    return spotUniverse(meta,ctxs);
+  }
+  const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
+  return universe(meta,ctxs);
+}
+function setMode(m){
+  if(m===MODE) return;
+  MODE=m; try{ localStorage.setItem('hf.mode',m); }catch(e){}
+  RADAR={t:0,U:null,short:null,det:null};      /* different venue, different cache */
+  $$('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  const pill=$('#modePill'); const on=$('[data-mode].on');
+  if(pill&&on){ pill.style.left=on.offsetLeft+'px'; pill.style.width=on.offsetWidth+'px'; }
+  document.documentElement.dataset.mode=m;
+  dispatchEvent(new CustomEvent('hf:mode'));
+}
+
 /* Spot pairs, keyed by the perp name they correspond to.
    Two traps here, both found by checking rather than assuming:
    1. spotMetaAndAssetCtxs returns 718 contexts against a 326-pair universe and
@@ -3346,7 +3684,8 @@ ROUTES.coin=async function(args){
   const costHost=el('div','cn-cost'); costSec.appendChild(costHost); PAGE.appendChild(costSec);
 
   const posSec=el('section','sec rv');
-  posSec.appendChild(secHead('Positioning','Who is paying to hold this, and how crowded it is.'));
+  posSec.appendChild(secHead(isSpot()?'The token':'Positioning',
+    isSpot()?'What it is, and how much of it there is.':'Who is paying to hold this, and how crowded it is.'));
   const posHost=el('div','cn-grid'); posSec.appendChild(posHost); PAGE.appendChild(posSec);
 
   const tapeSec=el('section','sec rv');
@@ -3368,15 +3707,16 @@ ROUTES.coin=async function(args){
   /* ── data ── */
   let M=null, A=null, chart=null, rangeK='1h';
   try{
-    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
-    const U=universe(meta,ctxs);
+    const U=await loadUniverse();
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
     M=U.find(m=>m.name===name);
     if(!M){
       PAGE.innerHTML='';
       const c2=el('div','card pad'); c2.style.maxWidth='620px';
       c2.append(el('h1',null,'No market called '+name));
-      const p2=el('p',null,'Hyperliquid does not list a perp by that name right now. It may have been delisted, or the link may be stale.');
+      const p2=el('p',null,'Hyperliquid does not list '+(isSpot()?'a spot pair':'a perp')+
+        ' by that name right now. It may have been delisted, it may only trade on the other side, '+
+        'or the link may be stale.');
       p2.style.cssText='color:var(--ink-2);margin-top:9px';
       const b2=el('a','btn pri mag','Back to the radar'); b2.href='#/radar'; b2.style.marginTop='15px';
       c2.append(p2,b2); PAGE.appendChild(c2); magnetise(c2);
@@ -3402,17 +3742,30 @@ ROUTES.coin=async function(args){
   }
   function paintActions(){
     acts.innerHTML='';
-    const perp=el('a','btn pri mag');
-    perp.href=TRADE_URL(name); perp.target='_blank'; perp.rel='noopener';
-    perp.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Trade the perp';
-    perp.addEventListener('click',()=>track('trade:perp'));
-    acts.appendChild(perp);
+    const ARROW='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>';
+    const primary=el('a','btn pri mag');
+    primary.href=marketUrl(M); primary.target='_blank'; primary.rel='noopener';
+    primary.innerHTML=ARROW+(isSpot()?'Buy spot':'Trade the perp');
+    primary.addEventListener('click',()=>track('trade:'+MODE));
+    acts.appendChild(primary);
+    if(isSpot()){
+      /* the other direction: does this token also have a perp? */
+      const p=(OTHER.perp||[]).find(x=>x.name===name);
+      if(p){ const b=el('a','btn ghost mag');
+        b.href=TRADE_URL(name); b.target='_blank'; b.rel='noopener';
+        b.innerHTML=ARROW+'Trade the perp';
+        b.addEventListener('click',()=>track('trade:perp'));
+        acts.appendChild(b); }
+      if(M.bridged) acts.appendChild(Object.assign(el('span','cn-note micro'),
+        {textContent:'a bridged wrapper, not the native asset'}));
+      magnetise(acts); return;
+    }
     const s=spotFor(name, M.mark);
     if(s){
       const sp=el('a','btn ghost mag');
-      sp.href='https://app.hyperliquid.xyz/trade/'+encodeURIComponent(s.base)+'/USDC';
+      sp.href=SPOT_URL(s.base);
       sp.target='_blank'; sp.rel='noopener';
-      sp.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Buy spot';
+      sp.innerHTML=ARROW+'Buy spot';
       sp.title=s.pair+' — spot mid '+px(s.mid)+', $'+fmtC(s.vol)+' traded in 24h';
       sp.addEventListener('click',()=>track('trade:spot'));
       acts.appendChild(sp);
@@ -3451,7 +3804,7 @@ ROUTES.coin=async function(args){
     chartHost.dataset.busy='1';
     try{
       const now=Date.now();
-      const raw=await apiR({type:'candleSnapshot',req:{coin:name,interval:r.k,
+      const raw=await apiR({type:'candleSnapshot',req:{coin:M.key||name,interval:r.k,
         startTime:now-r.bars*r.ms, endTime:now}},{ttl:45000});
       if(!Array.isArray(raw)||raw.length<5){
         chartHost.innerHTML='';
@@ -3535,7 +3888,7 @@ ROUTES.coin=async function(args){
   async function loadBook(){
     bookHost.innerHTML=''; bookHost.appendChild(el('div','sk sk-row'));
     try{
-      const book=await apiR({type:'l2Book',coin:name},{ttl:8000});
+      const book=await apiR({type:'l2Book',coin:M.key||name},{ttl:8000});
       /* Fixed steps do not survive contact with a real book. Hyperliquid
          publishes 20 levels a side and no more, and on a liquid market those
          20 levels span almost nothing — HYPE's reach 0.04% from mid, so a
@@ -3595,7 +3948,7 @@ ROUTES.coin=async function(args){
       g.appendChild(n); };
     tile('Round trip, taker','$'+fmtN(round,2),
       'in and out on $10,000 at '+(taker*100).toFixed(3)+'% a side, before any tier or referral discount');
-    tile('Funding, 24h if long', (fundDay>=0?'−':'+')+'$'+fmtN(Math.abs(fundDay),2),
+    if(!isSpot()) tile('Funding, 24h if long', (fundDay>=0?'−':'+')+'$'+fmtN(Math.abs(fundDay),2),
       fundDay>=0? 'you pay this to hold a $10,000 long for a day at the current rate'
                 : 'you receive this to hold a $10,000 long for a day at the current rate',
       fundDay>0?'down':'up');
@@ -3605,8 +3958,9 @@ ROUTES.coin=async function(args){
       A.atr&&M.mark? (A.atr/M.mark*100).toFixed(2)+'% of price — a stop inside this is inside the noise'
                    : 'not enough bars');
     costHost.appendChild(g);
-    costHost.appendChild(Object.assign(el('p','cn-fine'),{textContent:
-      'Funding settles hourly and changes hourly; this is the current rate held flat for a day, not a forecast of it.'}));
+    costHost.appendChild(Object.assign(el('p','cn-fine'),{textContent: isSpot()
+      ? 'Spot has no funding: you own the asset, so there is nothing to pay to keep holding it.'
+      : 'Funding settles hourly and changes hourly; this is the current rate held flat for a day, not a forecast of it.'}));
     field(costHost);
   }
 
@@ -3616,6 +3970,21 @@ ROUTES.coin=async function(args){
       const kk=el('s',null,k); if(tip){ kk.appendChild(document.createTextNode(' ')); kk.appendChild(qm(tip)); }
       n.append(kk, Object.assign(el('b',null,v),{className:cls||''}), el('p',null,s));
       posHost.appendChild(n); };
+    if(isSpot()){
+      /* Spot has no funding, no open interest and no oracle. It has supply,
+         which perps do not — so the section answers a different question
+         rather than showing four dashes. */
+      tile('Market cap', M.mcap?'$'+fmtC(M.mcap):'—',
+        M.mcap?'circulating supply at the current price':'the exchange does not publish supply for this token');
+      tile('24-hour volume','$'+fmtC(M.vol),'traded against USDC on this venue');
+      tile('Turnover', M.mcap&&M.vol? (M.vol/M.mcap*100).toFixed(2)+'%':'—',
+        'a day of volume as a share of market cap');
+      tile('Listing', M.bridged?'Bridged':(M.canonical?'Canonical':'Deployed'),
+        M.bridged? 'a wrapped version of an asset from another chain — not the native token'
+                 : M.canonical? 'a canonical Hyperliquid listing'
+                              : 'deployed by a third party on Hyperliquid');
+      field(posHost); return;
+    }
     tile('Funding APR', pct(M.fundingApr,1),
       M.fundingApr>0?'longs are paying shorts to hold':M.fundingApr<0?'shorts are paying longs to hold':'flat',
       M.fundingApr>0?'down':M.fundingApr<0?'up':'', 'fundapr');
@@ -3663,7 +4032,7 @@ ROUTES.coin=async function(args){
       try{ ws=new WebSocket('wss://api.hyperliquid.xyz/ws'); }
       catch(e){ status.textContent='The live feed is not reachable from this browser.'; return; }
       ws.onopen=()=>{ live=true;
-        ws.send(JSON.stringify({method:'subscribe',subscription:{type:'trades',coin:name}})); };
+        ws.send(JSON.stringify({method:'subscribe',subscription:{type:'trades',coin:M.key||name}})); };
       ws.onmessage=e=>{
         let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
         if(m.channel!=='trades'||!Array.isArray(m.data)) return;
