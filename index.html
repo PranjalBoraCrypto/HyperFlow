@@ -628,7 +628,8 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
   font-variant-numeric:tabular-nums}
 .cn-deprow span:first-child{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-2)}
 .cn-deprow .beyond{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-4)}
-.cn-deptot{background:var(--g2)}
+.cn-deptot{background:var(--g2);border-top:1px solid var(--line-2)}
+.cn-deptot .n{font-size:16px}
 .cn-deptot span:first-child{color:var(--ink-3)}
 .cn-fine{margin-top:11px;font-size:12.5px;color:var(--ink-4);line-height:1.6;max-width:80ch}
 
@@ -3197,6 +3198,15 @@ function withMAs(bars){
   return out;
 }
 
+/* Round numbers a person reads without decoding — the four largest that fit
+   inside what the exchange actually publishes. */
+function bookSteps(reach){
+  const LADDER=[0.005,0.01,0.02,0.03,0.05,0.075,0.1,0.15,0.25,0.4,0.6,1,1.5,2.5,4];
+  const fit=LADDER.filter(v=>v<=reach);
+  if(fit.length<2) return reach>0? [reach/2, reach] : [];
+  return fit.slice(-4);
+}
+
 /* ── the book ─────────────────────────────────────────────────────
    How many dollars you can actually put through before the price moves.
    Walks the real ladder, level by level, accumulating notional until the
@@ -3526,7 +3536,13 @@ ROUTES.coin=async function(args){
     bookHost.innerHTML=''; bookHost.appendChild(el('div','sk sk-row'));
     try{
       const book=await apiR({type:'l2Book',coin:name},{ttl:8000});
-      const d=depthLadder(book,[0.05,0.10,0.25,0.50]);
+      /* Fixed steps do not survive contact with a real book. Hyperliquid
+         publishes 20 levels a side and no more, and on a liquid market those
+         20 levels span almost nothing — HYPE's reach 0.04% from mid, so a
+         ladder starting at 0.05% printed "past the book" four times and told
+         a reader nothing. The steps are chosen to fit the book in front of
+         us instead. */
+      const d=depthLadder(book, bookSteps(depthLadder(book,[]).reach));
       bookHost.innerHTML='';
       if(!d){ bookHost.appendChild(el('p','rd-count','The book came back empty.')); return; }
       const t=el('div','cn-dep');
@@ -3540,7 +3556,8 @@ ROUTES.coin=async function(args){
         const cell=v=>{ if(v==null){ anyBeyond=true;
             return Object.assign(el('span','r beyond'),{textContent:'past the book'}); }
           return Object.assign(el('span','r n'),{textContent:'$'+fmtC(v)}); };
-        r2.append(el('span',null,row.pctMove.toFixed(2)+'%'), cell(row.buy), cell(row.sell));
+        r2.append(el('span',null,row.pctMove<0.01?row.pctMove.toFixed(3)+'%':row.pctMove.toFixed(2)+'%'),
+          cell(row.buy), cell(row.sell));
         t.appendChild(r2);
       });
       /* the whole thing, so the reader has the ceiling as well as the steps */
