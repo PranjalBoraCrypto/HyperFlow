@@ -1007,7 +1007,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .rd-count{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3)}
 
 /* the board */
-.rd-board{display:flex;flex-direction:column;gap:9px}
+.rd-board{display:flex;flex-direction:column;gap:11px}
 .mk{position:relative;border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
   transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease),
     opacity var(--sp-slow),filter var(--sp-slow)}
@@ -1035,13 +1035,25 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .mk[data-dir="short"] .stripe{background:linear-gradient(180deg,var(--down),transparent)}
 .mk[data-dir="none"] .stripe{background:linear-gradient(180deg,var(--ink-4),transparent)}
 /* the row no longer clips, so the pressable area carries its own corners */
-.mk-h{border-radius:var(--r3);display:grid;grid-template-columns:34px minmax(0,1.3fr) minmax(0,.9fr) minmax(0,1fr) auto auto;
-  gap:14px;align-items:center;padding:14px 16px 14px 19px;width:100%;text-align:left;cursor:pointer}
+/* Named areas at every width. The row grew a seventh child when Details/Trade
+   arrived and the grid still declared six columns, so the chevron auto-placed
+   onto a second line and sat alone under an empty row. Areas make that
+   impossible to do again by accident: a child with no area is visible in the
+   rule, not discovered in a screenshot. */
+.mk-h{border-radius:var(--r3);display:grid;
+  grid-template-columns:34px minmax(0,1.25fr) minmax(0,.85fr) minmax(0,1fr) auto auto auto;
+  grid-template-areas:"rank id spark read sc clx cv";
+  gap:18px;align-items:center;padding:16px 16px 16px 19px;width:100%;text-align:left;cursor:pointer}
+.mk-rank{grid-area:rank} .mk-id{grid-area:id} .mk-spark{grid-area:spark}
+.mk-read{grid-area:read} .mk-sc{grid-area:sc} .mk-h .clx{grid-area:clx} .mk-cv{grid-area:cv}
+/* the score is a number and the buttons are controls — they need air between
+   them, not the same gap the data columns use */
+.mk-h .clx{margin-left:6px}
 .mk-h:hover{background:color-mix(in srgb,var(--g2) 60%,transparent)}
 .mk-rank{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;color:var(--ink-3);
   text-align:center;transition:color var(--sp)}
 .mk[data-open="1"] .mk-rank{color:var(--mint)}
-.mk-id{min-width:0;display:flex;flex-direction:column;gap:3px}
+.mk-id{min-width:0;display:flex;flex-direction:column;gap:5px}
 .mk-id .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .mk-id b{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px;letter-spacing:-.03em}
 /* the coin name is the way out to the exchange */
@@ -1061,7 +1073,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 }
 .mk-id .px{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .mk-spark{height:38px;min-width:0}
-.mk-read{min-width:0;display:flex;flex-direction:column;gap:5px}
+.mk-read{min-width:0;display:flex;flex-direction:column;gap:7px}
 .mk-lean{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600}
 .mk-lean .ar{width:16px;height:16px;flex:none}
 .mk[data-dir="long"] .mk-lean{color:var(--up)} .mk[data-dir="short"] .mk-lean{color:var(--down)}
@@ -1069,7 +1081,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .mk-votes{display:flex;gap:3px}
 .mk-votes i{width:15px;height:4px;border-radius:99px;background:var(--line-2);transition:background var(--sp)}
 .mk-votes i[data-v="for"]{background:var(--up)} .mk-votes i[data-v="against"]{background:var(--down)}
-.mk-sc{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.mk-sc{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none}
 .mk-sc b{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:700;letter-spacing:-.03em;
   font-variant-numeric:tabular-nums}
 .mk-sc s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.14em;
@@ -1077,18 +1089,31 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .mk-cv{width:19px;height:19px;color:var(--ink-3);transition:transform var(--sp) var(--spring),color var(--sp);flex:none}
 .mk[data-open="1"] .mk-cv{transform:rotate(180deg);color:var(--mint)}
 .mk[data-open="1"] .mk-h{border-radius:var(--r3) var(--r3) 0 0}
+@media (max-width:1180px){
+  .mk-h{grid-template-columns:32px minmax(0,1.2fr) minmax(0,.8fr) minmax(0,1fr) auto auto auto;gap:14px}
+}
 @media (max-width:940px){
-  .mk-h{grid-template-columns:28px 1fr auto auto;gap:11px;padding:13px 13px 13px 16px}
+  .mk-h{grid-template-columns:28px minmax(0,1.15fr) minmax(0,1fr) auto auto auto;
+    grid-template-areas:"rank id read sc clx cv";gap:13px;padding:15px 13px 15px 16px}
   .mk-spark{display:none}
 }
-@media (max-width:560px){
-  .mk-h{grid-template-columns:1fr auto;grid-template-areas:"id sc" "read read";gap:9px}
+@media (max-width:720px){
+  /* two lines: what it is, then what it reads and what you can do about it */
+  .mk-h{grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"id sc" "read read" "clx clx";
+    gap:12px 12px;padding:15px 15px 16px}
   .mk-rank{display:none} .mk-cv{display:none}
-  .mk-id{grid-area:id} .mk-sc{grid-area:sc} .mk-read{grid-area:read}
+  .mk-h .clx{margin-left:0;justify-content:flex-start}
+  .mk-read{padding-top:2px}
+}
+@media (max-width:400px){
+  .mk-h{padding:14px 13px 15px}
+  .mk-h .clx{width:100%}
+  .mk-h .clx-b{flex:1;justify-content:center}
 }
 
 /* the working */
-.mk-body{display:none;padding:0 16px 17px 19px;flex-direction:column;gap:14px}
+.mk-body{display:none;padding:2px 18px 19px 19px;flex-direction:column;gap:17px}
 .mk[data-open="1"] .mk-body{display:flex;animation:pgIn .34s var(--ease-out)}
 /* the working: one line per measure. The reasoning moved into the tooltip —
    seven paragraphs of justification on screen is not transparency, it is noise. */

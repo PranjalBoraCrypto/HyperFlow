@@ -60,6 +60,7 @@ const SHARED = new Set([
   'btn','card','chip','sk','sk-row','tilt','edge','mag','lead','sec','sec-h','rv','pad','lift','glow',
   'micro','qm','tip','up','down','warn','info','pri','ghost','on','ico','go','seg','pill','stripe',
   'mono','crumb','dock','rail','page','shell','main','top','pgr','pgb','pgd','pgn',
+  'clx','clx-b',   // details+trade, dropped into rows and tuned there on purpose
 ]);
 const stem = c => c.includes('-') ? c.split('-')[0] : c;
 const hits = [];
