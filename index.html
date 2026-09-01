@@ -389,6 +389,25 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .foot a{color:var(--mint); text-decoration:none}
 .foot a:hover{text-decoration:underline}
 
+/* ---- touch targets: 44px minimum on anything tappable ----
+   Measured with getBoundingClientRect on the deployed page, not assumed:
+   fourteen controls were under 44px tall before this block existed. */
+@media (max-width:768px){
+  .sh-top{padding-bottom:8px}
+  .sh-mark{min-height:44px; min-width:44px; padding:8px 0}
+  .sh-field{height:52px; padding:0 6px 0 14px}
+  .sh-field input{height:44px}
+  .sh-go{height:44px; min-width:44px; padding:0 14px}
+  .sh-ico{width:44px; height:44px}
+  .sh-chip{height:44px; padding:0 16px}
+  .hm-big input{min-height:44px}
+  .wl-pgb{height:44px}
+  .sc-tog{height:44px}
+  .wl-mini{min-height:44px; min-width:44px}
+  .foot a{display:inline-block; padding:12px 0}
+  .tp-q{width:22px; height:22px; font-size:11px}
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
     transition-duration:.001ms !important; scroll-behavior:auto !important}
