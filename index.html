@@ -442,7 +442,9 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
    invisible 44px disc is centred on it. It is a pseudo-element so nothing in
    the label's layout moves, and it only exists where there is no pointer. */
 @media (hover:none){
-  .qm{position:relative}
+  /* z-index matters: the disc overlaps the value and caption below it, and
+     those paint later in DOM order, so without it they take the tap. */
+  .qm{position:relative;z-index:3}
   .qm::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;
     transform:translate(-50%,-50%);border-radius:50%}
 }
@@ -507,6 +509,181 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .sk-board{display:grid;gap:10px}
 .sk-row{height:96px;border-radius:var(--r3)}
 .sk-strip{height:74px;border-radius:var(--r3)}
+
+/* ═══════════════ COIN (cn-) ═══════════════ */
+.cn-head{padding-top:4px}
+.cn-id{display:flex;align-items:flex-end;gap:clamp(14px,2.6vw,30px);flex-wrap:wrap}
+.cn-back{display:inline-flex;align-items:center;gap:7px;min-height:44px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-3);text-decoration:none;transition:color var(--sp),gap var(--sp) var(--ease);
+  flex-basis:100%}
+.cn-back svg{width:14px;height:14px}
+.cn-back:hover{color:var(--mint);gap:11px}
+.cn-t{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
+.cn-t h1{font-size:clamp(36px,6vw,62px);letter-spacing:-.05em;line-height:1}
+.cn-px{display:flex;align-items:baseline;gap:10px}
+.cn-px .v{font-family:"IBM Plex Mono",monospace;font-size:clamp(19px,2.6vw,27px);font-weight:600;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.cn-acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
+.cn-acts .btn{height:46px;padding:0 18px;border-radius:13px}
+.cn-note{flex-basis:100%;color:var(--ink-4);font-size:10px;letter-spacing:.08em;
+  text-transform:none;opacity:.75}
+@media (max-width:720px){
+  .cn-acts{margin-left:0;width:100%}
+  .cn-acts .btn{flex:1 1 0;min-width:0}
+  .cn-note{width:100%}
+}
+
+/* the read */
+.cn-read{margin-top:8px}
+.cn-readc{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(16px,3vw,34px);
+  align-items:center;padding:clamp(18px,2.6vw,26px);border-radius:var(--r3);
+  background:var(--g1);border:1px solid var(--line);box-shadow:var(--e1);
+  transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+.cn-readc[data-dir="long"]{border-color:color-mix(in srgb,var(--up) 34%,var(--line))}
+.cn-readc[data-dir="short"]{border-color:color-mix(in srgb,var(--down) 34%,var(--line))}
+.cn-readc .l{min-width:0;display:flex;flex-direction:column;gap:11px}
+.cn-badge{display:inline-flex;align-items:center;gap:9px;font-family:"Bricolage Grotesque",sans-serif;
+  font-size:clamp(21px,3vw,29px);font-weight:700;letter-spacing:-.035em}
+.cn-badge svg{width:24px;height:24px;flex:none}
+.cn-readc[data-dir="long"] .cn-badge{color:var(--up)}
+.cn-readc[data-dir="short"] .cn-badge{color:var(--down)}
+.cn-readc[data-dir="none"] .cn-badge{color:var(--ink-3)}
+.cn-readp{font-size:14.5px;color:var(--ink-2);line-height:1.6;max-width:56ch}
+.cn-flags{display:flex;gap:7px;flex-wrap:wrap}
+.cn-score{text-align:right;line-height:1;flex:none}
+.cn-score b{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(38px,5.4vw,58px);
+  font-weight:800;letter-spacing:-.05em}
+.cn-score s{display:block;text-decoration:none;font-family:"IBM Plex Mono",monospace;
+  font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-4);margin-top:7px}
+.cn-votes{display:flex;gap:3px;justify-content:flex-end;margin-top:10px}
+.cn-votes i{width:15px;height:4px;border-radius:99px;background:var(--line-3)}
+.cn-votes i[data-v="for"]{background:var(--up)}
+.cn-votes i[data-v="against"]{background:var(--down)}
+.cn-disc{margin-top:12px;font-size:12.5px;color:var(--ink-4);line-height:1.6;max-width:78ch}
+@media (max-width:640px){
+  .cn-readc{grid-template-columns:1fr;gap:16px}
+  .cn-score{text-align:left}
+  .cn-votes{justify-content:flex-start}
+}
+
+/* chart */
+.cn-chead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-bottom:14px}
+.cn-chead h2{font-size:clamp(19px,2.4vw,25px);letter-spacing:-.035em}
+.cn-chart{position:relative;height:clamp(280px,42vh,440px);border-radius:var(--r3);
+  border:1px solid var(--line);background:var(--g1);padding:4px 4px 0;overflow:hidden;
+  transition:opacity var(--sp)}
+.cn-chart[data-busy]{opacity:.45}
+.ck{position:relative;width:100%;height:100%;touch-action:pan-y}
+.ck canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ck .ov{pointer-events:none}
+.ck-tip{position:absolute;top:6px;left:0;pointer-events:none;opacity:0;z-index:3;
+  display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;
+  background:var(--g3);border:1px solid var(--line-3);box-shadow:var(--e2);white-space:nowrap;
+  transition:opacity var(--sp)}
+.ck-tip[data-on="1"]{opacity:1}
+.ck-tip b{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600}
+.ck-tip span{font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+.ck-tip s{text-decoration:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
+.cn-leg{display:flex;gap:15px;flex-wrap:wrap;margin-top:11px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
+.cn-leg span{display:inline-flex;align-items:center;gap:6px}
+.cn-leg span::before{content:"";width:13px;height:2px;border-radius:2px;background:currentColor}
+.cn-leg [data-k="s20"]{color:var(--mint)}
+.cn-leg [data-k="s50"]{color:var(--warn)}
+.cn-leg [data-k="s100"]{color:var(--info)}
+
+/* measures */
+.cn-meas{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r3);
+  overflow:hidden;background:var(--g1)}
+.cn-m{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:14px;align-items:center;
+  padding:14px 18px;border-bottom:1px solid var(--line);transition:background var(--sp)}
+.cn-m:last-child{border-bottom:none}
+.cn-m:hover{background:var(--g2)}
+.cn-mv{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;
+  background:var(--g3);color:var(--ink-4)}
+.cn-mv svg{width:14px;height:14px}
+.cn-m[data-v="for"] .cn-mv{background:var(--up-wash);color:var(--up)}
+.cn-m[data-v="against"] .cn-mv{background:var(--down-wash);color:var(--down)}
+.cn-mb{min-width:0}
+.cn-mb b{display:block;font-size:14px;font-weight:600}
+.cn-mb s{display:block;text-decoration:none;font-size:12.5px;color:var(--ink-3);margin-top:2px;line-height:1.5}
+.cn-mn{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:560px){
+  .cn-m{padding:13px 14px;gap:11px;grid-template-columns:24px minmax(0,1fr) auto}
+  .cn-mn{font-size:13px}
+}
+
+/* depth */
+.cn-dep{border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;background:var(--g1)}
+.cn-deprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+  gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:center}
+.cn-deprow:last-child{border-bottom:none}
+.cn-dephd{background:var(--g2);font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.cn-deprow .r{text-align:right}
+.cn-deprow .n{font-family:"IBM Plex Mono",monospace;font-size:14.5px;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.cn-deprow span:first-child{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-2)}
+.cn-deprow .beyond{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-4)}
+.cn-deptot{background:var(--g2)}
+.cn-deptot span:first-child{color:var(--ink-3)}
+.cn-fine{margin-top:11px;font-size:12.5px;color:var(--ink-4);line-height:1.6;max-width:80ch}
+
+/* tiles shared by cost and positioning */
+.cn-grid,.cn-cost-g{display:grid;gap:11px;
+  grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr))}
+.cn-tile{padding:16px 17px;border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
+  transition:border-color var(--sp),transform var(--sp) var(--ease)}
+.cn-tile:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.cn-tile s{display:flex;align-items:center;gap:5px;text-decoration:none;
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3)}
+.cn-tile b{display:block;margin-top:9px;font-family:"Bricolage Grotesque",sans-serif;
+  font-size:clamp(21px,2.6vw,27px);font-weight:700;letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums}
+.cn-tile b.up{color:var(--up)} .cn-tile b.down{color:var(--down)}
+.cn-tile p{margin-top:7px;font-size:12.5px;color:var(--ink-3);line-height:1.55}
+
+/* tape */
+.cn-tapel{display:flex;flex-direction:column;gap:6px;min-height:60px}
+.cn-tr{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:12px;align-items:center;
+  padding:10px 14px;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+  animation:pgFlick .3s var(--ease-out) both}
+.cn-tsd{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:600}
+.cn-tr[data-side="buy"]{border-left:3px solid var(--up)}
+.cn-tr[data-side="sell"]{border-left:3px solid var(--down)}
+.cn-tr[data-side="buy"] .cn-tsd{color:var(--up)}
+.cn-tr[data-side="sell"] .cn-tsd{color:var(--down)}
+.cn-tn{font-family:"Bricolage Grotesque",sans-serif;font-size:16px;font-weight:700;letter-spacing:-.03em}
+.cn-tp,.cn-tt{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:520px){
+  .cn-tr{grid-template-columns:46px minmax(0,1fr) auto;gap:9px;padding:10px 12px}
+  .cn-tt{display:none}
+}
+
+/* section hosts: a min-height so a skeleton swap does not jump the page */
+.cn-book,.cn-cost,.cn-tape,.cn-news{min-height:74px}
+
+/* news */
+.cn-newsl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+.cn-n{position:relative;display:flex;flex-direction:column;gap:8px;padding:17px 18px;
+  border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
+  color:inherit;text-decoration:none;
+  transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+.cn-n:hover{border-color:var(--line-2);box-shadow:var(--e2)}
+.cn-nm{display:flex;align-items:center;gap:9px;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+.cn-nsrc{color:var(--mint);font-weight:600}
+.cn-nt{color:var(--ink-4)}
+.cn-n b{font-family:"Bricolage Grotesque",sans-serif;font-size:15.5px;font-weight:700;
+  letter-spacing:-.025em;line-height:1.3}
+.cn-n p{font-size:12.5px;color:var(--ink-3);line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* ═══════════════ HOME (hm-) ═══════════════ */
 /* The first screen carries its own gutter on top of the page's. It is the one
@@ -2215,7 +2392,7 @@ ROUTES.radar=async function(args){
           '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
           '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
         $('.tw-name',tr).addEventListener('click',e=>e.stopPropagation());
-        tr.addEventListener('click',()=>{ location.hash='#/radar/'+m.name; });
+        tr.addEventListener('click',()=>{ location.hash='#/coin/'+encodeURIComponent(m.name); });
         tb.appendChild(tr);
       });
       flick(tb);
@@ -2820,7 +2997,7 @@ ROUTES.home=async function(){
      in the project; see the bare-class list printed by the build check. */
   function miniRow(x,i){
     const {m,r}=x;
-    const a=el('a','hm-row tilt edge'); a.href='#/radar/'+encodeURIComponent(m.name);
+    const a=el('a','hm-row tilt edge'); a.href='#/coin/'+encodeURIComponent(m.name);
     a.dataset.dir=r.dir;
     a.appendChild(el('div','hm-stripe'));
     a.appendChild(el('div','hm-rk',String(i+1).padStart(2,'0')));
@@ -2868,6 +3045,683 @@ ROUTES.home=async function(){
     return wrap;
   }
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   15 · COIN — one market, everything a trader asks about it
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── candles ──────────────────────────────────────────────────────
+   A real chart, not a sparkline: bodies and wicks, a volume strip
+   underneath, three moving averages over the top, and a crosshair that
+   reads out the bar under the pointer. Drawn on one canvas at device
+   resolution; the crosshair repaints only the overlay so dragging across
+   200 bars costs nothing. */
+function candleChart(host, opts){
+  const wrap=el('div','ck');
+  const cv=el('canvas'), ov=el('canvas','ov');
+  const tip=el('div','ck-tip');
+  wrap.append(cv,ov,tip); host.appendChild(wrap);
+  let bars=[], W=0,H=0,c=null,o=null, geo=null, hover=-1;
+  /* `opts && opts.mas!==false` is undefined when opts is omitted, which is
+     falsy — the averages silently never drew. */
+  const mas = !opts || opts.mas!==false;
+
+  const PADL=0, PADR=62, PADT=14, PADB=22, VOLH=0.20;
+
+  function size(){
+    const r=wrap.getBoundingClientRect(); if(!r.width||!r.height) return false;
+    W=r.width; H=r.height; c=fit(cv,W,H,2); o=fit(ov,W,H,2); return true;
+  }
+  function compute(){
+    if(!bars.length){ geo=null; return; }
+    const plotW=W-PADL-PADR, plotH=(H-PADT-PADB)*(1-VOLH), volTop=PADT+plotH+10;
+    const volH=(H-PADT-PADB)-plotH-10;
+    let lo=Infinity, hi=-Infinity, vmax=0;
+    for(const b of bars){ if(b.l<lo)lo=b.l; if(b.h>hi)hi=b.h; if(b.v>vmax)vmax=b.v; }
+    for(const k of ['s20','s50','s100']) if(mas) for(const b of bars){
+      const v=b[k]; if(v!=null){ if(v<lo)lo=v; if(v>hi)hi=v; } }
+    const pad=(hi-lo)*0.06||1; lo-=pad; hi+=pad;
+    const step=plotW/bars.length;
+    geo={lo,hi,vmax,plotW,plotH,volTop,volH,step,
+      x:i=>PADL+step*(i+0.5),
+      y:v=>PADT+plotH-((v-lo)/(hi-lo))*plotH,
+      vy:v=>volTop+volH-(vmax?(v/vmax)*volH:0)};
+  }
+  function draw(){
+    if(!c||!geo){ if(c) c.clearRect(0,0,W,H); return; }
+    const up=tok('--up'), dn=tok('--down'), line=tok('--line'), ink4=tok('--ink-4');
+    c.clearRect(0,0,W,H);
+    /* price gridlines, five of them, labelled on the right */
+    c.font='500 10px "IBM Plex Mono", monospace'; c.textBaseline='middle'; c.textAlign='left';
+    for(let i=0;i<=4;i++){
+      const v=geo.lo+(geo.hi-geo.lo)*(i/4), y=geo.y(v);
+      c.strokeStyle=hexA(line,.9); c.lineWidth=1;
+      c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(W-PADR+4,Math.round(y)+.5); c.stroke();
+      c.fillStyle=ink4; c.fillText(px(v), W-PADR+9, y);
+    }
+    /* volume first, so price sits over it */
+    const bw=Math.max(1,Math.min(geo.step*0.62,14));
+    for(let i=0;i<bars.length;i++){ const b=bars[i];
+      c.fillStyle=hexA(b.c>=b.o?up:dn,.30);
+      const y=geo.vy(b.v); c.fillRect(geo.x(i)-bw/2, y, bw, geo.volTop+geo.volH-y); }
+    /* candles */
+    for(let i=0;i<bars.length;i++){ const b=bars[i], x=geo.x(i), col=b.c>=b.o?up:dn;
+      c.strokeStyle=col; c.lineWidth=1;
+      c.beginPath(); c.moveTo(Math.round(x)+.5,geo.y(b.h)); c.lineTo(Math.round(x)+.5,geo.y(b.l)); c.stroke();
+      const yo=geo.y(b.o), yc=geo.y(b.c);
+      const top=Math.min(yo,yc), h=Math.max(1,Math.abs(yc-yo));
+      c.fillStyle=col; c.fillRect(x-bw/2, top, bw, h);
+    }
+    /* moving averages */
+    if(mas){
+      [['s100',hexA(tok('--info'),.75),1.3],['s50',hexA(tok('--warn'),.8),1.3],
+       ['s20',hexA(tok('--mint'),.95),1.6]].forEach(([k,col,lw])=>{
+        c.strokeStyle=col; c.lineWidth=lw; c.beginPath(); let started=false;
+        for(let i=0;i<bars.length;i++){ const v=bars[i][k]; if(v==null) continue;
+          const x=geo.x(i), y=geo.y(v); started?c.lineTo(x,y):(c.moveTo(x,y),started=true); }
+        c.stroke();
+      });
+    }
+    /* time axis, in the band PADB already reserves */
+    c.fillStyle=ink4; c.font='500 9.5px "IBM Plex Mono", monospace'; c.textBaseline='top';
+    const span=bars[bars.length-1].t-bars[0].t, days=span/864e5;
+    const fmt=d=>days>3
+      ? d.toLocaleDateString(undefined,{month:'short',day:'numeric'})
+      : d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    const ticks=Math.max(2,Math.min(6,Math.floor(W/140)));
+    for(let i=0;i<ticks;i++){
+      const bi=Math.round((bars.length-1)*(i/(ticks-1)));
+      const x=geo.x(bi);
+      c.textAlign = i===0?'left' : i===ticks-1?'right' : 'center';
+      c.fillText(fmt(new Date(bars[bi].t)), clamp(x,0,W-PADR), H-PADB+6);
+    }
+    c.textAlign='left'; c.textBaseline='middle';
+
+    /* last price marker */
+    const last=bars[bars.length-1];
+    if(last){ const y=geo.y(last.c), col=last.c>=last.o?up:dn;
+      c.setLineDash([3,3]); c.strokeStyle=hexA(col,.55); c.lineWidth=1;
+      c.beginPath(); c.moveTo(0,Math.round(y)+.5); c.lineTo(W-PADR,Math.round(y)+.5); c.stroke();
+      c.setLineDash([]);
+      c.fillStyle=col; rr(c,W-PADR+5,y-9,PADR-8,18,5); c.fill();
+      c.fillStyle=tok('--on-mint'); c.font='600 10px "IBM Plex Mono", monospace';
+      c.textAlign='center'; c.fillText(px(last.c), W-PADR+5+(PADR-8)/2, y);
+      c.textAlign='left';
+    }
+  }
+  function overlay(){
+    if(!o) return;
+    o.clearRect(0,0,W,H);
+    if(hover<0||!geo||!bars[hover]){ tip.dataset.on='0'; return; }
+    const b=bars[hover], x=geo.x(hover);
+    o.strokeStyle=hexA(tok('--ink'),.28); o.lineWidth=1; o.setLineDash([3,3]);
+    o.beginPath(); o.moveTo(Math.round(x)+.5,PADT-6); o.lineTo(Math.round(x)+.5,H-PADB+4); o.stroke();
+    o.setLineDash([]);
+    o.fillStyle=hexA(tok('--mint'),.9);
+    o.beginPath(); o.arc(x,geo.y(b.c),3,0,7); o.fill();
+    const chg=b.o? (b.c/b.o-1)*100 : 0;
+    tip.innerHTML='<b>'+px(b.c)+'</b>'+
+      '<span class="'+(chg>=0?'up':'down')+'">'+pct(chg)+'</span>'+
+      '<s>'+new Date(b.t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+
+      ' · vol '+fmtC(b.v)+'</s>';
+    tip.dataset.on='1';
+    const tw=tip.offsetWidth||150;
+    tip.style.left=clamp(x-tw/2, 4, Math.max(4,W-tw-4))+'px';
+  }
+  const at=e=>{ const r=cv.getBoundingClientRect();
+    if(!geo) return -1;
+    const i=Math.round(((e.clientX-r.left)-PADL)/geo.step-0.5);
+    return clamp(i,0,bars.length-1); };
+  wrap.addEventListener('pointermove',e=>{ const i=at(e); if(i!==hover){ hover=i; overlay(); } },{passive:true});
+  wrap.addEventListener('pointerleave',()=>{ hover=-1; overlay(); });
+  wrap.addEventListener('pointerdown',e=>{ const i=at(e); hover=i; overlay(); },{passive:true});
+  let rt; const onR=()=>{clearTimeout(rt);rt=setTimeout(()=>{ if(cv.isConnected&&size()){compute();draw();overlay();} },140);};
+  addEventListener('resize',onR);
+  ACTIVE.push(()=>removeEventListener('resize',onR));
+  return {
+    set(list){ bars=list||[]; if(size()){ compute(); draw(); hover=-1; overlay(); } },
+    redraw(){ if(size()){ compute(); draw(); overlay(); } }
+  };
+}
+
+/* Moving averages computed once, in place, so the chart never recomputes them
+   while drawing. Null until there are enough bars — a 100-bar average over 40
+   bars is not a 100-bar average. */
+function withMAs(bars){
+  const out=bars.map(b=>({t:+b.t, o:+b.o, h:+b.h, l:+b.l, c:+b.c, v:+b.v}));
+  const closes=out.map(b=>b.c);
+  const roll=(n,key)=>{ let sum=0;
+    for(let i=0;i<out.length;i++){ sum+=closes[i]; if(i>=n) sum-=closes[i-n];
+      out[i][key]= i>=n-1 ? sum/n : null; } };
+  roll(20,'s20'); roll(50,'s50'); roll(100,'s100');
+  return out;
+}
+
+/* ── the book ─────────────────────────────────────────────────────
+   How many dollars you can actually put through before the price moves.
+   Walks the real ladder, level by level, accumulating notional until the
+   fill price is X% away from mid. This is the number that decides whether
+   a market is tradeable at size, and it is nowhere on the exchange's own
+   screen. */
+function depthLadder(book, steps){
+  const bids=(book.levels&&book.levels[0])||[], asks=(book.levels&&book.levels[1])||[];
+  if(!bids.length||!asks.length) return null;
+  const bestBid=+bids[0].px, bestAsk=+asks[0].px, mid=(bestBid+bestAsk)/2;
+  const walk=(side,limitPx,dir)=>{
+    let notional=0, size=0;
+    for(const lv of side){
+      const p=+lv.px, s=+lv.sz;
+      if(dir>0 ? p>limitPx : p<limitPx) break;
+      notional+=p*s; size+=s;
+    }
+    return {notional,size};
+  };
+  /* The exchange publishes 20 levels a side and no more, so the book has a
+     reach — the distance to its furthest level. Past that there is nothing to
+     measure, and printing the same total under 0.5% and 1.0% would look like a
+     number rather than the edge of the data. Rows past the reach say so. */
+  const reachAsk=(+asks[asks.length-1].px - mid)/mid*100;
+  const reachBid=(mid - +bids[bids.length-1].px)/mid*100;
+  const askTotal=asks.reduce((s,l)=>s+ +l.px * +l.sz, 0);
+  const bidTotal=bids.reduce((s,l)=>s+ +l.px * +l.sz, 0);
+  return {
+    mid, bestBid, bestAsk,
+    spreadPct: (bestAsk-bestBid)/mid*100,
+    bidLevels: bids.length, askLevels: asks.length,
+    reachAsk, reachBid, askTotal, bidTotal,
+    reach: Math.min(reachAsk, reachBid),
+    rows: steps.map(pctMove=>({
+      pctMove,
+      buy:  pctMove<=reachAsk ? walk(asks, mid*(1+pctMove/100), +1).notional : null,
+      sell: pctMove<=reachBid ? walk(bids, mid*(1-pctMove/100), -1).notional : null
+    }))
+  };
+}
+
+/* Spot pairs, keyed by the perp name they correspond to.
+   Two traps here, both found by checking rather than assuming:
+   1. spotMetaAndAssetCtxs returns 718 contexts against a 326-pair universe and
+      they are NOT positionally aligned — universe[109] is pair @109 while
+      ctxs[109].coin is "@107". They have to be joined on the coin field. Read
+      positionally, every spot price on the page is a different market's price.
+   2. A matching ticker is not a matching asset. Of eight perp names that also
+      exist as spot tokens, five are squatters: a "HYPE" token at $0.08 beside
+      the $82 perp, "TRUMP" at $0.0015 beside $2.26, "AZTEC" off by 53,000x.
+      Sending someone to buy one of those instead of the market they asked for
+      is the worst thing this page could do, so a pair is only offered when its
+      mid is within 15% of the perp mark. */
+let SPOT=null;
+async function spotIndex(){
+  if(SPOT) return SPOT;
+  const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000});
+  const tokens={}; (meta.tokens||[]).forEach(t=>tokens[t.index]=t);
+  const byCoin={}; (ctxs||[]).forEach(c=>{ if(c&&c.coin) byCoin[c.coin]=c; });
+  const byBase={};
+  (meta.universe||[]).forEach(u=>{
+    const bt=tokens[u.tokens[0]], qt=tokens[u.tokens[1]];
+    if(!bt||!qt||qt.name!=='USDC') return;
+    const c=byCoin[u.name]; if(!c) return;
+    const mid=+(c.midPx||c.markPx||0); if(!(mid>0)) return;
+    (byBase[bt.name]=byBase[bt.name]||[]).push({
+      base:bt.name, pair:bt.name+'/USDC', canonical:!!bt.isCanonical,
+      mid, vol:+c.dayNtlVlm||0, chg: +c.prevDayPx? (mid-+c.prevDayPx)/+c.prevDayPx*100 : null});
+  });
+  SPOT={};
+  for(const [b,list] of Object.entries(byBase))
+    SPOT[b]=list.slice().sort((x,y)=>(y.canonical-x.canonical)||(y.vol-x.vol))[0];
+  return SPOT;
+}
+function spotFor(name, perpMark){
+  const s=SPOT&&SPOT[name];
+  if(!s||!isFinite(perpMark)||perpMark<=0) return null;
+  return Math.abs(s.mid/perpMark-1)<0.15 ? s : null;
+}
+
+/* Bar counts chosen so a candle is wide enough to read on a phone: 140 hourly
+   bars is about six days, which is the window an hourly chart is actually for. */
+const RANGES=[{k:'1h',label:'1H',bars:140,ms:3600e3},
+              {k:'4h',label:'4H',bars:150,ms:4*3600e3},
+              {k:'1d',label:'1D',bars:180,ms:24*3600e3}];
+
+ROUTES.coin=async function(args){
+  const name=decodeURIComponent(args[0]||'').toUpperCase();
+  if(!name){ location.hash='#/radar'; return; }
+  $('#crumbT').textContent=name;
+
+  /* ── shell, painted before anything is fetched ── */
+  const head=el('section','cn-head');
+  const idw=el('div','cn-id');
+  const back=el('a','cn-back'); back.href='#/radar';
+  back.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Radar';
+  idw.appendChild(back);
+  const title=el('div','cn-t');
+  title.append(el('h1',null,name));
+  const pxw=el('div','cn-px'); pxw.append(el('b','v','—'), el('span','chip dim','—'));
+  title.appendChild(pxw);
+  idw.appendChild(title);
+  const acts=el('div','cn-acts');
+  idw.appendChild(acts);
+  head.appendChild(idw);
+  PAGE.appendChild(head);
+
+  const readSec=el('section','sec rv');
+  const readHost=el('div','cn-read'); readHost.appendChild(el('div','sk sk-row'));
+  readSec.appendChild(readHost); PAGE.appendChild(readSec);
+
+  const chartSec=el('section','sec rv');
+  const chartHead=el('div','cn-chead');
+  const rangeSeg=el('div','seg'); const rpill=el('div','pill'); rangeSeg.appendChild(rpill);
+  chartHead.append(el('h2',null,'Price'), rangeSeg);
+  chartSec.appendChild(chartHead);
+  const chartHost=el('div','cn-chart');
+  chartSec.appendChild(chartHost);
+  const legend=el('div','cn-leg');
+  legend.innerHTML='<span data-k="s20">20-bar average</span><span data-k="s50">50-bar</span>'+
+    '<span data-k="s100">100-bar</span>';
+  chartSec.appendChild(legend);
+  PAGE.appendChild(chartSec);
+
+  const measSec=el('section','sec rv');
+  measSec.appendChild(secHead('What each measure says',
+    'Seven of them. Each one is a number you can check, and a plain sentence about what that number means.'));
+  const measHost=el('div','cn-meas'); measSec.appendChild(measHost); PAGE.appendChild(measSec);
+
+  const bookSec=el('section','sec rv');
+  bookSec.appendChild(secHead('Size you can actually move',
+    'Walked through the live order book. How many dollars go through before the price moves that far.'));
+  const bookHost=el('div','cn-book'); bookSec.appendChild(bookHost); PAGE.appendChild(bookSec);
+
+  const costSec=el('section','sec rv');
+  costSec.appendChild(secHead('What the trade costs','Before it is right about direction, a trade has to clear its own cost.'));
+  const costHost=el('div','cn-cost'); costSec.appendChild(costHost); PAGE.appendChild(costSec);
+
+  const posSec=el('section','sec rv');
+  posSec.appendChild(secHead('Positioning','Who is paying to hold this, and how crowded it is.'));
+  const posHost=el('div','cn-grid'); posSec.appendChild(posHost); PAGE.appendChild(posSec);
+
+  const tapeSec=el('section','sec rv');
+  tapeSec.appendChild(secHead('The tape','Live trades as they print, biggest first. Nothing is stored — this is what has crossed since you opened the page.'));
+  const tapeHost=el('div','cn-tape'); tapeSec.appendChild(tapeHost); PAGE.appendChild(tapeSec);
+
+  const newsSec=el('section','sec rv');
+  newsSec.appendChild(secHead('In the news','From CoinDesk, The Block, Blockworks and Decrypt. Refreshed hourly.'));
+  const newsHost=el('div','cn-news'); newsHost.appendChild(el('div','sk sk-row'));
+  newsSec.appendChild(newsHost); PAGE.appendChild(newsSec);
+
+  const refSec=el('section','sec rv');
+  refSec.appendChild(secHead('Reading is free. Trading needs an account.'));
+  refSec.appendChild(refBlock('coin'));
+  PAGE.appendChild(refSec);
+
+  field(PAGE); magnetise(PAGE); reveal(PAGE);
+
+  /* ── data ── */
+  let M=null, A=null, chart=null, rangeK='1h';
+  try{
+    const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:20000});
+    const U=universe(meta,ctxs);
+    RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
+    M=U.find(m=>m.name===name);
+    if(!M){
+      PAGE.innerHTML='';
+      const c2=el('div','card pad'); c2.style.maxWidth='620px';
+      c2.append(el('h1',null,'No market called '+name));
+      const p2=el('p',null,'Hyperliquid does not list a perp by that name right now. It may have been delisted, or the link may be stale.');
+      p2.style.cssText='color:var(--ink-2);margin-top:9px';
+      const b2=el('a','btn pri mag','Back to the radar'); b2.href='#/radar'; b2.style.marginTop='15px';
+      c2.append(p2,b2); PAGE.appendChild(c2); magnetise(c2);
+      return;
+    }
+    paintHeader();
+    /* the buttons need the spot index, but nothing else waits on it */
+    spotIndex().then(()=>paintActions()).catch(()=>paintActions());
+    paintPositioning();
+    startTape();
+    loadNews();
+    await loadRange('1h');
+  }catch(e){
+    readHost.innerHTML='';
+    readHost.appendChild(el('p','rd-count', e.code==='RATE'
+      ? 'The exchange rate-limited this browser. Give it a minute.'
+      : 'The exchange did not answer. Try again in a moment.'));
+  }
+
+  function paintHeader(){
+    const v=$('.v',pxw); v.textContent=px(M.mark);
+    const ch=$('.chip',pxw); ch.className='chip '+(M.chg>=0?'up':'down'); ch.textContent=pct(M.chg);
+  }
+  function paintActions(){
+    acts.innerHTML='';
+    const perp=el('a','btn pri mag');
+    perp.href=TRADE_URL(name); perp.target='_blank'; perp.rel='noopener';
+    perp.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Trade the perp';
+    perp.addEventListener('click',()=>track('trade:perp'));
+    acts.appendChild(perp);
+    const s=spotFor(name, M.mark);
+    if(s){
+      const sp=el('a','btn ghost mag');
+      sp.href='https://app.hyperliquid.xyz/trade/'+encodeURIComponent(s.base)+'/USDC';
+      sp.target='_blank'; sp.rel='noopener';
+      sp.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Buy spot';
+      sp.title=s.pair+' — spot mid '+px(s.mid)+', $'+fmtC(s.vol)+' traded in 24h';
+      sp.addEventListener('click',()=>track('trade:spot'));
+      acts.appendChild(sp);
+      acts.appendChild(Object.assign(el('span','cn-note micro'),
+        {textContent:'spot '+px(s.mid)+' · $'+fmtC(s.vol)+' 24h'}));
+    } else if(SPOT&&SPOT[name]){
+      /* there is a token with this ticker but it is not this asset — say so
+         rather than silently offering nothing */
+      acts.appendChild(Object.assign(el('span','cn-note micro'),
+        {textContent:'no spot market for this asset'}));
+    }
+    magnetise(acts);
+  }
+
+  /* ── range switcher and chart ── */
+  RANGES.forEach(r=>{
+    const b=el('button',null,r.label); b.dataset.r=r.k;
+    if(r.k===rangeK) b.className='on';
+    b.addEventListener('click',()=>{
+      if(rangeK===r.k||rangeSeg.dataset.busy) return;
+      rangeSeg.dataset.busy='1';
+      $$('button',rangeSeg).forEach(x=>x.classList.toggle('on',x.dataset.r===r.k));
+      movePill();
+      loadRange(r.k).finally(()=>delete rangeSeg.dataset.busy);
+    });
+    rangeSeg.appendChild(b);
+  });
+  const movePill=()=>{ const on=$('button.on',rangeSeg);
+    if(on){ rpill.style.left=on.offsetLeft+'px'; rpill.style.width=on.offsetWidth+'px'; } };
+  requestAnimationFrame(movePill); setTimeout(movePill,80);
+
+  async function loadRange(k){
+    rangeK=k;
+    const r=RANGES.find(x=>x.k===k)||RANGES[0];
+    if(!chart){ chartHost.innerHTML=''; chart=candleChart(chartHost); }
+    chartHost.dataset.busy='1';
+    try{
+      const now=Date.now();
+      const raw=await apiR({type:'candleSnapshot',req:{coin:name,interval:r.k,
+        startTime:now-r.bars*r.ms, endTime:now}},{ttl:45000});
+      if(!Array.isArray(raw)||raw.length<5){
+        chartHost.innerHTML='';
+        chartHost.appendChild(el('p','rd-count','Not enough history at this interval to draw a chart.'));
+        chart=null; return;
+      }
+      chart.set(withMAs(raw));
+      /* the hourly bars are what every measure on this page is computed from,
+         so the read and the measures are only recomputed on the 1h range */
+      if(k==='1h'){
+        A=analyse(M, raw);
+        RADAR.det[name]=A;
+        paintRead(); paintMeasures(); paintCost();
+        loadBook();
+      }
+    }catch(e){
+      chartHost.innerHTML='';
+      chartHost.appendChild(el('p','rd-count','The chart did not load. '+
+        (e.code==='RATE'?'The exchange rate-limited this browser.':'Try again in a moment.')));
+      chart=null;
+    } finally { delete chartHost.dataset.busy; }
+  }
+
+  /* ── the read ──
+     A direction, stated once, with the count behind it and the flags that
+     qualify it. Deliberately not a call to action: it says what the measures
+     read, names how many agree, and points at the list underneath. */
+  function paintRead(){
+    if(!A) return;
+    const r=momentum(M,A);
+    readHost.innerHTML='';
+    const card=el('div','cn-readc tilt edge'); card.dataset.dir=r.dir;
+    const l=el('div','l');
+    const badge=el('div','cn-badge');
+    badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+
+      (r.dir==='long'?'<path d="M12 19V5M6 11l6-6 6 6"/>':
+       r.dir==='short'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>'+
+      '<span>'+(r.dir==='long'?'Reads up':r.dir==='short'?'Reads down':'No trend')+'</span>';
+    l.appendChild(badge);
+    l.appendChild(el('p','cn-readp', r.dir==='none'
+      ? 'The seven measures are split — '+r.for+' point up, '+r.against+' point down. That is a market without a trend to read, not a quiet one.'
+      : r.for+' of the seven measures point '+(r.dir==='long'?'up':'down')+', '+r.against+' point the other way. '+
+        'Agreement is what the score below counts; it says nothing about what happens next.'));
+    const flags=el('div','cn-flags');
+    (r.flags||[]).forEach(f=>{ const c2=el('span','chip warn',f.t); c2.setAttribute('data-tip',f.w); flags.appendChild(c2); });
+    if(r.flags&&r.flags.length) l.appendChild(flags);
+    card.appendChild(l);
+    const sc=el('div','cn-score');
+    const b=el('b'); countUp(b,r.score,v=>String(Math.round(v)),700);
+    sc.append(b, el('s',null,'agreement score'));
+    const bars=el('div','cn-votes');
+    r.votes.forEach(v=>{ const i=el('i'); if(v.vote!=='flat') i.dataset.v=v.vote; bars.appendChild(i); });
+    sc.appendChild(bars);
+    card.appendChild(sc);
+    readHost.appendChild(card);
+    readHost.appendChild(Object.assign(el('p','cn-disc'),
+      {textContent:'This is arithmetic on public data, not a call. It has no view on the next hour, no knowledge of your size, and the score is a sort order rather than a probability.'}));
+    field(readHost);
+  }
+
+  /* ── the measures, in plain words ── */
+  function paintMeasures(){
+    if(!A) return;
+    const r=momentum(M,A);
+    measHost.innerHTML='';
+    r.votes.forEach(v=>{
+      const row=el('div','cn-m'); row.dataset.v=v.vote;
+      const ic=el('span','cn-mv');
+      ic.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+
+        (v.vote==='for'?'<path d="M12 19V5M6 11l6-6 6 6"/>':
+         v.vote==='against'?'<path d="M12 5v14M6 13l6 6 6-6"/>':'<path d="M5 12h14"/>')+'</svg>';
+      const body=el('div','cn-mb');
+      body.append(el('b',null,v.label), el('s',null,v.why));
+      row.append(ic, body, el('span','cn-mn',v.val));
+      measHost.appendChild(row);
+    });
+    field(measHost);
+  }
+
+  /* ── the book ── */
+  async function loadBook(){
+    bookHost.innerHTML=''; bookHost.appendChild(el('div','sk sk-row'));
+    try{
+      const book=await apiR({type:'l2Book',coin:name},{ttl:8000});
+      const d=depthLadder(book,[0.05,0.10,0.25,0.50]);
+      bookHost.innerHTML='';
+      if(!d){ bookHost.appendChild(el('p','rd-count','The book came back empty.')); return; }
+      const t=el('div','cn-dep');
+      const hd=el('div','cn-deprow cn-dephd');
+      hd.append(el('span',null,'Price moves by'), el('span','r',
+        'Buying'), el('span','r','Selling'));
+      t.appendChild(hd);
+      let anyBeyond=false;
+      d.rows.forEach(row=>{
+        const r2=el('div','cn-deprow');
+        const cell=v=>{ if(v==null){ anyBeyond=true;
+            return Object.assign(el('span','r beyond'),{textContent:'past the book'}); }
+          return Object.assign(el('span','r n'),{textContent:'$'+fmtC(v)}); };
+        r2.append(el('span',null,row.pctMove.toFixed(2)+'%'), cell(row.buy), cell(row.sell));
+        t.appendChild(r2);
+      });
+      /* the whole thing, so the reader has the ceiling as well as the steps */
+      const tot=el('div','cn-deprow cn-deptot');
+      tot.append(el('span',null,'everything published'),
+        Object.assign(el('span','r n'),{textContent:'$'+fmtC(d.askTotal)}),
+        Object.assign(el('span','r n'),{textContent:'$'+fmtC(d.bidTotal)}));
+      t.appendChild(tot);
+      bookHost.appendChild(t);
+      bookHost.appendChild(Object.assign(el('p','cn-fine'),{textContent:
+        'Mid '+px(d.mid)+', spread '+d.spreadPct.toFixed(3)+'%. The exchange publishes '+
+        d.bidLevels+' bids and '+d.askLevels+' asks, reaching '+d.reach.toFixed(2)+
+        '% from mid'+(anyBeyond?' — past that there is nothing to measure, not nothing there.':'.')}));
+      field(bookHost);
+    }catch(e){
+      bookHost.innerHTML='';
+      bookHost.appendChild(el('p','rd-count','The book did not load.'));
+    }
+  }
+
+  /* ── cost ── */
+  function paintCost(){
+    if(!A) return;
+    const SIZE=10000;
+    const taker=TAKER, round=SIZE*taker*2;
+    const fundDay=SIZE*(M.fundingHr/100)*24;
+    const spread=(M.spreadPct||0);
+    /* what the trade owes before direction matters: taker in, taker out, and
+       half the impact spread (you cross it once on the way in) */
+    const be=(taker*2*100)+spread/2;
+    costHost.innerHTML='';
+    const g=el('div','cn-cost-g');
+    const tile=(k,v,s,cls)=>{ const n=el('div','cn-tile');
+      n.append(el('s',null,k), Object.assign(el('b',null,v),{className:cls||''}), el('p',null,s));
+      g.appendChild(n); };
+    tile('Round trip, taker','$'+fmtN(round,2),
+      'in and out on $10,000 at '+(taker*100).toFixed(3)+'% a side, before any tier or referral discount');
+    tile('Funding, 24h if long', (fundDay>=0?'−':'+')+'$'+fmtN(Math.abs(fundDay),2),
+      fundDay>=0? 'you pay this to hold a $10,000 long for a day at the current rate'
+                : 'you receive this to hold a $10,000 long for a day at the current rate',
+      fundDay>0?'down':'up');
+    tile('Break-even move', (be).toFixed(3)+'%',
+      'how far it has to go just to cover the round trip and half the spread');
+    tile('Expected move, 1×ATR', A.atr? px(A.atr) : '—',
+      A.atr&&M.mark? (A.atr/M.mark*100).toFixed(2)+'% of price — a stop inside this is inside the noise'
+                   : 'not enough bars');
+    costHost.appendChild(g);
+    costHost.appendChild(Object.assign(el('p','cn-fine'),{textContent:
+      'Funding settles hourly and changes hourly; this is the current rate held flat for a day, not a forecast of it.'}));
+    field(costHost);
+  }
+
+  function paintPositioning(){
+    posHost.innerHTML='';
+    const tile=(k,v,s,cls,tip)=>{ const n=el('div','cn-tile');
+      const kk=el('s',null,k); if(tip){ kk.appendChild(document.createTextNode(' ')); kk.appendChild(qm(tip)); }
+      n.append(kk, Object.assign(el('b',null,v),{className:cls||''}), el('p',null,s));
+      posHost.appendChild(n); };
+    tile('Funding APR', pct(M.fundingApr,1),
+      M.fundingApr>0?'longs are paying shorts to hold':M.fundingApr<0?'shorts are paying longs to hold':'flat',
+      M.fundingApr>0?'down':M.fundingApr<0?'up':'', 'fundapr');
+    tile('Open interest','$'+fmtC(M.oiNtl),'dollar value of every position open on this market','', 'oi');
+    tile('Volume / open interest', M.volOverOi!=null?M.volOverOi.toFixed(2)+'×':'—',
+      M.volOverOi!=null? (M.volOverOi>1?'turned over more than once in a day':'less than one turnover in a day'):'—','','vsoi');
+    tile('Mark vs oracle', pct(M.oracleGap,3),
+      M.oracleGap>0?'the perp is trading above spot':'the perp is trading below spot','','basis');
+    field(posHost);
+  }
+
+  /* ── the tape ──
+     A WebSocket, not a poll. Hyperliquid publishes no REST history of trades,
+     so this is honestly what has crossed since the page opened — the heading
+     says so rather than implying an hour of history nobody has. */
+  function startTape(){
+    let ws=null, biggest=[], seen=new Set(), count=0, notional=0, live=false, retry=null;
+    const cap=8;
+    tapeHost.innerHTML='';
+    const status=el('p','cn-fine','connecting to the trade feed…');
+    const list=el('div','cn-tapel');
+    tapeHost.append(list,status);
+    const render=()=>{
+      list.innerHTML='';
+      if(!biggest.length){
+        list.appendChild(el('p','rd-count', live
+          ? 'Nothing has crossed on this market yet. On a quiet book that can take a while.'
+          : 'Waiting for the first print…'));
+        return;
+      }
+      biggest.forEach(t=>{
+        const r=el('div','cn-tr'); r.dataset.side=t.side==='B'?'buy':'sell';
+        r.append(el('span','cn-tsd', t.side==='B'?'buy':'sell'),
+          Object.assign(el('span','cn-tn'),{textContent:'$'+fmtC(t.ntl)}),
+          Object.assign(el('span','cn-tp'),{textContent:px(t.px)}),
+          Object.assign(el('span','cn-tt'),{textContent:new Date(t.time)
+            .toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}));
+        list.appendChild(r);
+      });
+      status.textContent=count.toLocaleString()+' trades seen · $'+fmtC(notional)+
+        ' crossed since you opened this page · largest '+biggest.length+' shown';
+    };
+    render();
+    const connect=()=>{
+      try{ ws=new WebSocket('wss://api.hyperliquid.xyz/ws'); }
+      catch(e){ status.textContent='The live feed is not reachable from this browser.'; return; }
+      ws.onopen=()=>{ live=true;
+        ws.send(JSON.stringify({method:'subscribe',subscription:{type:'trades',coin:name}})); };
+      ws.onmessage=e=>{
+        let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
+        if(m.channel!=='trades'||!Array.isArray(m.data)) return;
+        let changed=false;
+        for(const t of m.data){
+          if(seen.has(t.tid)) continue; seen.add(t.tid);
+          const ntl=+t.px*+t.sz; count++; notional+=ntl;
+          if(biggest.length<cap || ntl>biggest[biggest.length-1].ntl){
+            biggest.push({side:t.side,px:+t.px,sz:+t.sz,ntl,time:t.time});
+            biggest.sort((a,b)=>b.ntl-a.ntl);
+            if(biggest.length>cap) biggest.length=cap;
+            changed=true;
+          }
+        }
+        /* the counters move on every message; the list only repaints when the
+           order actually changed, so a busy market does not thrash the DOM */
+        if(changed) render();
+        else status.textContent=count.toLocaleString()+' trades seen · $'+fmtC(notional)+
+          ' crossed since you opened this page · largest '+biggest.length+' shown';
+      };
+      ws.onclose=()=>{ live=false;
+        if(!retry) retry=setTimeout(()=>{ retry=null; if(tapeHost.isConnected) connect(); },4000); };
+      ws.onerror=()=>{ try{ws.close()}catch(_){}; };
+    };
+    connect();
+    ACTIVE.push(()=>{ if(retry) clearTimeout(retry); retry=1;
+      try{ ws&&ws.close(); }catch(e){} });
+  }
+
+  /* ── news ── */
+  async function loadNews(){
+    try{
+      const ctl=new AbortController();
+      const t=setTimeout(()=>ctl.abort(),9000);
+      const r=await fetch('/api/news?coin='+encodeURIComponent(name),{signal:ctl.signal});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('status '+r.status);
+      const d=await r.json();
+      newsHost.innerHTML='';
+      if(!d.items||!d.items.length){
+        newsHost.appendChild(el('p','rd-count', d.note||
+          'No recent story from these outlets mentions this market.'));
+        return;
+      }
+      const wrap=el('div','cn-newsl lead');
+      d.items.forEach(it=>{
+        const a=el('a','cn-n tilt edge'); a.href=it.link; a.target='_blank'; a.rel='noopener noreferrer';
+        const meta=el('div','cn-nm');
+        meta.append(el('span','cn-nsrc',it.source));
+        if(it.time) meta.append(el('span','cn-nt',since(it.time)));
+        a.append(meta, el('b',null,it.title));
+        if(it.summary) a.append(el('p',null,it.summary));
+        wrap.appendChild(a);
+      });
+      newsHost.appendChild(wrap);
+      if(d.sources&&d.sources.length)
+        newsHost.appendChild(Object.assign(el('p','cn-fine'),
+          {textContent:'Headlines from '+d.sources.join(', ')+'. Cached for an hour, so the same request does not hit them once per reader.'}));
+      field(newsHost); reveal(newsHost);
+    }catch(e){
+      newsHost.innerHTML='';
+      newsHost.appendChild(el('p','rd-count','The news feed did not answer.'));
+    }
+  }
+};
+
+/* "3h ago" reads faster than a timestamp when the question is only how fresh
+   the story is. */
+function since(ms){
+  const s=Math.max(0,(Date.now()-ms)/1000);
+  if(s<90) return 'just now';
+  const m=s/60; if(m<60) return Math.round(m)+'m ago';
+  const h=m/60; if(h<24) return Math.round(h)+'h ago';
+  const d=h/24; return Math.round(d)+'d ago';
+}
 
 /* --- placeholders for the pages still to come --- */
 function soon(title,copy,bullets){
