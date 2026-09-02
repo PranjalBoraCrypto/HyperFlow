@@ -4333,8 +4333,12 @@ ROUTES.coin=async function(args){
                    : 'The perp trades under the plain ticker.')));
       head.appendChild(n);
     }
-    /* the buttons need the spot index, but nothing else waits on it */
-    spotIndex().then(()=>paintActions()).catch(()=>paintActions());
+    /* The buttons need whichever venue is the OTHER one, and nothing else
+       waits on it. In spot that is the perp list, which only the radar table
+       used to load — so a spot page never offered "Trade the perp" at all. */
+    Promise.all([ spotIndex().catch(()=>null),
+                  isSpot()? otherSide().catch(()=>null) : null ])
+      .then(()=>paintActions()).catch(()=>paintActions());
     paintPositioning();
     paintSimilar(U);
     startTape();
