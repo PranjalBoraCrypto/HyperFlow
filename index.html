@@ -4304,20 +4304,32 @@ ROUTES.coin=async function(args){
      top bar, whatever the header currently measures. */
   const sent=el('div','cn-sent');
   PAGE.append(sent, head);
-  /* rootMargin is baked into an observer, so a bar that changes height on
-     rotation needs a new one rather than a stale offset. */
-  let sIO=null;
-  const watchSent=()=>{
-    if(sIO) sIO.disconnect();
-    const topH=($('#top')&&Math.round($('#top').getBoundingClientRect().height))||60;
-    sIO=new IntersectionObserver(
-      es=>{ head.dataset.stuck = es[0].isIntersecting? '0':'1'; },
-      {rootMargin:'-'+topH+'px 0px 0px 0px', threshold:0});
-    sIO.observe(sent);
+  /* A scroll listener, NOT an IntersectionObserver — and this is the fifth
+     time in this project that the distinction has mattered. IO callbacks are
+     delivered in the rendering steps, exactly like requestAnimationFrame, so a
+     view the browser is not painting receives none of them: I watched this
+     very header sit at its full height with document.hidden true and both rAF
+     and a freshly-constructed observer never fire once. A stuck flag that only
+     resolves after the first paint is survivable; a habit of hanging state off
+     frame callbacks is what produced four silent-emptiness bugs before it.
+
+     Scroll events are not gated on painting, the read is one rect on one
+     element, and the attribute is only written when the answer changes. The
+     sentinel is still the reference: it sits where the header rests and scrolls
+     normally, so "sentinel above the bar" IS "header pinned", whatever the
+     header currently measures and however tall the bar is at this width. */
+  let stuck=null;
+  const measure=()=>{
+    const topH=($('#top')&&$('#top').getBoundingClientRect().height)||60;
+    const now = sent.getBoundingClientRect().top <= topH ? '1':'0';
+    if(now!==stuck){ stuck=now; head.dataset.stuck=now; }
   };
-  watchSent();
-  addEventListener('hf:topH',watchSent);
-  ACTIVE.push(()=>{ if(sIO) sIO.disconnect(); removeEventListener('hf:topH',watchSent); });
+  measure();
+  addEventListener('scroll',measure,{passive:true});
+  addEventListener('resize',measure);
+  addEventListener('hf:topH',measure);
+  ACTIVE.push(()=>{ removeEventListener('scroll',measure);
+    removeEventListener('resize',measure); removeEventListener('hf:topH',measure); });
 
   const readSec=el('section','sec rv');
   const readHost=el('div','cn-read'); readHost.appendChild(el('div','sk sk-row'));
