@@ -4328,8 +4328,14 @@ ROUTES.coin=async function(args){
   addEventListener('scroll',measure,{passive:true});
   addEventListener('resize',measure);
   addEventListener('hf:topH',measure);
+  /* A hidden page is not sent scroll events either — I scrolled one 1800px with
+     document.hidden and the handler never ran, then dispatched the event by
+     hand and it resolved correctly. Nobody is looking at a hidden page, so the
+     only thing that matters is that it is right again the moment they are. */
+  document.addEventListener('visibilitychange',measure);
   ACTIVE.push(()=>{ removeEventListener('scroll',measure);
-    removeEventListener('resize',measure); removeEventListener('hf:topH',measure); });
+    removeEventListener('resize',measure); removeEventListener('hf:topH',measure);
+    document.removeEventListener('visibilitychange',measure); });
 
   const readSec=el('section','sec rv');
   const readHost=el('div','cn-read'); readHost.appendChild(el('div','sk sk-row'));
