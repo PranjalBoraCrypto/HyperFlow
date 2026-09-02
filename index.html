@@ -4488,7 +4488,10 @@ ROUTES.coin=async function(args){
        the distance is built on: a rung is roughly "within a factor of two on
        every axis". */
     const rung=d=> d<0.45?3 : d<0.95?2 : 1;
-    const howAlike=n=> n===3?'very close' : n===2?'close' : 'nearest left';
+    /* "close" on its own, sitting above a column headed PRICE, reads as a
+       closing price — or as a button. The word has to say what is being
+       measured, and "similar" is the word the section heading already uses. */
+    const howAlike=n=> n===3?'very similar' : n===2?'similar' : 'loosely similar';
     near.forEach(({m:x,d},i)=>{
       const a2=el('a','cn-simc tilt edge'); a2.href='#/coin/'+encodeURIComponent(x.name);
       a2.style.setProperty('--i',i);          /* the section's stagger */
