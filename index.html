@@ -68,6 +68,8 @@ window.va('beforeSend',function(e){try{var u=new URL(e.url);return Object.assign
      clears it and hands 36px back to the content, which is where the reading
      happens. */
   --rail:74px; --railw:210px; --top:60px;
+  /* the page gutter, named so a sticky header can bleed back out through it */
+  --pagex:clamp(16px,3.6vw,56px);
   /* motion */
   --sp-fast:.16s; --sp:.24s; --sp-slow:.42s;
   --ease:cubic-bezier(.2,.8,.25,1);
@@ -278,7 +280,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 /* Side gutters were capped at 26px, so on a wide screen the content ran almost
    edge to edge against the rail and the window. Doubled, with the rail's 36px
    paying for most of it. */
-.page{padding:clamp(18px,2.6vw,34px) clamp(16px,3.6vw,56px) 120px;max-width:1520px;width:100%;margin:0 auto}
+.page{padding:clamp(18px,2.6vw,34px) var(--pagex) 120px;max-width:1520px;width:100%;margin:0 auto}
 .page[data-enter="1"]{animation:pgEnter .5s var(--ease-out) both}
 @keyframes pgEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -553,7 +555,72 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .sk-strip{height:74px;border-radius:var(--r3)}
 
 /* ═══════════════ COIN (cn-) ═══════════════ */
-.cn-head{padding-top:4px}
+/* ── the coin header, kept on screen ──────────────────────────────────
+   Which market you are reading is the one fact every number below depends on,
+   and it used to scroll away after the first section — by the tape you were
+   looking at figures with no name attached.
+
+   It sticks under the top bar rather than at 0, and it CONDENSES: at full size
+   it is a display heading with room to breathe, and once the page has moved
+   past it the type comes down, the back link and the alias note drop out, and
+   the buttons shrink to a strip about 56px tall. A sticky block at its resting
+   height would eat a third of a phone screen, which is worse than losing it.
+
+   It bleeds back out through the page gutter, because an opaque bar inset from
+   the page edges lets content slide past in the margins beside it. */
+/* --top is 60, but under 860px the bar is height:auto with its own padding and
+   measures 65 — so parking the header at var(--top) left a 5px slot with the
+   page sliding through it. --topnow is the bar's measured height, kept current
+   by a ResizeObserver. */
+.cn-head{position:sticky;top:var(--topnow,var(--top));z-index:40;
+  margin:0 calc(var(--pagex)*-1);padding:4px var(--pagex) 0;
+  background:color-mix(in srgb,var(--g0) 86%,transparent);
+  backdrop-filter:blur(18px) saturate(1.5);
+  border-bottom:1px solid transparent;
+  transition:padding var(--sp) var(--ease),border-color var(--sp),background var(--sp)}
+.cn-head[data-stuck="1"]{padding-top:0;padding-bottom:0;
+  background:color-mix(in srgb,var(--g0) 95%,transparent);border-bottom-color:var(--line)}
+.cn-head[data-stuck="1"] .cn-back,
+.cn-head[data-stuck="1"] .cn-alias{display:none}
+.cn-head[data-stuck="1"] .cn-id{align-items:center;padding:9px 0;gap:12px}
+.cn-head[data-stuck="1"] .cn-t{gap:10px;align-items:center}
+.cn-head[data-stuck="1"] .cn-t h1{font-size:clamp(18px,2.2vw,23px)}
+.cn-head[data-stuck="1"] .cn-t .cmk{--s:28px;margin-right:0}
+.cn-head[data-stuck="1"] .cn-px b{font-size:15px}
+.cn-head[data-stuck="1"] .cn-note{display:none}
+.cn-head[data-stuck="1"] .cn-acts .btn{height:38px;padding:0 15px;font-size:13.5px}
+/* the type has to move with the bar, not a beat behind it */
+.cn-t h1,.cn-px b{transition:font-size var(--sp) var(--ease)}
+.cn-t .cmk{transition:width var(--sp) var(--ease),height var(--sp) var(--ease)}
+.cn-id,.cn-acts .btn{transition:padding var(--sp) var(--ease),height var(--sp) var(--ease),
+  gap var(--sp) var(--ease),font-size var(--sp) var(--ease)}
+/* the 1px marker the observer watches; it sits where the header started */
+.cn-sent{height:1px;margin-bottom:-1px}
+@media (max-width:640px){
+  /* At rest the actions take their own full-width row. Condensed they must sit
+     beside the name, or the "compact" bar is taller than the thing it replaced
+     — it measured 102px before this. */
+  .cn-head[data-stuck="1"] .cn-id{flex-wrap:nowrap;padding:8px 0;gap:10px}
+  .cn-head[data-stuck="1"] .cn-t{flex:1 1 auto;min-width:0;flex-wrap:nowrap}
+  .cn-head[data-stuck="1"] .cn-t h1{min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .cn-head[data-stuck="1"] .cn-acts{width:auto;margin-left:auto;flex:0 0 auto;flex-wrap:nowrap}
+  .cn-head[data-stuck="1"] .cn-acts .btn{flex:0 0 auto;height:36px;padding:0 13px;font-size:13px}
+  /* what goes, in order, as the bar runs out of room: the second button, then
+     the change chip — the price it is a change OF is the number worth keeping */
+  .cn-head[data-stuck="1"] .cn-acts .btn:not(.pri),
+  .cn-head[data-stuck="1"] .cn-note{display:none}
+}
+@media (max-width:460px){
+  .cn-head[data-stuck="1"] .cn-px .chip{display:none}
+  .cn-head[data-stuck="1"] .cn-t h1{font-size:17px}
+  .cn-head[data-stuck="1"] .cn-px b{font-size:13.5px}
+  .cn-head[data-stuck="1"] .cn-t .cmk{--s:24px}
+  .cn-head[data-stuck="1"] .cn-acts .btn{height:34px;padding:0 11px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cn-head,.cn-t h1,.cn-px b,.cn-t .cmk,.cn-id,.cn-acts .btn{transition:none}
+}
 .cn-id{display:flex;align-items:flex-end;gap:clamp(14px,2.6vw,30px);flex-wrap:wrap}
 .cn-back{display:inline-flex;align-items:center;gap:7px;min-height:44px;
   font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
@@ -2247,6 +2314,18 @@ addEventListener('hf:mode',syncModeChrome);
 })();
 addEventListener('hashchange',route);
 addEventListener('scroll',()=>{ $('#top').dataset.stuck=scrollY>4?'1':'0'; },{passive:true});
+/* The bar is a fixed 60px on a desktop and height:auto below 860px, where it
+   comes out at 65. Anything that parks itself underneath needs the real
+   number, not the variable, so the real number is published as one. */
+(function topHeight(){
+  const bar=$('#top'); if(!bar) return;
+  const set=()=>{ const h=Math.round(bar.getBoundingClientRect().height);
+    if(h>0){ document.documentElement.style.setProperty('--topnow',h+'px');
+      dispatchEvent(new CustomEvent('hf:topH',{detail:h})); } };
+  set();
+  if(window.ResizeObserver) new ResizeObserver(set).observe(bar);
+  else addEventListener('resize',set);
+})();
 
 /* ═══════════════════════════════════════════════════════════════
    9 · command palette
@@ -4219,7 +4298,26 @@ ROUTES.coin=async function(args){
   const acts=el('div','cn-acts');
   idw.appendChild(acts);
   head.appendChild(idw);
-  PAGE.appendChild(head);
+  /* A 1px marker where the header rests. The observer watching it fires twice
+     in the life of the page instead of on every scroll frame, and it needs no
+     magic number: the marker leaving the viewport IS the header reaching the
+     top bar, whatever the header currently measures. */
+  const sent=el('div','cn-sent');
+  PAGE.append(sent, head);
+  /* rootMargin is baked into an observer, so a bar that changes height on
+     rotation needs a new one rather than a stale offset. */
+  let sIO=null;
+  const watchSent=()=>{
+    if(sIO) sIO.disconnect();
+    const topH=($('#top')&&Math.round($('#top').getBoundingClientRect().height))||60;
+    sIO=new IntersectionObserver(
+      es=>{ head.dataset.stuck = es[0].isIntersecting? '0':'1'; },
+      {rootMargin:'-'+topH+'px 0px 0px 0px', threshold:0});
+    sIO.observe(sent);
+  };
+  watchSent();
+  addEventListener('hf:topH',watchSent);
+  ACTIVE.push(()=>{ if(sIO) sIO.disconnect(); removeEventListener('hf:topH',watchSent); });
 
   const readSec=el('section','sec rv');
   const readHost=el('div','cn-read'); readHost.appendChild(el('div','sk sk-row'));
