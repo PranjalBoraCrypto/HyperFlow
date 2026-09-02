@@ -1080,15 +1080,20 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .rd-hourhd{display:flex;align-items:center;gap:9px;margin-bottom:10px;color:var(--ink-3)}
 .rd-hourhd::after{content:"";flex:1;height:1px;background:var(--line)}
 .rd-hourl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}
-.rd-hr{position:relative;border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
+/* A column that fills its grid row, so if one card's name does wrap — a very
+   long ticker on a narrow screen — the verdict still sits on the same line as
+   its neighbours' instead of dropping the card out of alignment. */
+.rd-hr{position:relative;display:flex;flex-direction:column;
+  border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
   transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
-.rd-hh{display:flex;flex-direction:column;gap:6px;width:100%;padding:13px 15px 13px 18px;
+.rd-hh{display:flex;flex-direction:column;gap:6px;width:100%;flex:1 1 auto;
+  padding:13px 15px 13px 18px;
   text-align:left;cursor:pointer;min-height:44px;border-radius:inherit}
 .rd-hcv{position:absolute;right:12px;top:14px;display:grid;place-items:center;color:var(--ink-4);
   transition:transform var(--sp) var(--ease),color var(--sp)}
 .rd-hcv svg{width:15px;height:15px}
 .rd-hr[data-open="1"] .rd-hcv{transform:rotate(180deg);color:var(--mint)}
-.rd-hr .vd{font-size:13.5px;font-weight:600;line-height:1.4;padding-right:22px}
+.rd-hr .vd{font-size:13.5px;font-weight:600;line-height:1.4;padding-right:22px;margin-top:auto}
 .rd-hr[data-dir="up"] .vd{color:var(--up)}
 .rd-hr[data-dir="down"] .vd{color:var(--down)}
 .rd-hr[data-dir="flat"] .vd{color:var(--ink-2)}
@@ -1108,8 +1113,12 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .rd-hr[data-dir="up"]::after{background:var(--up)}
 .rd-hr[data-dir="down"]::after{background:var(--down)}
 .rd-hr:hover{border-color:var(--line-2);box-shadow:var(--e2)}
-.rd-hr .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-right:22px}
-.rd-hr .n b{font-family:"Bricolage Grotesque",sans-serif;font-size:15.5px;font-weight:700;letter-spacing:-.03em}
+.rd-hr .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-right:22px;min-width:0}
+/* the chip never shrinks; the ticker only gives way if it alone is too long
+   for the card, which is a better failure than a two-line header */
+.rd-hr .n .chip{flex:0 0 auto}
+.rd-hr .n b{font-family:"Bricolage Grotesque",sans-serif;font-size:15.5px;font-weight:700;
+  letter-spacing:-.03em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rd-hr .v{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-4)}
 .rd-hmore{grid-column:1/-1;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-4);
   padding-top:2px}
@@ -3143,8 +3152,14 @@ ROUTES.radar=async function(args){
       const vd=verdict(m,a);
       const n=el('div','rd-hr tilt edge'); n.dataset.dir=vd.tone;
       const hd=el('button','rd-hh'); hd.type='button';
+      /* Just the number. The strip is headed "what changed in the last hour",
+         so "this hour" on every chip was both a repetition and the reason a
+         six-letter ticker pushed the chip onto a second line — UANSEM and
+         UPUMP wrapped while UFART and SEDA did not, and the verdicts under
+         them stopped lining up across the row. */
       const nm=el('div','n'); nm.append(coinMark(m.name,24), el('b',null,m.name),
-        Object.assign(el('span','chip '+(a.hourChg>=0?'up':'down')),{textContent:pct(a.hourChg)+' this hour'}));
+        Object.assign(el('span','chip '+(a.hourChg>=0?'up':'down')),
+          {textContent:pct(a.hourChg), title:pct(a.hourChg)+' over the last completed hour'}));
       hd.appendChild(nm);
       /* the verdict, not the mechanics — the mechanics are one tap away */
       hd.appendChild(Object.assign(el('div','vd'),{textContent:vd.head}));
