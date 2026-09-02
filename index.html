@@ -2097,33 +2097,96 @@ function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page
    the whole point: a missing mark is honest, a confident wrong one is not. */
 const ICON_HOST='https://app.hyperliquid.xyz/coins/';
 /* ── the same asset under two names ──────────────────────────────────
-   Spot ENA reaches Hyperliquid through Unit's bridge, and Unit names its
-   tokens U + the ticker, so the spot market is listed as UENA. Anywhere this
-   site has to answer "where else does this trade" — the coin page, the
-   other-venue list in the table, the icon — it needs to know those two names
-   are one asset.
+   Spot XRP is listed as FXRP. Spot ENA is UENA, spot Monero is XMR1, spot LINK
+   is LINK0, spot PENGU is HPENGU. There is no single prefix and no list to
+   memorise: at least five different bridges put assets on this venue and each
+   one names its tokens its own way. The first version of this guessed at
+   Unit's U and got everything else wrong, which is how XRP stayed invisible.
 
-   The pairing is READ, not typed: a spot token whose fullName begins with
-   "Unit " is a bridge wrapper, and dropping its leading U gives the
-   underlying's ticker. spotUniverse() registers each one it sees, so a Unit
-   listing added next month works without an edit here. The fullName test is
-   the part that matters — U-stripping on its own would hand a memecoin called
-   UAAVE the real AAVE logo and a link to the wrong market.
+   So the pairing is not guessed from the name at all — it is PROVED by price.
+   A name test proposes a candidate: the spot ticker ends with the perp's
+   ticker (UBTC, FXRP, HPENGU), or starts with it followed by digits (XMR1,
+   LINK0, AVAX0), or the perp's ticker appears as a word in the token's own
+   fullName ("Unit Bitcoin"). Then the mid has to agree with the perp mark, and
+   that is what actually decides it, because two names for one asset cannot
+   disagree on what it is worth.
 
-   The map below is the same nine, hard-coded, for the case where spot
-   metadata has not been fetched at all (the whole site in Perps mode never
-   loads it). Each was checked against its fullName. UFART is the one Unit
-   ticker that is not U + the perp name: the perp is FARTCOIN. */
+   Checked against the live venue: 26 pairs land within 0.4%, and the closest
+   thing to a false positive is 1.97% away. That gap is the whole design.
+   FXMR calls itself "Freedom XMR" and passes every name test, but trades at
+   $28 against Monero's $508 — it is not Monero, and the price says so where no
+   amount of string matching would. Same for BZEC at a seventh of ZEC.
+
+   Staking receipts are excluded by name as well as by price. KHYPE tracks HYPE
+   to within 2%, close enough that a wider band would swallow it, but a staking
+   receipt accrues — it is worth more than the thing it holds, by design and by
+   a margin that grows. It is not the same asset and never becomes one.
+
+   The seed map below covers the case where spot metadata is never fetched at
+   all. Everything else is learned from the venue on the way in, so a bridge
+   that lists something new next month is paired without an edit here. */
 const ICON_ALIAS={UBTC:'BTC',UETH:'ETH',USOL:'SOL',UZEC:'ZEC',UPUMP:'PUMP',
-  UFART:'FARTCOIN',UXPL:'XPL',UENA:'ENA',UMON:'MON'};
-const BRIDGE_EXC={UFART:'FARTCOIN'};
-/* spot token -> the ticker it stands in for, or null if it stands for itself */
-function bridgeAlt(tok){
-  if(!tok||!tok.name) return null;
-  const n=String(tok.name);
-  if(BRIDGE_EXC[n]) return BRIDGE_EXC[n];
-  if(!/^Unit\s/i.test(tok.fullName||'')) return null;
-  return /^U[A-Z0-9]{2,}$/.test(n) ? n.slice(1) : null;
+  UFART:'FARTCOIN',UXPL:'XPL',UENA:'ENA',UMON:'MON',FXRP:'XRP',XMR1:'XMR'};
+/* how far apart two names for one asset may trade. Above the 0.4% the real
+   pairs actually show, and well under the 1.97% of the nearest impostor. */
+const TWIN_TOL=0.025;
+const TWIN_DERIV=/\b(staked|restaked|staking|vault|yield|liquid staking)\b/i;
+let TWINS={s2p:{},p2s:{}}, twinsP=null;
+
+/* a k-market is the same asset quoted in thousands: kBONK against UBONK is a
+   1000x disagreement about price and no disagreement at all about the asset */
+function twinUnit(pn){ return /^k[A-Z0-9]{2,}$/.test(pn)
+  ? {t:pn.slice(1), div:1000} : {t:pn, div:1}; }
+
+function learnTwins(spotRows, perpRows){
+  if(!spotRows||!perpRows) return TWINS;
+  const s2p={}, p2s={}, vol={};
+  const wordIn=(h,t)=>new RegExp('(^|[^A-Z0-9])'+t+'([^A-Z0-9]|$)','i').test(h||'');
+  for(const sp of spotRows){
+    const nm=String(sp.name||'').toUpperCase();
+    if(!nm||!(sp.mark>0)) continue;
+    if(TWIN_DERIV.test(sp.full||'')) continue;
+    let best=null;
+    for(const pp of perpRows){
+      if(pp.delisted||!(pp.mark>0)) continue;
+      const u=twinUnit(pp.name); if(u.t.length<2) continue;
+      if(nm===u.t) continue;                       /* same ticker, nothing to map */
+      const affix = nm.endsWith(u.t) ||
+        (nm.startsWith(u.t) && /^[0-9]*$/.test(nm.slice(u.t.length)));
+      if(!(affix || wordIn(sp.full,u.t))) continue;
+      const d=Math.abs(sp.mark/(pp.mark/u.div)-1);
+      if(d<=TWIN_TOL && (!best || d<best.d)) best={p:pp.name, d};
+    }
+    if(!best) continue;
+    s2p[nm]=best.p;
+    /* two wrappers can carry one asset — AVAX0 and UAVAX both hold AVAX — so
+       the perp points back at whichever of them anyone actually trades */
+    const v=+sp.vol||0;
+    if(!(best.p in p2s) || v>vol[best.p]){ p2s[best.p]=nm; vol[best.p]=v; }
+    ICON_ALIAS[nm]=best.p;                         /* the mark follows the asset */
+  }
+  TWINS={s2p,p2s};
+  return TWINS;
+}
+/* Both sides, cached, once. Cheap wherever it is called from: the page it
+   matters on has already asked for at least one of these two responses. */
+async function ensureTwins(){
+  if(twinsP) return twinsP;
+  twinsP=(async()=>{
+    try{
+      const [pr,sr]=await Promise.all([
+        apiR({type:'metaAndAssetCtxs'},{ttl:300000}),
+        apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000})]);
+      learnTwins(spotUniverse(sr[0],sr[1]), universe(pr[0],pr[1]));
+    }catch(e){ twinsP=null; }                      /* a failure may be retried */
+    return TWINS;
+  })();
+  return twinsP;
+}
+/* the counterpart of a name on the other venue, in whichever direction */
+function twinOf(name, wantSpot){
+  const n=String(name||'').toUpperCase();
+  return (wantSpot? TWINS.p2s[n] : TWINS.s2p[n]) || null;
 }
 /* a name the store has already refused is not asked for again this session */
 const ICON_MISS=new Set();
@@ -4162,8 +4225,9 @@ function spotUniverse(meta,ctxs){
     if(!bt||!qt||qt.name!=='USDC') return;
     const c=byCoin[u.name]; if(!c) return;
     const mark=+(c.midPx||c.markPx||0); if(!(mark>0)) return;
-    const alt=bridgeAlt(bt);
-    if(alt) ICON_ALIAS[bt.name]=alt;   /* the mark follows the asset, not the wrapper */
+    /* learnTwins needs the token's own description to rule out staking
+       receipts, and the price to prove everything else */
+    const alt=TWINS.s2p[String(bt.name).toUpperCase()]||null;
     const prev=+c.prevDayPx;
     const supply=+c.circulatingSupply;
     out.push({name:bt.name, key:u.name, kind:'spot', pair:bt.name+'/USDC',
@@ -4176,8 +4240,16 @@ function spotUniverse(meta,ctxs){
       mcap: isFinite(supply)&&supply>0? supply*mark : null,
       /* U-prefixed tickers are bridged wrappers, not the native asset. Saying
          so is the difference between a listing and a trap. */
-      bridged: /^U[A-Z0-9]{2,}$/.test(bt.name) && bt.name!=='USDC',
-      /* the perp ticker a reader would have typed to get here */
+      /* "bridged" used to be a guess from a leading U, which called UBTC a
+         wrapper and FXRP a native token. Two different claims live here and
+         they need different evidence: having a TWIN is a claim about identity
+         and is settled by price, while being a WRAPPER is a claim about what
+         the token is, which the issuer states in its own name — "Unit Ansem"
+         is a wrapper whether or not Hyperliquid lists an ANSEM perp for it to
+         be a twin of. So: a twin, or a description that says so. */
+      bridged: !!alt || /^(unit|wrapped)\s|bridge|layerzero/i.test(bt.fullName||''),
+      full: bt.fullName||'',
+      /* the ticker a reader would have typed to get here */
       alt: alt
     });
   });
@@ -4202,6 +4274,7 @@ async function otherSide(){
     const [meta,ctxs]=await apiR({type:'metaAndAssetCtxs'},{ttl:300000});
     OTHER.perp=universe(meta,ctxs).filter(m=>!m.delisted);
   }else{
+    await ensureTwins();
     const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000});
     OTHER.spot=spotUniverse(meta,ctxs);
   }
@@ -4210,6 +4283,10 @@ async function otherSide(){
 
 async function loadUniverse(){
   if(isSpot()){
+    /* Spot rows are the ones that carry a twin, so the map is built before the
+       first paint rather than upgrading marks and links underneath the reader.
+       Both calls are cached and one of them is this one. */
+    await ensureTwins();
     const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:20000});
     return spotUniverse(meta,ctxs);
   }
@@ -4242,6 +4319,8 @@ function setMode(m){
 let SPOT=null;
 async function spotIndex(){
   if(SPOT) return SPOT;
+  /* the twin map has to exist before the index is keyed by it */
+  await ensureTwins();
   const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000});
   const tokens={}; (meta.tokens||[]).forEach(t=>tokens[t.index]=t);
   const byCoin={}; (ctxs||[]).forEach(c=>{ if(c&&c.coin) byCoin[c.coin]=c; });
@@ -4255,10 +4334,10 @@ async function spotIndex(){
       mid, vol:+c.dayNtlVlm||0, chg: +c.prevDayPx? (mid-+c.prevDayPx)/+c.prevDayPx*100 : null};
     (byBase[bt.name]=byBase[bt.name]||[]).push(row);
     /* The ENA perp had no "Buy spot" button because the spot market is called
-       UENA and this index was keyed by the spot ticker alone. A bridge token
-       is also filed under the asset it carries. */
-    const alt=bridgeAlt(bt);
-    if(alt){ ICON_ALIAS[bt.name]=alt; (byAlt[alt]=byAlt[alt]||[]).push(row); }
+       UENA and this index was keyed by the spot ticker alone. A wrapper is
+       also filed under the asset it carries. */
+    const alt=TWINS.s2p[String(bt.name).toUpperCase()];
+    if(alt) (byAlt[alt]=byAlt[alt]||[]).push(row);
   });
   SPOT={};
   const pick=list=>list.slice().sort((x,y)=>(y.canonical-x.canonical)||(y.vol-x.vol))[0];
@@ -4431,10 +4510,10 @@ ROUTES.coin=async function(args){
        ENA" — true of the string and false of the market. Resolve the same
        asset under this venue's name and go there, telling the reader why. */
     if(!M){
-      const same = isSpot()
-        ? U.find(m=>m.alt===name)
-        : (ICON_ALIAS[name] && U.find(m=>m.name===ICON_ALIAS[name]))
-          || (/^U[A-Z0-9]{2,}$/.test(name) ? U.find(m=>m.name===name.slice(1)) : null);
+      await ensureTwins();
+      const want = isSpot() ? twinOf(name,true) : twinOf(name,false);
+      const same = (want && U.find(m=>m.name===want)) ||
+        (isSpot() ? U.find(m=>m.alt===name) : null);
       if(same && same.name!==name){
         ALIASED={from:name, to:same.name};
         location.replace('#/coin/'+encodeURIComponent(same.name));
@@ -4456,12 +4535,15 @@ ROUTES.coin=async function(args){
     paintHeader();
     if(ALIASED && ALIASED.to===name){
       const from=ALIASED.from; ALIASED=null;
+      /* "Unit names it U + the ticker" was true of UENA and wrong about FXRP,
+         XMR1, LINK0 and HPENGU — several bridges list here and each names its
+         tokens its own way. The sentence describes what was checked instead. */
       const n=el('p','cn-alias');
       n.append(el('b',null,'You asked for '+from+'.'),
         document.createTextNode(' On Hyperliquid '+(isSpot()?'spot':'perps')+' that market is '+
-          name+' — the same asset, listed under the name it arrives with. '+
-          (isSpot()? 'Unit bridges it onto the venue and names it U + the ticker.'
-                   : 'The perp trades under the plain ticker.')));
+          name+' — the same asset under the name the bridge that carries it gave it. '+
+          'Paired by price, not by the ticker: the two track each other to within a fraction '+
+          'of a percent.'));
       head.appendChild(n);
     }
     /* The buttons need whichever venue is the OTHER one, and nothing else
