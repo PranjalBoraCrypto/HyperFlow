@@ -356,7 +356,38 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .edge:hover::before{opacity:.85}
 /* siblings step back — the hovered row leads */
 .lead > *{transition:opacity var(--sp-slow) var(--ease),filter var(--sp-slow) var(--ease)}
-.lead:hover > *:not(:hover){opacity:.46;filter:saturate(.55)}
+/* The container's hover area is the whole box: the gaps between cards, the
+   padding, and the empty cell a three-card row leaves in a two-column grid.
+   So `.lead:hover > *:not(:hover)` dimmed EVERY child the moment the pointer
+   crossed into the section without being over a card — the section went dark
+   and nothing led, which is the opposite of the effect. Asking whether a child
+   is actually hovered fixes it at the source, and because this is one rule
+   every list carrying .lead is fixed with it: the home cards, the mini board,
+   the market table and the last-hour strip. */
+.lead:has(> *:hover) > *:not(:hover){opacity:.46;filter:saturate(.55)}
+/* ── coin marks ──────────────────────────────────────────────────────
+   Either the exchange's own artwork for that exact ticker, or a monogram that
+   is obviously not a logo. There is no third option and nothing is drawn by
+   hand — see coinMark() for where the file comes from. */
+.cmk{--s:26px;flex:0 0 auto;width:var(--s);height:var(--s);border-radius:50%;
+  display:grid;place-items:center;overflow:hidden;position:relative;
+  background:var(--g2);border:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-weight:600;
+  font-size:calc(var(--s)*.34);letter-spacing:-.02em;color:var(--ink-4);
+  user-select:none;-webkit-user-select:none}
+.cmk img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;
+  opacity:0;transform:scale(.8);
+  transition:opacity .38s var(--ease-out),transform .55s var(--spring)}
+.cmk[data-on="1"] img{opacity:1;transform:none}
+/* the letters underneath step aside rather than showing through the artwork */
+.cmk[data-on="1"]{color:transparent}
+/* a faint plate only once artwork has loaded: several marks (ETH, FARTCOIN)
+   are drawn dark on transparent and vanish against this background.
+   color-mix against --ink so it stays a light plate in the light theme too. */
+.cmk[data-on="1"]{background:color-mix(in srgb,var(--ink) 8%,transparent);
+  border-color:var(--line-2)}
+@media (prefers-reduced-motion:reduce){ .cmk img{transition:none;transform:none} }
+
 /* ── TOUCH: the hover layer, rebuilt ────────────────────────────────
    Roughly 60% of readers have no pointer at all, so every effect above is
    dead weight for them. Switching it off is only half the job: an interface
@@ -366,7 +397,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
    affordance that hover was REVEALING is simply always visible, because there
    is no second state to reveal it in. */
 @media (hover:none){
-  .lead:hover > *:not(:hover){opacity:1;filter:none}
+  .lead:has(> *:hover) > *:not(:hover){opacity:1;filter:none}
   .tilt:hover{transform:none}
   .edge:hover::before{opacity:0}
   /* press feedback: the tap is the hover */
@@ -531,6 +562,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-back svg{width:14px;height:14px}
 .cn-back:hover{color:var(--mint);gap:11px}
 .cn-t{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
+.cn-t .cmk{align-self:center;margin-right:-4px;--s:clamp(34px,4.6vw,54px)}
 .cn-t h1{font-size:clamp(36px,6vw,62px);letter-spacing:-.05em;line-height:1}
 .cn-px{display:flex;align-items:baseline;gap:10px}
 .cn-px .v{font-family:"IBM Plex Mono",monospace;font-size:clamp(19px,2.6vw,27px);font-weight:600;
@@ -692,6 +724,53 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-tile b.up{color:var(--up)} .cn-tile b.down{color:var(--down)}
 .cn-tile p{margin-top:7px;font-size:12.5px;color:var(--ink-3);line-height:1.55}
 
+/* ── flow: the windows behind the tape ───────────────────────────────
+   A tape only ever shows the last few seconds, so on its own it cannot answer
+   "how much actually traded here". These four windows do. */
+.cn-flow{border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
+  padding:15px 17px 17px;margin-bottom:11px}
+.cn-fh{display:flex;align-items:center;gap:11px 14px;flex-wrap:wrap;
+  justify-content:space-between;margin-bottom:16px}
+.cn-fhl{display:flex;align-items:center;gap:9px;min-width:0}
+.cn-fhl h3{font-family:"Bricolage Grotesque",sans-serif;font-size:15.5px;font-weight:700;
+  letter-spacing:-.03em}
+.cn-fs{display:grid;gap:15px 20px;transition:opacity var(--sp);
+  grid-template-columns:repeat(auto-fit,minmax(min(124px,100%),1fr))}
+.cn-flow[data-busy="1"] .cn-fs,.cn-flow[data-busy="1"] .cn-sp{opacity:.35}
+.cn-f1 s{display:block;text-decoration:none;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-4);
+  margin-bottom:6px}
+.cn-f1 b{display:block;font-family:"Bricolage Grotesque",sans-serif;
+  font-size:clamp(18px,2.1vw,23px);font-weight:700;letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums}
+.cn-f1 b.up{color:var(--up)} .cn-f1 b.down{color:var(--down)}
+.cn-f1 i{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);margin-top:5px}
+/* the split, labelled as what it is and never as buying versus selling */
+.cn-sp{margin-top:17px;padding-top:15px;border-top:1px solid var(--line);
+  transition:opacity var(--sp)}
+.cn-spl{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;margin-bottom:9px;
+  font-variant-numeric:tabular-nums}
+.cn-spl span{white-space:nowrap}
+.cn-spl s{text-decoration:none;opacity:.72}
+.cn-spl b{font-weight:600}
+.cn-spu{color:var(--up)} .cn-spd{color:var(--down)}
+.cn-spb{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--g2);
+  gap:2px}
+.cn-spb i{display:block;height:100%;width:0;border-radius:99px;
+  transition:width .75s var(--spring)}
+.cn-spb .cn-spu{background:linear-gradient(90deg,color-mix(in srgb,var(--up) 50%,transparent),var(--up))}
+.cn-spb .cn-spd{background:linear-gradient(90deg,var(--down),color-mix(in srgb,var(--down) 50%,transparent))}
+.cn-spn{margin-top:11px;font-size:12px;color:var(--ink-3);line-height:1.55}
+.cn-spc{margin-top:4px;font-size:11px;color:var(--ink-4)}
+@media (max-width:520px){
+  .cn-flow{padding:14px 14px 15px}
+  .cn-fs{gap:13px 14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cn-spl s{display:none}
+  .cn-spl{font-size:11.5px}
+}
+@media (prefers-reduced-motion:reduce){ .cn-spb i{transition:none} }
+
 /* tape */
 .cn-tapel{display:flex;flex-direction:column;gap:6px;min-height:60px;
   /* a fixed run of rows keeps the section from resizing on every print */
@@ -725,15 +804,45 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-tape,.cn-news{min-height:74px}
 
 /* markets like this one */
-.cn-sim{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))}
-.cn-simc{position:relative;display:flex;flex-direction:column;gap:7px;padding:15px 16px;
+.cn-sim{display:grid;gap:11px;grid-template-columns:repeat(auto-fit,minmax(min(252px,100%),1fr))}
+.cn-simc{position:relative;display:flex;flex-direction:column;gap:13px;padding:16px 17px 15px;
   border-radius:var(--r3);background:var(--g1);border:1px solid var(--line);
-  color:inherit;text-decoration:none;min-height:44px;
+  color:inherit;text-decoration:none;overflow:hidden;
   transition:border-color var(--sp),box-shadow var(--sp),transform var(--sp) var(--ease)}
+/* backwards, not both: `both` would hold transform:none after the animation
+   finished and quietly kill the tilt these cards carry for the rest of the
+   page's life. */
+@keyframes simIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}
+.cn-simc{animation:simIn .52s var(--ease-out) backwards;animation-delay:calc(var(--i,0)*55ms)}
+@media (prefers-reduced-motion:reduce){ .cn-simc{animation:none} }
 .cn-simc:hover{border-color:var(--line-2);box-shadow:var(--e2)}
-.cn-simc .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.cn-simc .t b{font-family:"Bricolage Grotesque",sans-serif;font-size:16px;font-weight:700;letter-spacing:-.03em}
-.cn-simc .v{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-4)}
+.cn-simt{display:flex;align-items:center;gap:10px;min-width:0}
+.cn-simt b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;font-weight:700;
+  letter-spacing:-.03em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cn-simt .chip{margin-left:auto;flex:0 0 auto}
+/* how alike, as rungs rather than a distance score nobody asked for */
+.cn-simw{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)}
+.cn-simr{display:flex;gap:3px;flex:0 0 auto}
+.cn-simr span{width:14px;height:3px;border-radius:2px;background:var(--line-3);
+  transition:background var(--sp) var(--ease),transform var(--sp) var(--spring)}
+.cn-simr span[data-on="1"]{background:var(--mint)}
+.cn-simc:hover .cn-simr span[data-on="1"]{transform:scaleY(1.6)}
+.cn-simg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.cn-simg s{display:block;text-decoration:none;font-family:"IBM Plex Mono",monospace;
+  font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px}
+.cn-simg b{display:block;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  font-weight:600;font-variant-numeric:tabular-nums}
+.cn-simg b.up{color:var(--up)} .cn-simg b.down{color:var(--down)}
+.cn-simf{display:flex;align-items:center;gap:7px;margin-top:auto;padding-top:12px;
+  border-top:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--ink-3);
+  transition:color var(--sp)}
+.cn-simf svg{width:14px;height:14px;transform:translateX(-3px);opacity:.55;
+  transition:transform var(--sp) var(--spring),opacity var(--sp)}
+.cn-simc:hover .cn-simf{color:var(--mint)}
+.cn-simc:hover .cn-simf svg{transform:none;opacity:1}
+@media (hover:none){ .cn-simf{color:var(--mint)} .cn-simf svg{transform:none;opacity:1} }
+@media (max-width:420px){ .cn-simg{gap:9px 10px} }
 
 /* news */
 .cn-newsl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
@@ -1231,6 +1340,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .tw td b{font-weight:600}
 /* the market name is the way out to the exchange; the rest of the row still
    opens the reading on this site */
+.tw-name .cmk{margin-right:3px}
 .tw-name{display:inline-flex;align-items:center;gap:4px;color:inherit;text-decoration:none;
   border-radius:8px;margin:-6px -7px;padding:6px 7px;min-height:32px;
   transition:color var(--sp),background var(--sp)}
@@ -1272,7 +1382,7 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .fb-col{display:flex;flex-direction:column;gap:7px}
 .fb-hd{display:flex;align-items:center;gap:8px;padding:0 2px 4px}
 .fb-hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
-.fb-r{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 14px;
+.fb-r{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:11px 14px;
   border-radius:var(--r2);background:var(--g1);border:1px solid var(--line);
   color:inherit;text-decoration:none;min-height:44px;
   transition:border-color var(--sp),transform var(--sp) var(--ease)}
@@ -1751,6 +1861,7 @@ const TIPS={
   spread:['Impact spread','The distance between the impact bid and ask — roughly what it costs to get in and straight back out at size. Thin books make good-looking setups expensive.'],
   hold:['Cost to hold','What funding alone costs or pays on the notional you entered, per 8 hours and per day, at the current rate. The rate changes hourly; this is the current rate held constant.'],
   breakeven:['Break-even move','How far price must move in your favour to cover taker fees both ways plus one day of funding at the current rate. Below that, the trade is paying the venue.'],
+  flowsplit:['How much traded','Volume summed over completed bars, so it reconciles with the exchange\'s own 24h figure once you allow for the part of the current hour that has not finished. The split underneath is by bar direction — volume that traded on bars closing up against bars closing down. It is NOT buy volume against sell volume: the exchange attaches a side to live trades only, and its history is candles, which carry no side at all. Nobody can give you a real buy/sell split over a day, so this page does not pretend to.'],
   atrmove:['Expected move','One ATR expressed in dollars and percent — a rough scale for where a stop has to sit to not be noise.']
 };
 (function tips(){
@@ -1877,6 +1988,65 @@ function setNav(id){
 }
 function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page:String(name)}}); }catch(e){} }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   Coin marks
+   ═══════════════════════════════════════════════════════════════
+   Every logo on this site is fetched from Hyperliquid's own icon store, keyed
+   by the exact ticker: app.hyperliquid.xyz/coins/<NAME>.svg. That is the same
+   file the exchange serves next to that market on its own screens, so the mark
+   here can never be a different coin's artwork than the one you see when you
+   go to trade it. Nothing is drawn by hand and nothing is guessed from a name.
+
+   The store is strict — it 404s on anything it does not have, which was worth
+   checking, because a store that answered every request with a house image
+   would be a machine for showing the wrong logo. It covers 230 of the 233
+   perps. Two adjustments, both read off the exchange's own metadata:
+
+   · the seven k-markets (kPEPE, kSHIB, kBONK, kLUNC, kFLOKI, kDOGS, kNEIRO)
+     are the same asset quoted in thousands, so the k comes off.
+   · nine spot tokens are Unit-bridged versions of an asset the store already
+     has. The token's own fullName says which — "Unit Bitcoin", "Unit Zcash" —
+     and each pair below was read off that field rather than inferred from the
+     ticker. UANSEM is bridged too but has no listed underlying, so it is not
+     in the list and falls through to a monogram.
+
+   Everything else — three delisted perps, and most of the long tail of spot
+   tokens — gets a monogram tile. A monogram is visibly not a logo, which is
+   the whole point: a missing mark is honest, a confident wrong one is not. */
+const ICON_HOST='https://app.hyperliquid.xyz/coins/';
+const ICON_ALIAS={UBTC:'BTC',UETH:'ETH',USOL:'SOL',UZEC:'ZEC',UPUMP:'PUMP',
+  UFART:'FARTCOIN',UXPL:'XPL',UENA:'ENA',UMON:'MON'};
+/* a name the store has already refused is not asked for again this session */
+const ICON_MISS=new Set();
+function iconKey(name){
+  const n=String(name||'').trim().toUpperCase();
+  if(!n) return '';
+  if(ICON_ALIAS[n]) return ICON_ALIAS[n];
+  /* the k prefix is lower-case on the exchange, so match the raw name */
+  const raw=String(name).trim();
+  if(/^k[A-Z0-9]/.test(raw)) return raw.slice(1);
+  return raw;
+}
+function coinMark(name,size){
+  const w=el('span','cmk');
+  if(size) w.style.setProperty('--s',size+'px');
+  w.setAttribute('aria-hidden','true');
+  /* The monogram is the BASE state, not the failure state. Marks below the
+     fold load lazily and a mark whose file 404s has a round trip to wait
+     through, so building the tile empty meant rows of blank discs on every
+     first paint. The letters are always there; the artwork lands on top of
+     them and the letters go transparent once it has. */
+  w.textContent=String(name||'?').replace(/^k/,'').slice(0,2).toUpperCase();
+  const key=iconKey(name);
+  if(!key||ICON_MISS.has(key)) return w;
+  const img=el('img'); img.alt=''; img.loading='lazy'; img.decoding='async';
+  img.addEventListener('load',()=>{ w.dataset.on='1'; },{once:true});
+  img.addEventListener('error',()=>{ ICON_MISS.add(key); img.remove(); },{once:true});
+  img.src=ICON_HOST+encodeURIComponent(key)+'.svg';
+  w.appendChild(img);
+  return w;
+}
 
 /* Two things you can do with any market on this site: read it here, or trade
    it there. Everywhere a coin appears it gets both, from this one function, so
@@ -2451,10 +2621,18 @@ function pager(host, total, per, page, onPage){
   const from=page*per+1, to=Math.min(total,(page+1)*per);
   host.appendChild(el('span','pgn',from+'–'+to+' of '+total));
 }
+/* `both` meant these rows kept the animation's final opacity:1 FOREVER, as an
+   inline animated value, and an animated value beats every ordinary
+   declaration in the stylesheet. So the hover dim landed on the market table,
+   the mini board, the top-10 and the last-hour strip as a desaturation with no
+   fade — half the effect, silently, on four lists at once. `backwards` fills
+   only before the animation starts, which is all the delay actually needs, and
+   the inline rule is cleared once it has played so nothing lingers. */
 function flick(box){
   if(RM()) return;
   [...box.children].forEach((n,i)=>{ n.style.animation='none'; void n.offsetWidth;
-    n.style.animation='pgFlick .3s var(--ease-out) '+Math.min(i,9)*20+'ms both'; });
+    n.style.animation='pgFlick .3s var(--ease-out) '+Math.min(i,9)*20+'ms backwards';
+    n.addEventListener('animationend',()=>{ n.style.animation=''; },{once:true}); });
 }
 function secHead(title, sub, right){
   const h=el('div','sec-h');
@@ -2700,7 +2878,7 @@ ROUTES.radar=async function(args){
         const amt=el('div','a');
         amt.innerHTML=pct(m.fundingApr,0)+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
           'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 15.5l7-7M9.5 8.5H16v6.5"/></svg>';
-        r.append(mm,bar,amt);
+        r.append(coinMark(m.name,24),mm,bar,amt);
         col.appendChild(r);
         void bi.offsetWidth; bi.style.transform='scaleX('+(Math.abs(m.fundingApr)/mx)+')';
       });
@@ -2833,6 +3011,7 @@ ROUTES.radar=async function(args){
             '<td class="n r '+(m.delisted||m.absent?'dim':m.fundingApr>0?'up':m.fundingApr<0?'down':'dim')+'">'+(m.absent?'—':z(pct(m.fundingApr,1)))+'</td>'+
             '<td class="n r dim">'+(m.volOverOi!=null?m.volOverOi.toFixed(2)+'×':'—')+'</td>'+
             '<td class="n r dim">'+(m.spreadPct!=null?m.spreadPct.toFixed(3)+'%':'—')+'</td>';
+        $('.tw-name',tr).prepend(coinMark(m.name,20));
         $('.tw-name',tr).addEventListener('click',e=>e.stopPropagation());
         if(!m.absent){ const td=el('td','r'); td.appendChild(coinLinks(m,{compact:true})); tr.appendChild(td); }
         else tr.appendChild(el('td','r'));
@@ -2917,7 +3096,7 @@ ROUTES.radar=async function(args){
       const vd=verdict(m,a);
       const n=el('div','rd-hr tilt edge'); n.dataset.dir=vd.tone;
       const hd=el('button','rd-hh'); hd.type='button';
-      const nm=el('div','n'); nm.append(el('b',null,m.name),
+      const nm=el('div','n'); nm.append(coinMark(m.name,24), el('b',null,m.name),
         Object.assign(el('span','chip '+(a.hourChg>=0?'up':'down')),{textContent:pct(a.hourChg)+' this hour'}));
       hd.appendChild(nm);
       /* the verdict, not the mechanics — the mechanics are one tap away */
@@ -3049,7 +3228,7 @@ ROUTES.radar=async function(args){
       'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+
       '<path d="M8.5 15.5l7-7M9.5 8.5H16v6.5"/></svg>';
     link.addEventListener('click',e=>e.stopPropagation());
-    nm.append(link, el('span','chip '+(m.chg>=0?'up':'down'), pct(m.chg)));
+    nm.append(coinMark(m.name,26), link, el('span','chip '+(m.chg>=0?'up':'down'), pct(m.chg)));
     (r.flags||[]).forEach(f=>{ const c2=el('span','chip warn',f.t); c2.setAttribute('data-tip',f.w); nm.appendChild(c2); });
     id.append(nm, el('div','px', px(m.mark)+'  ·  $'+fmtC(m.vol)+' 24h'));
     h.appendChild(id);
@@ -3551,7 +3730,8 @@ ROUTES.home=async function(){
     a.appendChild(el('div','hm-rk',String(i+1).padStart(2,'0')));
     const id=el('div','hm-idc');
     const nm=el('div','hm-nm');
-    nm.append(el('b',null,m.name), el('span','chip '+(m.chg>=0?'up':'down'),pct(m.chg)));
+    nm.append(coinMark(m.name,24), el('b',null,m.name),
+      el('span','chip '+(m.chg>=0?'up':'down'),pct(m.chg)));
     id.append(nm, el('div','hm-px', px(m.mark)+'  ·  $'+fmtC(m.vol)+' 24h'));
     a.appendChild(id);
     const lean=el('div','hm-ln');
@@ -3956,7 +4136,7 @@ ROUTES.coin=async function(args){
   back.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Radar';
   idw.appendChild(back);
   const title=el('div','cn-t');
-  title.append(el('h1',null,name));
+  title.append(coinMark(name,40), el('h1',null,name));
   const pxw=el('div','cn-px'); pxw.append(el('b','v','—'), el('span','chip dim','—'));
   title.appendChild(pxw);
   idw.appendChild(title);
@@ -4006,8 +4186,17 @@ ROUTES.coin=async function(args){
   const posHost=el('div','cn-grid'); posSec.appendChild(posHost); PAGE.appendChild(posSec);
 
   const tapeSec=el('section','sec rv');
-  tapeSec.appendChild(secHead('The tape',
-    'Every trade as it prints, newest first. Nothing is stored and nothing is replayed — this starts when you open the page.'));
+  /* The page carries a perps/spot switch, so a section full of trades has to
+     say which of the two it is showing. It used to say neither. */
+  const venue=el('span','chip'+(isSpot()?'':' info'));
+  venue.textContent=isSpot()? 'Spot' : 'Perps';
+  venue.setAttribute('data-tip', isSpot()
+    ? 'Every number in this section comes from the spot pair, not the perp. Switch at the top of the page.'
+    : 'Every number in this section comes from the perp, not the spot pair. Switch at the top of the page.');
+  tapeSec.appendChild(secHead('Flow and the tape',
+    'How much traded over four windows, then every trade as it prints. The live rows start when you open the page — nothing is stored and nothing is replayed.',
+    venue));
+  const flowHost=el('div','cn-flow'); tapeSec.appendChild(flowHost);
   const tapeHost=el('div','cn-tape'); tapeSec.appendChild(tapeHost); PAGE.appendChild(tapeSec);
 
   const newsSec=el('section','sec rv');
@@ -4024,13 +4213,23 @@ ROUTES.coin=async function(args){
 
   const simSec=el('section','sec rv');
   simSec.appendChild(secHead('Markets like this one',
-    'Closest on the things that decide how a market behaves: how much trades, how much is open against it, and how it has moved today.'));
+    'Closest on the three things that decide how a market behaves: how much trades, how much is open against it, and how far it has moved today. Every figure is the live one.'));
   const simHost=el('div','cn-sim lead'); simSec.appendChild(simHost); PAGE.appendChild(simSec);
 
   field(PAGE); magnetise(PAGE); reveal(PAGE);
 
   /* ── data ── */
   let M=null, A=null, chart=null, rangeK='1h';
+  /* `let` does not hoist. These lived next to their own functions, below the
+     try block that calls loadFlow(), and the page threw "Cannot access flowK
+     before initialization" on open — the flow card never rendered and nothing
+     said why. Page state is declared with the rest of the page state. */
+  const FLOWW=[{k:'1h', label:'1H',  src:'m', bars:60,  unit:'minute', word:'the last 60 completed minutes'},
+               {k:'24h',label:'24H', src:'h', bars:24,  unit:'hour',   word:'the last 24 completed hours'},
+               {k:'7d', label:'7D',  src:'h', bars:168, unit:'hour',   word:'the last 7 days'},
+               {k:'30d',label:'30D', src:'h', bars:720, unit:'hour',   word:'the last 30 days'}];
+  let flowK='24h', flowRaw=null, flowStat=null, flowSplit=null, flowSeg=null;
+
   try{
     const U=await loadUniverse();
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
@@ -4053,6 +4252,7 @@ ROUTES.coin=async function(args){
     paintPositioning();
     paintSimilar(U);
     startTape();
+    loadFlow();
     loadNews();
     await loadRange('1h');
   }catch(e){
@@ -4178,14 +4378,51 @@ ROUTES.coin=async function(args){
       return {m:x, d:dv*1.0 + doi*0.8 + dc*0.7};
     }).sort((a,b)=>a.d-b.d).slice(0,6);
     simHost.innerHTML='';
-    near.forEach(({m:x})=>{
+    /* The distance is a real number but a meaningless one to read, so it is
+       spent on three rungs and a word instead. The cutoffs are the same scale
+       the distance is built on: a rung is roughly "within a factor of two on
+       every axis". */
+    const rung=d=> d<0.45?3 : d<0.95?2 : 1;
+    const howAlike=n=> n===3?'very close' : n===2?'close' : 'nearest left';
+    near.forEach(({m:x,d},i)=>{
       const a2=el('a','cn-simc tilt edge'); a2.href='#/coin/'+encodeURIComponent(x.name);
-      const top=el('div','t');
-      top.append(el('b',null,x.name),
+      a2.style.setProperty('--i',i);          /* the section's stagger */
+
+      const top=el('div','cn-simt');
+      top.append(coinMark(x.name,30), el('b',null,x.name),
         Object.assign(el('span','chip '+(x.chg>=0?'up':'down')),{textContent:pct(x.chg)}));
       a2.appendChild(top);
-      a2.appendChild(Object.assign(el('div','v'),
-        {textContent:'$'+fmtC(x.vol)+' traded'+(x.oiNtl?' · $'+fmtC(x.oiNtl)+' open':'')}));
+
+      const n2=rung(d);
+      const wr=el('div','cn-simw');
+      const rr=el('div','cn-simr');
+      for(let k=0;k<3;k++){ const sp=el('span'); if(k<n2) sp.dataset.on='1'; rr.appendChild(sp); }
+      wr.append(rr, el('span',null,howAlike(n2)));
+      a2.appendChild(wr);
+
+      /* Four numbers, and every one of them is on the row already — no extra
+         call is made to fill this card in. */
+      const g=el('div','cn-simg');
+      const G=(label,val,cls)=>{ const d2=el('div');
+        d2.append(el('s',null,label), Object.assign(el('b',null,val),{className:cls||''}));
+        g.appendChild(d2); };
+      G('price', px(x.mark));
+      G('24h volume', '$'+fmtC(x.vol));
+      if(isSpot()){
+        G('market cap', x.mcap? '$'+fmtC(x.mcap) : '—');
+        G('spread', x.spreadPct!=null? x.spreadPct.toFixed(3)+'%' : '—');
+      }else{
+        G('open interest', x.oiNtl? '$'+fmtC(x.oiNtl) : '—');
+        G('funding apr', x.fundingApr!=null? pct(x.fundingApr,1) : '—',
+          x.fundingApr>0?'up':x.fundingApr<0?'down':'');
+      }
+      a2.appendChild(g);
+
+      const f=el('div','cn-simf');
+      f.innerHTML='<span>Read '+x.name+'</span><svg viewBox="0 0 24 24" fill="none" '+
+        'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+        '<path d="M5 12h12M12 6l6 6-6 6"/></svg>';
+      a2.appendChild(f);
       simHost.appendChild(a2);
     });
     field(simHost);
@@ -4325,6 +4562,143 @@ ROUTES.coin=async function(args){
     tile('Mark vs oracle', pct(M.oracleGap,3),
       M.oracleGap>0?'the perp is trading above spot':'the perp is trading below spot','','basis');
     field(posHost);
+  }
+
+  /* ── flow ──
+     "How much actually traded here" is the question a tape cannot answer,
+     because a tape only ever holds the last few seconds. Four windows do.
+
+     What this deliberately does NOT show is buy volume against sell volume,
+     because that number does not exist to be shown. Hyperliquid puts a side on
+     every trade it broadcasts live, but its history is candles, and a candle
+     carries open, high, low, close, volume and a trade count — no side. The
+     recentTrades endpoint returns ten prints, roughly thirteen seconds' worth.
+     So there is no honest way to write "$120M bought, $95M sold" over a day,
+     and deriving one from bar direction and calling it buying pressure is
+     exactly the kind of number this site exists not to print.
+
+     What IS real is the same volume split by how each bar closed, and that is
+     what the bar is labelled: traded on hours that closed up, against hours
+     that closed down. Every figure here is a sum over completed bars, so it
+     reconciles against the exchange's own 24h volume to within the part of the
+     current hour that has not finished yet.
+
+     Two calls cover all four windows: one minute bars for the last hour, one
+     hour bars for the last thirty days, sliced four ways. */
+
+  function flowBars(raw){
+    /* the last bar the exchange returns is the one still being built, and a
+       partial bar makes every window look thinner than it is */
+    const b=(raw||[]).map(k=>({o:+k.o,h:+k.h,l:+k.l,c:+k.c,v:+k.v,n:+k.n||0,t:k.t}));
+    return b.slice(0,-1);
+  }
+  function flowStats(bars,n){
+    const w=bars.length>n? bars.slice(-n) : bars;
+    let vol=0, up=0, down=0, tr=0;
+    for(const b of w){
+      const ntl=b.v*((b.o+b.h+b.l+b.c)/4);   /* typical price, not close */
+      vol+=ntl; tr+=b.n;
+      if(b.c>=b.o) up+=ntl; else down+=ntl;
+    }
+    const chg = w.length&&w[0].o ? (w[w.length-1].c/w[0].o-1)*100 : null;
+    return {vol,up,down,tr,chg,n:w.length,avg:tr?vol/tr:0};
+  }
+
+  function buildFlow(){
+    flowHost.innerHTML='';
+    const hd=el('div','cn-fh');
+    const L=el('div','cn-fhl');
+    L.append(el('h3',null,'How much traded'), qm('flowsplit'));
+    flowSeg=el('div','seg'); const fp=el('div','pill'); flowSeg.appendChild(fp);
+    FLOWW.forEach(w=>{
+      const b=el('button',w.k===flowK?'on':null,w.label); b.type='button'; b.dataset.f=w.k;
+      b.addEventListener('click',()=>{
+        if(flowK===w.k) return;
+        flowK=w.k;
+        $$('button',flowSeg).forEach(x=>x.classList.toggle('on',x.dataset.f===w.k));
+        moveFP();
+        paintFlow();
+      });
+      flowSeg.appendChild(b);
+    });
+    const moveFP=()=>{ const on=$('button.on',flowSeg);
+      if(on){ fp.style.left=on.offsetLeft+'px'; fp.style.width=on.offsetWidth+'px'; } };
+    requestAnimationFrame(()=>requestAnimationFrame(moveFP));
+    addEventListener('resize',moveFP); ACTIVE.push(()=>removeEventListener('resize',moveFP));
+    hd.append(L,flowSeg);
+    flowStat=el('div','cn-fs');
+    flowSplit=el('div','cn-sp');
+    flowHost.append(hd,flowStat,flowSplit);
+    flowHost.dataset.busy='1';
+    for(let i=0;i<4;i++){ const sk=el('div','sk'); sk.style.height='46px'; flowStat.appendChild(sk); }
+  }
+
+  function paintFlow(){
+    if(!flowRaw) return;
+    const w=FLOWW.find(x=>x.k===flowK)||FLOWW[1];
+    const st=flowStats(w.src==='m'?flowRaw.m:flowRaw.h, w.bars);
+    delete flowHost.dataset.busy;
+    if(!st.n){ flowStat.innerHTML='';
+      flowStat.appendChild(el('p','rd-count','No completed bars in this window yet.'));
+      flowSplit.innerHTML=''; return; }
+
+    flowStat.innerHTML='';
+    const F=(label,sub,cls)=>{
+      const d=el('div','cn-f1'); d.append(el('s',null,label));
+      const b=el('b'); if(cls) b.className=cls; d.appendChild(b);
+      if(sub) d.appendChild(el('i',null,sub));
+      flowStat.appendChild(d); return b;
+    };
+    countUp(F('traded', w.word), st.vol, v=>'$'+fmtC(v), 700);
+    countUp(F('trades', 'prints that crossed'), st.tr, v=>Math.round(v).toLocaleString(), 700);
+    countUp(F('average trade', 'value of a typical print'), st.avg, v=>'$'+fmtC(v), 700);
+    const cb=F('price move','first bar open to last bar close',
+      st.chg==null?'':st.chg>=0?'up':'down');
+    cb.textContent = st.chg==null? '—' : pct(st.chg);
+
+    /* the split */
+    flowSplit.innerHTML='';
+    const tot=st.up+st.down;
+    const upPct = tot? st.up/tot*100 : 50;
+    /* the long half of each label is dropped on a narrow screen, where it
+       wrapped to two lines and said nothing the note does not */
+    const lab=el('div','cn-spl');
+    const side=(cls,val,mid,tail)=>{ const n=el('span',cls);
+      n.append(el('b',null,'$'+fmtC(val)), document.createTextNode(' '),
+        el('s',null,mid), document.createTextNode(' '+tail));
+      return n; };
+    lab.append(side('cn-spu', st.up,  'on '+w.unit+'s that closed','up'),
+               side('cn-spd', st.down,'on '+w.unit+'s that closed','down'));
+    const bar=el('div','cn-spb');
+    const iu=el('i','cn-spu'), idn=el('i','cn-spd');
+    bar.append(iu,idn);
+    const note=el('div','cn-spn');
+    note.append(el('p',null, Math.round(upPct)+'% of this window traded on '+w.unit+
+      's that closed higher than they opened. Completed bars only.'));
+    note.append(el('p','cn-spc','Bar direction, not buying against selling — the exchange puts a '+
+      'side on live trades only, never on history.'));
+    flowSplit.append(lab,bar,note);
+    requestAnimationFrame(()=>{ iu.style.width=upPct+'%'; idn.style.width=(100-upPct)+'%'; });
+  }
+
+  async function loadFlow(){
+    buildFlow();
+    try{
+      const now=Date.now();
+      const coin=M&&M.key||name;
+      const [mm,hh]=await Promise.all([
+        apiR({type:'candleSnapshot',req:{coin,interval:'1m',startTime:now-75*60e3,endTime:now}},{ttl:45000}),
+        apiR({type:'candleSnapshot',req:{coin,interval:'1h',startTime:now-31*864e5,endTime:now}},{ttl:120000})
+      ]);
+      flowRaw={m:flowBars(mm), h:flowBars(hh)};
+      paintFlow();
+    }catch(e){
+      delete flowHost.dataset.busy;
+      flowStat.innerHTML='';
+      flowStat.appendChild(el('p','rd-count', e.code==='RATE'
+        ? 'The exchange rate-limited this browser, so the windows did not load.'
+        : 'The windows did not load. Try again in a moment.'));
+    }
   }
 
     /* ── the tape ──
