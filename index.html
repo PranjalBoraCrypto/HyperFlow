@@ -3065,7 +3065,7 @@ ROUTES.radar=async function(args){
            new tab — it used to route back into this same page, which is where
            the reader already was. */
         const r=el('a','fb-r edge');
-        r.href=TRADE_URL(m.name); r.target='_blank'; r.rel='noopener';
+        r.href=marketUrl(m); r.target='_blank'; r.rel='noopener';
         r.title='Open '+m.name+' on Hyperliquid';
         const mm=el('div','m');
         mm.append(el('b',null,m.name), el('s',null,'$'+fmtC(m.oiNtl)+' OI'));
@@ -3425,7 +3425,12 @@ ROUTES.radar=async function(args){
     h.appendChild(el('div','mk-rank',String(i+1).padStart(2,'0')));
     const id=el('div','mk-id');
     const nm=el('div','n');
-    const link=el('a','mk-name'); link.href=TRADE_URL(m.name);
+    /* TRADE_URL builds a PERP path. In spot these rows are spot markets and a
+       spot market lives at TOKEN/USDC, so the board's own coin links were
+       sending spot readers to a perp that in several cases does not exist —
+       /trade/FXRP rather than /trade/FXRP/USDC. marketUrl knows the difference
+       and every link on the site now goes through it. */
+    const link=el('a','mk-name'); link.href=marketUrl(m);
     link.target='_blank'; link.rel='noopener';
     link.title='Open '+m.name+' on Hyperliquid';
     link.innerHTML='<b>'+m.name+'</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
@@ -3509,7 +3514,7 @@ ROUTES.radar=async function(args){
        the label was writing a cheque the link didn't cash. The referral is a
        separate, quieter line underneath, for a reader who has no account yet. */
     const a1=el('a','btn ghost mag');
-    a1.href=TRADE_URL(m.name); a1.target='_blank'; a1.rel='noopener';
+    a1.href=marketUrl(m); a1.target='_blank'; a1.rel='noopener';
     a1.innerHTML='<svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>Open '+m.name+' on Hyperliquid';
     a1.style.alignSelf='flex-start';
     a1.addEventListener('click',()=>track('trade:row'));
@@ -4578,15 +4583,21 @@ ROUTES.coin=async function(args){
     primary.addEventListener('click',()=>track('trade:'+MODE));
     acts.appendChild(primary);
     if(isSpot()){
-      /* the other direction: does this token also have a perp? */
+      /* The other direction: does this token also have a perp? It found the
+         right one and then built the link from the name in the URL — so on
+         FXRP the button read "Trade the perp" and opened /trade/FXRP, a perp
+         that does not exist. The link belongs to the market that was found,
+         and it says which one that is. */
       const p=(OTHER.perp||[]).find(x=>x.name===name||(M.alt&&x.name===M.alt));
       if(p){ const b=el('a','btn ghost mag');
-        b.href=TRADE_URL(name); b.target='_blank'; b.rel='noopener';
-        b.innerHTML=ARROW+'Trade the perp';
+        b.href=TRADE_URL(p.name); b.target='_blank'; b.rel='noopener';
+        b.innerHTML=ARROW+'Trade the '+(p.name===name? 'perp' : p.name+' perp');
+        b.title='Open the '+p.name+' perp on Hyperliquid';
         b.addEventListener('click',()=>track('trade:perp'));
         acts.appendChild(b); }
       if(M.bridged) acts.appendChild(Object.assign(el('span','cn-note micro'),
-        {textContent:'a bridged wrapper, not the native asset'}));
+        {textContent: M.alt? 'a wrapper for '+M.alt+', not the native asset'
+                           : 'a bridged wrapper, not the native asset'}));
       magnetise(acts); return;
     }
     const s=spotFor(name, M.mark);
