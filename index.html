@@ -2040,10 +2040,22 @@ function coinMark(name,size){
   w.textContent=String(name||'?').replace(/^k/,'').slice(0,2).toUpperCase();
   const key=iconKey(name);
   if(!key||ICON_MISS.has(key)) return w;
-  const img=el('img'); img.alt=''; img.loading='lazy'; img.decoding='async';
+  /* NOT loading="lazy". These start at opacity 0 inside a 22-40px box, and on
+     the deployed site Chrome deferred every one of them indefinitely — the
+     whole site rendered as monograms while a direct new Image() of the same
+     URL loaded in under a second. It behaved differently in the test browser,
+     which is the worst version of this: an icon layer that quietly does not
+     appear on some machines. They are 1-3KB SVGs and at most a couple of dozen
+     per page, so they load normally, at low priority so they never compete
+     with the page's own data. */
+  const img=el('img'); img.alt=''; img.decoding='async';
+  try{ img.fetchPriority='low'; }catch(e){}
   img.addEventListener('load',()=>{ w.dataset.on='1'; },{once:true});
   img.addEventListener('error',()=>{ ICON_MISS.add(key); img.remove(); },{once:true});
   img.src=ICON_HOST+encodeURIComponent(key)+'.svg';
+  /* a cached file can be complete before a frame has passed; the listener
+     above is attached first so this is only a belt for the braces */
+  if(img.complete&&img.naturalWidth) w.dataset.on='1';
   w.appendChild(img);
   return w;
 }
