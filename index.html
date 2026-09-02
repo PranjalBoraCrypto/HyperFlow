@@ -2162,7 +2162,11 @@ function learnTwins(spotRows, perpRows){
     /* two wrappers can carry one asset — AVAX0 and UAVAX both hold AVAX — so
        the perp points back at whichever of them anyone actually trades */
     const v=+sp.vol||0;
-    if(!(best.p in p2s) || v>vol[best.p]){ p2s[best.p]=nm; vol[best.p]=v; }
+    /* keyed upper, valued as the venue spells it — kBONK is a perp name with a
+       lower-case letter in it, and a map that cannot be asked about it in
+       either case is a map with seven holes */
+    const pk=best.p.toUpperCase();
+    if(!(pk in p2s) || v>vol[pk]){ p2s[pk]=sp.name; vol[pk]=v; }
     ICON_ALIAS[nm]=best.p;                         /* the mark follows the asset */
   }
   TWINS={s2p,p2s};
@@ -4364,7 +4368,13 @@ const RANGES=[{k:'1h',label:'1H',bars:140,ms:3600e3},
               {k:'1d',label:'1D',bars:180,ms:24*3600e3}];
 
 ROUTES.coin=async function(args){
-  const name=decodeURIComponent(args[0]||'').toUpperCase();
+  /* NOT uppercased. Seven markets on this venue carry a lower-case k — kPEPE,
+     kSHIB, kBONK, kLUNC, kFLOKI, kDOGS, kNEIRO, the ones quoted in thousands —
+     and forcing the URL to KPEPE meant it could never match the market it
+     named. Every coin page for all seven read "No market called KPEPE". A
+     name that differs only in case is corrected below, against the venue's own
+     spelling, rather than by shouting at it here. */
+  const name=decodeURIComponent(args[0]||'');
   if(!name){ location.hash='#/radar'; return; }
   $('#crumbT').textContent=name;
 
@@ -4510,6 +4520,11 @@ ROUTES.coin=async function(args){
     const U=await loadUniverse();
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
     M=U.find(m=>m.name===name);
+    if(!M){
+      /* the venue's spelling wins: #/coin/kpepe becomes #/coin/kPEPE */
+      const ci=U.find(m=>String(m.name).toLowerCase()===name.toLowerCase());
+      if(ci){ location.replace('#/coin/'+encodeURIComponent(ci.name)); return; }
+    }
     /* Not found does not mean not listed. Spot ENA trades on Hyperliquid as
        UENA, so "#/coin/ENA" with Spot selected used to say "No market called
        ENA" — true of the string and false of the market. Resolve the same
@@ -5113,7 +5128,9 @@ ROUTES.coin=async function(args){
     try{
       const ctl=new AbortController();
       const t=setTimeout(()=>ctl.abort(),9000);
-      const r=await fetch('/api/news?coin='+encodeURIComponent(name),{signal:ctl.signal});
+      /* iconKey resolves a wrapper or a k-market to the asset underneath —
+         headlines are written about ENA and PEPE, never about UENA or kPEPE */
+      const r=await fetch('/api/news?coin='+encodeURIComponent(iconKey(name)),{signal:ctl.signal});
       clearTimeout(t);
       if(!r.ok) throw new Error('status '+r.status);
       const d=await r.json();
