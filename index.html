@@ -563,6 +563,11 @@ html{scrollbar-width:thin; scrollbar-color:var(--line-3) var(--g1)}
 .cn-back:hover{color:var(--mint);gap:11px}
 .cn-t{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
 .cn-t .cmk{align-self:center;margin-right:-4px;--s:clamp(34px,4.6vw,54px)}
+/* why the ticker in the URL is not the ticker on the page */
+.cn-alias{margin-top:14px;padding:11px 14px;border-radius:var(--r2);
+  background:var(--g1);border:1px solid var(--line);border-left:3px solid var(--mint);
+  font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:760px}
+.cn-alias b{color:var(--ink);font-weight:600}
 .cn-t h1{font-size:clamp(36px,6vw,62px);letter-spacing:-.05em;line-height:1}
 .cn-px{display:flex;align-items:baseline;gap:10px}
 .cn-px .v{font-family:"IBM Plex Mono",monospace;font-size:clamp(19px,2.6vw,27px);font-weight:600;
@@ -2015,8 +2020,35 @@ function track(name){ try{ window.va&&window.va('event',{name:'route',data:{page
    tokens — gets a monogram tile. A monogram is visibly not a logo, which is
    the whole point: a missing mark is honest, a confident wrong one is not. */
 const ICON_HOST='https://app.hyperliquid.xyz/coins/';
+/* ── the same asset under two names ──────────────────────────────────
+   Spot ENA reaches Hyperliquid through Unit's bridge, and Unit names its
+   tokens U + the ticker, so the spot market is listed as UENA. Anywhere this
+   site has to answer "where else does this trade" — the coin page, the
+   other-venue list in the table, the icon — it needs to know those two names
+   are one asset.
+
+   The pairing is READ, not typed: a spot token whose fullName begins with
+   "Unit " is a bridge wrapper, and dropping its leading U gives the
+   underlying's ticker. spotUniverse() registers each one it sees, so a Unit
+   listing added next month works without an edit here. The fullName test is
+   the part that matters — U-stripping on its own would hand a memecoin called
+   UAAVE the real AAVE logo and a link to the wrong market.
+
+   The map below is the same nine, hard-coded, for the case where spot
+   metadata has not been fetched at all (the whole site in Perps mode never
+   loads it). Each was checked against its fullName. UFART is the one Unit
+   ticker that is not U + the perp name: the perp is FARTCOIN. */
 const ICON_ALIAS={UBTC:'BTC',UETH:'ETH',USOL:'SOL',UZEC:'ZEC',UPUMP:'PUMP',
   UFART:'FARTCOIN',UXPL:'XPL',UENA:'ENA',UMON:'MON'};
+const BRIDGE_EXC={UFART:'FARTCOIN'};
+/* spot token -> the ticker it stands in for, or null if it stands for itself */
+function bridgeAlt(tok){
+  if(!tok||!tok.name) return null;
+  const n=String(tok.name);
+  if(BRIDGE_EXC[n]) return BRIDGE_EXC[n];
+  if(!/^Unit\s/i.test(tok.fullName||'')) return null;
+  return /^U[A-Z0-9]{2,}$/.test(n) ? n.slice(1) : null;
+}
 /* a name the store has already refused is not asked for again this session */
 const ICON_MISS=new Set();
 function iconKey(name){
@@ -2943,9 +2975,12 @@ ROUTES.radar=async function(args){
        actually trades here. Loaded on demand — nobody should pay a call for a
        list they have not asked for. */
     let absentRows=null, showAbsent=false;
-    const here=new Set(all.map(m=>m.name));
+    /* A market answers to both names. Without this, Spot listed ENA as a
+       "perps only" market while UENA — the same asset, trading right there —
+       sat a few rows above it. */
+    const here=new Set(all.flatMap(m=>[m.name,m.alt].filter(Boolean)));
     otherSide().then(list=>{
-      absentRows=(list||[]).filter(m=>!here.has(m.name))
+      absentRows=(list||[]).filter(m=>!here.has(m.name)&&!(m.alt&&here.has(m.alt)))
         .sort((a,b)=>b.vol-a.vol)
         .map(m=>({...m, absent:true, vol:0, mark:m.mark}));
       if(!absentRows.length) return;
@@ -4033,6 +4068,8 @@ function spotUniverse(meta,ctxs){
     if(!bt||!qt||qt.name!=='USDC') return;
     const c=byCoin[u.name]; if(!c) return;
     const mark=+(c.midPx||c.markPx||0); if(!(mark>0)) return;
+    const alt=bridgeAlt(bt);
+    if(alt) ICON_ALIAS[bt.name]=alt;   /* the mark follows the asset, not the wrapper */
     const prev=+c.prevDayPx;
     const supply=+c.circulatingSupply;
     out.push({name:bt.name, key:u.name, kind:'spot', pair:bt.name+'/USDC',
@@ -4045,7 +4082,9 @@ function spotUniverse(meta,ctxs){
       mcap: isFinite(supply)&&supply>0? supply*mark : null,
       /* U-prefixed tickers are bridged wrappers, not the native asset. Saying
          so is the difference between a listing and a trap. */
-      bridged: /^U[A-Z0-9]{2,}$/.test(bt.name) && bt.name!=='USDC'
+      bridged: /^U[A-Z0-9]{2,}$/.test(bt.name) && bt.name!=='USDC',
+      /* the perp ticker a reader would have typed to get here */
+      alt: alt
     });
   });
   /* one row per token: prefer the canonical pair, then the busiest */
@@ -4059,6 +4098,9 @@ function spotUniverse(meta,ctxs){
    a reader is looking for actually trades. One extra call, cached five
    minutes, and only made when they ask to see the list. */
 let OTHER={perp:null,spot:null};
+/* set by the coin route just before it redirects to the same asset's other
+   name, read once on the way in so the reader is told why the ticker changed */
+let ALIASED=null;
 async function otherSide(){
   const want=isSpot()?'perp':'spot';
   if(OTHER[want]) return OTHER[want];
@@ -4109,19 +4151,26 @@ async function spotIndex(){
   const [meta,ctxs]=await apiR({type:'spotMetaAndAssetCtxs'},{ttl:300000});
   const tokens={}; (meta.tokens||[]).forEach(t=>tokens[t.index]=t);
   const byCoin={}; (ctxs||[]).forEach(c=>{ if(c&&c.coin) byCoin[c.coin]=c; });
-  const byBase={};
+  const byBase={}, byAlt={};
   (meta.universe||[]).forEach(u=>{
     const bt=tokens[u.tokens[0]], qt=tokens[u.tokens[1]];
     if(!bt||!qt||qt.name!=='USDC') return;
     const c=byCoin[u.name]; if(!c) return;
     const mid=+(c.midPx||c.markPx||0); if(!(mid>0)) return;
-    (byBase[bt.name]=byBase[bt.name]||[]).push({
-      base:bt.name, pair:bt.name+'/USDC', canonical:!!bt.isCanonical,
-      mid, vol:+c.dayNtlVlm||0, chg: +c.prevDayPx? (mid-+c.prevDayPx)/+c.prevDayPx*100 : null});
+    const row={base:bt.name, pair:bt.name+'/USDC', canonical:!!bt.isCanonical,
+      mid, vol:+c.dayNtlVlm||0, chg: +c.prevDayPx? (mid-+c.prevDayPx)/+c.prevDayPx*100 : null};
+    (byBase[bt.name]=byBase[bt.name]||[]).push(row);
+    /* The ENA perp had no "Buy spot" button because the spot market is called
+       UENA and this index was keyed by the spot ticker alone. A bridge token
+       is also filed under the asset it carries. */
+    const alt=bridgeAlt(bt);
+    if(alt){ ICON_ALIAS[bt.name]=alt; (byAlt[alt]=byAlt[alt]||[]).push(row); }
   });
   SPOT={};
-  for(const [b,list] of Object.entries(byBase))
-    SPOT[b]=list.slice().sort((x,y)=>(y.canonical-x.canonical)||(y.vol-x.vol))[0];
+  const pick=list=>list.slice().sort((x,y)=>(y.canonical-x.canonical)||(y.vol-x.vol))[0];
+  for(const [b,list] of Object.entries(byBase)) SPOT[b]=pick(list);
+  /* a token that genuinely carries the name always wins the key */
+  for(const [b,list] of Object.entries(byAlt)) if(!SPOT[b]) SPOT[b]=pick(list);
   return SPOT;
 }
 function spotFor(name, perpMark){
@@ -4246,6 +4295,21 @@ ROUTES.coin=async function(args){
     const U=await loadUniverse();
     RADAR={t:Date.now(),U,short:RADAR.short,det:RADAR.det||{}};
     M=U.find(m=>m.name===name);
+    /* Not found does not mean not listed. Spot ENA trades on Hyperliquid as
+       UENA, so "#/coin/ENA" with Spot selected used to say "No market called
+       ENA" — true of the string and false of the market. Resolve the same
+       asset under this venue's name and go there, telling the reader why. */
+    if(!M){
+      const same = isSpot()
+        ? U.find(m=>m.alt===name)
+        : (ICON_ALIAS[name] && U.find(m=>m.name===ICON_ALIAS[name]))
+          || (/^U[A-Z0-9]{2,}$/.test(name) ? U.find(m=>m.name===name.slice(1)) : null);
+      if(same && same.name!==name){
+        ALIASED={from:name, to:same.name};
+        location.replace('#/coin/'+encodeURIComponent(same.name));
+        return;
+      }
+    }
     if(!M){
       PAGE.innerHTML='';
       const c2=el('div','card pad'); c2.style.maxWidth='620px';
@@ -4259,6 +4323,16 @@ ROUTES.coin=async function(args){
       return;
     }
     paintHeader();
+    if(ALIASED && ALIASED.to===name){
+      const from=ALIASED.from; ALIASED=null;
+      const n=el('p','cn-alias');
+      n.append(el('b',null,'You asked for '+from+'.'),
+        document.createTextNode(' On Hyperliquid '+(isSpot()?'spot':'perps')+' that market is '+
+          name+' — the same asset, listed under the name it arrives with. '+
+          (isSpot()? 'Unit bridges it onto the venue and names it U + the ticker.'
+                   : 'The perp trades under the plain ticker.')));
+      head.appendChild(n);
+    }
     /* the buttons need the spot index, but nothing else waits on it */
     spotIndex().then(()=>paintActions()).catch(()=>paintActions());
     paintPositioning();
@@ -4288,7 +4362,7 @@ ROUTES.coin=async function(args){
     acts.appendChild(primary);
     if(isSpot()){
       /* the other direction: does this token also have a perp? */
-      const p=(OTHER.perp||[]).find(x=>x.name===name);
+      const p=(OTHER.perp||[]).find(x=>x.name===name||(M.alt&&x.name===M.alt));
       if(p){ const b=el('a','btn ghost mag');
         b.href=TRADE_URL(name); b.target='_blank'; b.rel='noopener';
         b.innerHTML=ARROW+'Trade the perp';
@@ -4388,7 +4462,7 @@ ROUTES.coin=async function(args){
       const doi=(x.oiNtl!=null&&M.oiNtl!=null)? Math.abs(lg(x.oiNtl)-lg(M.oiNtl)) : 0;
       const dc=Math.abs((x.chg||0)-(M.chg||0))/8;
       return {m:x, d:dv*1.0 + doi*0.8 + dc*0.7};
-    }).sort((a,b)=>a.d-b.d).slice(0,6);
+    }).sort((a,b)=>a.d-b.d).slice(0,5);
     simHost.innerHTML='';
     /* The distance is a real number but a meaningless one to read, so it is
        spent on three rungs and a word instead. The cutoffs are the same scale
